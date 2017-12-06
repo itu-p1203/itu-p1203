@@ -1,0 +1,4 @@
+[submodule "ffmpeg-debug-qp"]
+	path = ffmpeg-debug-qp
+	url = https://github.com/slhck/ffmpeg-debug-qp
+    branch = master
