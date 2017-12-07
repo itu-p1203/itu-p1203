@@ -259,9 +259,9 @@ If you use this software in your research, you must:
 1. Include the link to this repository
 2. Cite the following publication:
 
-        @inproceedings{Raake2017a,
+        @inproceedings{Raake2017,
         address = {Erfurt},
-        author = {Raake, Alexander and Garcia, Marie-Neige and Robitza, Werner and List, Peter and Goring, Steve and Feiten, Bernhard},
+        author = {Raake, Alexander and Garcia, Marie-Neige and Robitza, Werner and List, Peter and Göring, Steve and Feiten, Bernhard},
         booktitle = {2017 Ninth International Conference on Quality of Multimedia Experience (QoMEX)},
         doi = {10.1109/QoMEX.2017.7965631},
         isbn = {978-1-5386-4024-1},
