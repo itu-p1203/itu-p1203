@@ -272,6 +272,8 @@ If you use this software in your research, you must:
         year = {2017}
         }
 
+Development of this software has been partly funded by the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No 643072, Project [QoE-Net](http://www.qoenet-itn.eu/).
+
 ## License
 
 Copyright 2017 Deutsche Telekom AG, Technische Universität Berlin, Technische Universität Ilmenau, LM Ericsson
