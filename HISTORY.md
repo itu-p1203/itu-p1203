@@ -1,5 +1,9 @@
 # History
 
+## v1.1.2 (2018-01-15)
+
+- Allow using O21 and O22 input directly
+
 ## v1.1.1 (2018-01-15)
 
 - Fix bug in setting different display resolution
