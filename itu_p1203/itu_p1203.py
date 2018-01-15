@@ -94,9 +94,9 @@ class P1203Standalone:
 
         display_res = "1920x1080"
         try:
-            self.input_report["IGen"]["displaySize"]
+            display_res = self.input_report["IGen"]["displaySize"]
         except Exception:
-            logger.warning("No display resolution, assuming full HD")
+            logger.warning("No display resolution specified, assuming full HD")
 
         stream_id = None
         try:
