@@ -39,7 +39,7 @@ import itu_p1203.utils as utils
 logger = log.setup_custom_logger('main')
 
 
-def extract_from_single_file(input_file, mode, debug, only_pa, only_pv):
+def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_pv=False, print_intermediate=False):
     """
     Extract the report based on a single input file (JSON or video)
 
@@ -49,6 +49,7 @@ def extract_from_single_file(input_file, mode, debug, only_pa, only_pv):
         debug {bool} -- whether to run in debug mode
         only_pa {bool} -- only run Pa module
         only_pv {bool} -- only run Pv module
+        print_intermediate {bool} -- print intermediate O.21/O.22 values
     """
     if not os.path.isfile(input_file):
         logger.error("No such file: {input_file}".format(input_file=input_file))
@@ -84,7 +85,7 @@ def extract_from_single_file(input_file, mode, debug, only_pa, only_pv):
     elif only_pv:
         output = itu_p1203.calculate_pv()
     else:
-        output = itu_p1203.calculate_complete()
+        output = itu_p1203.calculate_complete(print_intermediate)
 
     return (input_file, output)
 
@@ -130,6 +131,11 @@ def main():
         help="just print Pv O.22 values"
     )
     parser.add_argument(
+        '--print-intermediate',
+        action='store_true',
+        help="print intermediate O.21/O.22 values"
+    )
+    parser.add_argument(
         '--cpu-count',
         type=int,
         default=multiprocessing.cpu_count(),
@@ -151,12 +157,12 @@ def main():
 
     if use_multiprocessing:
         pool = Pool(processes=argsdict["cpu_count"])
-        params = [(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"]) for input_file in argsdict["input"]]
+        params = [(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"]) for input_file in argsdict["input"]]
         output_results = pool.starmap(extract_from_single_file, params)
     else:
         # iterate over input files
         for input_file in argsdict["input"]:
-            result = extract_from_single_file(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"])
+            result = extract_from_single_file(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"])
             # append to output
             output_results.append(result)
 

@@ -25,6 +25,7 @@ SOFTWARE.
 
 import json
 import datetime
+import sys
 
 from itu_p1203 import log
 from itu_p1203.p1203Pa import P1203Pa
@@ -62,19 +63,35 @@ class P1203Standalone:
         Calculate Pa and return audio dict
         """
         logger.debug("Calculating audio scores ...")
-        segments = []
-        try:
-            segments = self.input_report['I11']["segments"]
-        except Exception:
-            logger.warning("No audio segments specified")
 
-        stream_id = None
-        try:
-            stream_id = self.input_report["I11"]["streamId"]
-        except Exception:
-            logger.warning("No stream ID specified")
+        # estimate quality from segments
+        if 'I11' in self.input_report.keys():
+            segments = []
+            if 'segments' not in self.input_report['I11']:
+                logger.warning("No audio segments specified")
+            else:
+                segments = self.input_report['I11']["segments"]
 
-        self.audio = P1203Pa(segments, stream_id).calculate()
+            stream_id = None
+            try:
+                stream_id = self.input_report["I11"]["streamId"]
+            except Exception:
+                logger.warning("No stream ID specified")
+
+            self.audio = P1203Pa(segments, stream_id).calculate()
+
+        # use existing O21 scores
+        elif 'O21' in self.input_report.keys():
+            self.audio = {
+                "audio": {
+                    "streamId": -1,
+                    "O21": self.input_report['O21']
+                }
+            }
+
+        else:
+            logger.error("No 'I11' or 'O21' found in input report")
+            sys.exit(1)
 
         if self.debug:
             print(json.dumps(self.audio, indent=True, sort_keys=True))
@@ -86,29 +103,45 @@ class P1203Standalone:
         Calculate Pv and return video dict
         """
         logger.debug("Calculating video scores ...")
-        segments = []
-        try:
+
+        # estimate quality from segments
+        if 'I13' in self.input_report.keys():
+            if 'segments' not in self.input_report["I13"]:
+                logger.error("No video segments defined, check your input format")
+                sys.exit(1)
+
             segments = self.input_report["I13"]["segments"]
-        except Exception:
-            logger.error("No video segments defined, check your input format")
 
-        display_res = "1920x1080"
-        try:
-            display_res = self.input_report["IGen"]["displaySize"]
-        except Exception:
-            logger.warning("No display resolution specified, assuming full HD")
+            display_res = "1920x1080"
+            try:
+                display_res = self.input_report["IGen"]["displaySize"]
+            except Exception:
+                logger.warning("No display resolution specified, assuming full HD")
 
-        stream_id = None
-        try:
-            stream_id = self.input_report["I13"]["streamId"]
-        except Exception:
-            logger.warning("No stream ID specified")
+            stream_id = None
+            try:
+                stream_id = self.input_report["I13"]["streamId"]
+            except Exception:
+                logger.warning("No stream ID specified")
 
-        self.video = P1203Pv(
-            segments=segments,
-            display_res=display_res,
-            stream_id=stream_id
-        ).calculate()
+            self.video = P1203Pv(
+                segments=segments,
+                display_res=display_res,
+                stream_id=stream_id
+            ).calculate()
+
+        # use existing O22 scores
+        elif 'O22' in self.input_report.keys():
+            self.video = {
+                "video": {
+                    "streamId": -1,
+                    "O22": self.input_report['O22']
+                }
+            }
+
+        else:
+            logger.error("No 'I13' or 'O22' found in input report")
+            sys.exit(1)
 
         if self.debug:
             print(json.dumps(self.video, indent=True, sort_keys=True))
@@ -141,9 +174,12 @@ class P1203Standalone:
 
         return self.integration
 
-    def calculate_complete(self):
+    def calculate_complete(self, print_intermediate=False):
         """
         Calculates P.1203 scores based on JSON input file
+
+        Arguments:
+            print_intermediate {bool} -- print intermediate O.21/O.22 values
 
         Returns:
             dict -- integration output according to spec:
@@ -158,13 +194,27 @@ class P1203Standalone:
         self.calculate_pv()
         self.calculate_integration()
 
+        # try setting stream ID from input video
+        stream_id = -1
+        mode = -1
+        try:
+            stream_id = self.video["video"]["streamId"]
+            mode = self.video["video"]["mode"]
+        except Exception as e:
+            pass
+
         self.overall_result = {
-            "streamId": self.video["video"]["streamId"],
-            "mode": self.video["video"]["mode"],
+            "streamId": stream_id,
+            "mode": mode,
             "O23": self.integration["O23"],
             "O34": self.integration["O34"],
             "O35": self.integration["O35"],
             "O46": self.integration["O46"],
             "date": datetime.datetime.today().isoformat()
         }
+
+        if print_intermediate:
+            self.overall_result["O21"] = self.audio["audio"]["O21"]
+            self.overall_result["O22"] = self.video["video"]["O22"]
+
         return self.overall_result

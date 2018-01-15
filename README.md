@@ -47,9 +47,9 @@ Then you will get a `p1203-standalone` executable on your system.
 ## CLI Usage
 
 ```
-itu_p1203 [-h] [-m {0,1,2,3}]
-                 [--debug] [--only-pa] [--only-pv] [--version]
-                 input [input ...]
+itu_p1203 [-h] [-m {0,1,2,3}] [--debug] [--only-pa] [--only-pv]
+          [--print-intermediate] [--cpu-count CPU_COUNT] [--version]
+          input [input ...]
 
 P.1203 standalone reference implementation
 
@@ -64,6 +64,9 @@ optional arguments:
   --debug               some debug output (default: False)
   --only-pa             just print Pa O.21 values (default: False)
   --only-pv             just print Pv O.22 values (default: False)
+  --print-intermediate  print intermediate O.21/O.22 values (default: False)
+  --cpu-count CPU_COUNT thread/CPU count (default: 8)
+  --version             show program's version number and exit
 ```
 
 The program will output a valid JSON report with the following structure:
@@ -71,6 +74,12 @@ The program will output a valid JSON report with the following structure:
 ```
 {
   "path/to/first/input/file": {
+    "O21": [
+      # per-second audio quality scores (only if --print-intermediate was used)
+    ],
+    "O22": [
+      # per-second video quality scores (only if --print-intermediate was used)
+    ]
     "O23": 5.0,     # stalling quality
     "O34": [
       # per-second audiovisual quality scores
@@ -175,6 +184,8 @@ Note:
 
 - All timestamps are in media time
 - All timestamps are given as seconds (with optional fractional seconds)
+
+As an alternative to giving segment information, the input can also be a list of O.21 (audio) and O.22 (video) quality scores, e.g. from other calculations. See `examples/existing_O21_O22.json` for an example.
 
 ### JSON Audio Input Format
 
