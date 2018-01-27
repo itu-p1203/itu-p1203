@@ -1,5 +1,9 @@
 # History
 
+## v1.1.3 (2018-01-27)
+
+- Allow easier import of submodules
+
 ## v1.1.2 (2018-01-15)
 
 - Allow using O21 and O22 input directly

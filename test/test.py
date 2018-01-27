@@ -5,8 +5,8 @@ import unittest
 
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../')
 
-from itu_p1203.itu_p1203 import P1203Standalone
-from itu_p1203.p1203Pv import P1203Pv
+from itu_p1203 import P1203Standalone
+from itu_p1203 import P1203Pv
 import itu_p1203.utils as utils
 
 

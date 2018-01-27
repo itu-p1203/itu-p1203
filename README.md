@@ -42,7 +42,7 @@ From this directory, run:
 
     pip3 install .
 
-Then you will get a `p1203-standalone` executable on your system.
+Then you will get a `p1203-standalone` executable on your system. You can import the libraries with `itu_p1203`.
 
 ## CLI Usage
 
@@ -251,13 +251,13 @@ See `itu_p1203/extractor.py -h` for more info.
 You can use the classes contained in this module to programmatically call the model in your test application. For example:
 
 ```python
-from itu_p1203.itu_p1203 import P1203Standalone
+from itu_p1203 import P1203Standalone
 P1203Standalone(input_json).calculate_complete()
 
-from itu_p1203.p1203Pa import P1203Pa
+from itu_p1203 import P1203Pa
 P1203Pa(segments).calculate()
 
-from itu_p1203.p1203Pq import P1203Pq
+from itu_p1203 import P1203Pq
 P1203Pq(audio_scores, video_scores).calculate()
 ```
 
