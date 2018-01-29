@@ -153,7 +153,11 @@ def main():
         logger.setLevel(logging.DEBUG)
 
     output_results = []
-    use_multiprocessing = not argsdict["debug"]
+
+    if argsdict["debug"] or argsdict["cpu_count"] == 1:
+        use_multiprocessing = False
+    else:
+        use_multiprocessing = True
 
     if use_multiprocessing:
         pool = Pool(processes=argsdict["cpu_count"])

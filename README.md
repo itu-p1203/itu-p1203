@@ -17,7 +17,7 @@ The software takes the following input:
 Based on the input, it calculates per-second audio and video quality scores and an overall audiovisual integrated quality score according to the P.1203 standards. The following codecs are supported:
 
 * Audio: AAC-LC, HE-AAC, MP2, AC3
-* Video: H.264
+* Video: H.264 (additional codecs supported through non-standard extension; see below)
 
 When specifying the input, the software automatically decides which "mode" will be used for evaluation:
 
@@ -47,7 +47,7 @@ Then you will get a `p1203-standalone` executable on your system. You can import
 ## CLI Usage
 
 ```
-itu_p1203 [-h] [-m {0,1,2,3}] [--debug] [--only-pa] [--only-pv]
+p1203-standalone [-h] [-m {0,1,2,3}] [--debug] [--only-pa] [--only-pv]
           [--print-intermediate] [--cpu-count CPU_COUNT] [--version]
           input [input ...]
 
@@ -206,7 +206,8 @@ For video, `segments` contains a list of video segments to be analyzed. Each seg
 
 ```
 {
-  "codec": "h264",       # only h264 supported in standard
+  "codec": "h264",       # only "h264" supported in standard,
+                         # can be "vp9" or "h265" for non-standard extension
   "start": 0.0,          # start timestamp in s
   "duration": 5.0,       # duration in s
   "res": "1920x1080",    # resolution as "widthxheight", e.g. "1920x1080"
@@ -242,7 +243,7 @@ python3 -m itu_p1203.extractor -m 1 /path/to/segment1.mp4 /path/to/segment2.mp4 
 
 This is what the `itu_p1203` script does in the background if you call it with a video file as argument.
 
-For extracting Mode 3 values, you need the [`ffmpeg-debug-qp`](https://github.com/slhck/ffmpeg-debug-qp) executable installed. Note that this is experimental and may not work with all input video files, hence cannot be used to validate an existing implementation.
+For extracting Mode 3 values, you need the [`ffmpeg-debug-qp`](https://github.com/slhck/ffmpeg-debug-qp) executable installed. **Note:** This procedure is experimental and may not work with all input video files, hence cannot be used to validate an existing implementation.
 
 See `itu_p1203/extractor.py -h` for more info.
 
@@ -252,16 +253,44 @@ You can use the classes contained in this module to programmatically call the mo
 
 ```python
 from itu_p1203 import P1203Standalone
+from itu_p1203 import P1203Pq
+from itu_p1203 import P1203Pa
+from itu_p1203 import P1203Pv
+
 P1203Standalone(input_json).calculate_complete()
 
-from itu_p1203 import P1203Pa
 P1203Pa(segments).calculate()
 
-from itu_p1203 import P1203Pq
 P1203Pq(audio_scores, video_scores).calculate()
+
+P1203Pv.video_model_function_mode0(
+  coding_res=1920*1080,
+  display_res=1920*1080,
+  bitrate_kbps_segment_size=1500,
+  framerate=24
+)
 ```
 
 For more, see the example usage in `itu_p1203/__main__.py`.
+
+## Non-Standard Codec Mapping
+
+In order to be able to use this software with other codecs than the P.1203-specified H.264, the software implements a custom mapping function for H.265/HEVC and VP9-encoded streams when using Mode 0. **Note:** When using other codecs than H.264, the resulting values will not be compliant to the official standard. In the future, further updates to the mapping function may be supplied by the authors based on more extensive testing.
+
+The proposed mapping uses a third-order polynomial function:
+
+    y = a*x^3 + b*x^2 + c*x + d
+
+where `y` is the compensated MOS and `x` is the original MOS. The coefficients (`a` through `d`) are the following:
+
+    COEFFS_VP9 = [-0.04129014, 0.30953836, 0.32314399, 0.5284358]
+    COEFFS_H265 = [-0.05196039, 0.39430046, 0.17486221, 0.50008018]
+
+To derive the function, a set of six 10 s video-only sequences with various spatiotemporal complexity was chosen, encoded at different bitrates (from 200–40000 kBit/s) and resolutions (from 360p to 2160p) with the `libvpx-vp9` and `libx265` encoders. The encoders were set to use two-pass encoding. The quality of each sequence was calculated with [VMAF](https://github.com/Netflix/vmaf) version 0.6.1 and mapped linearly to a MOS scale from 1–5. The mapping was then derived based on averaging the sequence scores; it has an RMSE of < 0.034.
+
+The relationship between the VMAF scores for these clips, averaged over all sources, are shown in the below figure:
+
+![](doc/mapping.png)
 
 ## Acknowledgement
 

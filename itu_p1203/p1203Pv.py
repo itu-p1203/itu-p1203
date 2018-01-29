@@ -39,6 +39,10 @@ class P1203Pv(object):
     VIDEO_COEFFS = (4.66, -0.07, 4.06, 0.642, -2.293, 0.186)
     MOBILE_COEFFS = (0.7, 0.85)
 
+    # non-standard codec mapping
+    COEFFS_VP9 = [-0.04129014, 0.30953836, 0.32314399, 0.5284358]
+    COEFFS_H265 = [-0.05196039, 0.39430046, 0.17486221, 0.50008018]
+
     @staticmethod
     def degradation_due_to_upscaling(coding_res, display_res):
         """
@@ -331,10 +335,29 @@ class P1203Pv(object):
                 first_frame["fps"],
                 frames
             )
-            self.o22.append(score)
 
         else:
-            pass
+            logger.error("Unsupported mode: {}".format(self.mode))
+            sys.exit(1)
+
+        # non-standard codec mapping
+        codec_list = list(set([f["codec"] for f in frames]))
+        if len(codec_list) > 1:
+            logger.error("Codec switching between frames in measurement window detected.")
+            sys.exit(1)
+        elif codec_list[0] != "h264":
+            def correction_func(x, a, b, c, d):
+                return a * x * x * x + b * x * x + c * x + d
+            if codec_list[0] in ["hevc", "h265"]:
+                coeffs = self.COEFFS_H265
+            elif codec_list[0] == "vp9":
+                coeffs = self.COEFFS_VP9
+            else:
+                logger.error("Unsupported codec in measurement window: {}".format(codec_list[0]))
+            # compensate score
+            score = max(1, min(correction_func(score, *coeffs), 5))
+
+        self.o22.append(score)
 
     def calculate(self):
         """
@@ -374,6 +397,18 @@ class P1203Pv(object):
                         break
 
         logger.debug("Evaluating stream in mode " + str(self.mode))
+
+        # check for differing or wrong codecs
+        codecs = list(set([s["codec"] for s in self.segments]))
+        for c in codecs:
+            if c not in ["h264", "h265", "hevc", "vp9"]:
+                logger.error("Unsupported codec: {}".format(c))
+                sys.exit(1)
+            elif c != "h264":
+                logger.warning("Non-standard codec used. O22 Output will not be ITU-T P.1203 compliant.")
+            if self.mode != 0 and c != "h264":
+                logger.error("Non-standard codec calculation only possible with Mode 0.")
+                sys.exit(1)
 
         # generate fake frames
         if self.mode == 0:
