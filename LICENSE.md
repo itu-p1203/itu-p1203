@@ -1,4 +1,4 @@
-Copyright 2017 Deutsche Telekom AG, Technische Universität Berlin, Technische Universität Ilmenau, LM Ericsson
+Copyright 2017-2018 Deutsche Telekom AG, Technische Universität Berlin, Technische Universität Ilmenau, LM Ericsson
 
 Permission is hereby granted, free of charge, to use the software for non-commercial research purposes.
 
