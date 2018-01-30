@@ -299,10 +299,12 @@ If you use this software in your research, you must:
 1. Include the link to this repository
 2. Cite the following publication:
 
+   A. Raake, M.-N. Garcia, W. Robitza, P. List, S. Göring, and B. Feiten, “A bitstream-based, scalable video-quality model for HTTP adaptive streaming: ITU-T P.1203.1,” in Ninth International Conference on Quality of Multimedia Experience (QoMEX), (Erfurt), 2017.
+
         @inproceedings{Raake2017,
         address = {Erfurt},
         author = {Raake, Alexander and Garcia, Marie-Neige and Robitza, Werner and List, Peter and Göring, Steve and Feiten, Bernhard},
-        booktitle = {2017 Ninth International Conference on Quality of Multimedia Experience (QoMEX)},
+        booktitle = {Ninth International Conference on Quality of Multimedia Experience (QoMEX)},
         doi = {10.1109/QoMEX.2017.7965631},
         isbn = {978-1-5386-4024-1},
         month = {May},
