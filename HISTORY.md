@@ -1,5 +1,13 @@
 # History
 
+## v1.1.5 (2018-01-31)
+
+- Minor updates
+
+## v1.1.4 (2018-01-31)
+
+- Minor updates
+
 ## v1.1.3 (2018-01-27)
 
 - Allow easier import of submodules

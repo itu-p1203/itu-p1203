@@ -24,6 +24,7 @@ SOFTWARE.
 """
 
 import math
+import sys
 
 from itu_p1203 import log
 import itu_p1203.utils as utils
@@ -33,6 +34,12 @@ logger = log.setup_custom_logger('main')
 
 
 class P1203Pa(object):
+
+    VALID_CODECS = ["mp2", "ac3", "aaclc", "heaac"]
+    COEFFS_A1 = {'mp2': 100.00, 'ac3': 100.00, 'aaclc': 100.00, 'heaac': 100.00}
+    COEFFS_A2 = {'mp2': -0.02, 'ac3': -0.03, 'aaclc': -0.05, 'heaac': -0.11}
+    COEFFS_A3 = {'mp2': 15.48, 'ac3': 15.70, 'aaclc': 14.60, 'heaac': 20.06}
+
     @staticmethod
     def audio_model_function(codec, bitrate):
         """
@@ -41,14 +48,11 @@ class P1203Pa(object):
         - codec: used audio codec, must be one of mp2, ac3, aaclc, heaac
         - bitrate: used audio bitrate in kBit/s
         """
-        codec = codec.lower()
-        if codec == "aac":
-            logger.debug("assumed that 'aac' means 'aaclc'; please fix your input file")
-            codec = "aaclc"
-        a1 = {'mp2': 100.00, 'ac3': 100.00, 'aaclc': 100.00, 'heaac': 100.00}
-        a2 = {'mp2': -0.02, 'ac3': -0.03, 'aaclc': -0.05, 'heaac': -0.11}
-        a3 = {'mp2': 15.48, 'ac3': 15.70, 'aaclc': 14.60, 'heaac': 20.06}
-        q_cod_a = a1[codec] * math.exp(a2[codec] * bitrate) + a3[codec]
+        if codec not in P1203Pa.VALID_CODECS:
+            logger.error("Unsupported audio codec {}, use any of {}".format(codec, P1203Pa.VALID_CODECS))
+            sys.exit(1)
+
+        q_cod_a = P1203Pa.COEFFS_A1[codec] * math.exp(P1203Pa.COEFFS_A2[codec] * bitrate) + P1203Pa.COEFFS_A3[codec]
         qa = 100 - q_cod_a
         mos_audio = utils.mos_from_r(qa)
         return mos_audio
@@ -89,11 +93,19 @@ class P1203Pa(object):
         measurementwindow.set_score_callback(self.model_callback)
 
         dts = 0
+        warning_shown = False
         for segment in self.segments:
             # generate 100 audio samples per second, should be enough for precision
             sample_rate = 100
             num_frames = int(segment["duration"] * sample_rate)
             frame_duration = 1.0 / sample_rate
+
+            if segment["codec"] == "aac":
+                if not warning_shown:
+                    logger.warning("Assumed that 'aac' means 'aaclc'; please fix your input file")
+                    warning_shown = True
+                segment["codec"] = "aaclc"
+
             for i in range(int(num_frames)):
                 frame = {
                     "duration": frame_duration,
