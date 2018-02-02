@@ -24,11 +24,11 @@ SOFTWARE.
 """
 
 import math
-import sys
 
-from itu_p1203 import log
-import itu_p1203.utils as utils
-from itu_p1203.measurementwindow import MeasurementWindow
+from . import log
+from . import utils
+from .errors import P1203StandaloneError
+from .measurementwindow import MeasurementWindow
 
 logger = log.setup_custom_logger('main')
 
@@ -49,8 +49,7 @@ class P1203Pa(object):
         - bitrate: used audio bitrate in kBit/s
         """
         if codec not in P1203Pa.VALID_CODECS:
-            logger.error("Unsupported audio codec {}, use any of {}".format(codec, P1203Pa.VALID_CODECS))
-            sys.exit(1)
+            raise P1203StandaloneError("Unsupported audio codec {}, use any of {}".format(codec, P1203Pa.VALID_CODECS))
 
         q_cod_a = P1203Pa.COEFFS_A1[codec] * math.exp(P1203Pa.COEFFS_A2[codec] * bitrate) + P1203Pa.COEFFS_A3[codec]
         qa = 100 - q_cod_a

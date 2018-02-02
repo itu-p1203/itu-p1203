@@ -25,12 +25,12 @@ SOFTWARE.
 
 import math
 import numpy as np
-import sys
 import json
 
-from itu_p1203 import log
-import itu_p1203.utils as utils
-from itu_p1203.measurementwindow import MeasurementWindow
+from . import log
+from . import utils
+from .errors import P1203StandaloneError
+from .measurementwindow import MeasurementWindow
 
 logger = log.setup_custom_logger('main')
 
@@ -237,8 +237,7 @@ class P1203Pv(object):
 
                     frame_type = frame["type"]
                     if frame_type not in ["I", "P", "B"]:
-                        logger.error("frame type " + str(frame_type) + " not valid; must be I/P/B")
-                        sys.exit(1)
+                        raise P1203StandaloneError("frame type " + str(frame_type) + " not valid; must be I/P/B")
                     types.append(frame_type)
 
                 qppb = []
@@ -337,14 +336,12 @@ class P1203Pv(object):
             )
 
         else:
-            logger.error("Unsupported mode: {}".format(self.mode))
-            sys.exit(1)
+            raise P1203StandaloneError("Unsupported mode: {}".format(self.mode))
 
         # non-standard codec mapping
         codec_list = list(set([f["codec"] for f in frames]))
         if len(codec_list) > 1:
-            logger.error("Codec switching between frames in measurement window detected.")
-            sys.exit(1)
+            raise P1203StandaloneError("Codec switching between frames in measurement window detected.")
         elif codec_list[0] != "h264":
             def correction_func(x, a, b, c, d):
                 return a * x * x * x + b * x * x + c * x + d
@@ -388,8 +385,7 @@ class P1203Pv(object):
             if "frames" in segment:
                 for frame in segment["frames"]:
                     if "frameType" not in frame.keys() or "frameSize" not in frame.keys():
-                        logger.error("Frame definition must have at least 'frameType' and 'frameSize'")
-                        sys.exit(1)
+                        raise P1203StandaloneError("Frame definition must have at least 'frameType' and 'frameSize'")
                     if "qpValues" in frame.keys():
                         self.mode = 3
                     else:
@@ -402,13 +398,11 @@ class P1203Pv(object):
         codecs = list(set([s["codec"] for s in self.segments]))
         for c in codecs:
             if c not in ["h264", "h265", "hevc", "vp9"]:
-                logger.error("Unsupported codec: {}".format(c))
-                sys.exit(1)
+                raise P1203StandaloneError("Unsupported codec: {}".format(c))
             elif c != "h264":
                 logger.warning("Non-standard codec used. O22 Output will not be ITU-T P.1203 compliant.")
             if self.mode != 0 and c != "h264":
-                logger.error("Non-standard codec calculation only possible with Mode 0.")
-                sys.exit(1)
+                raise P1203StandaloneError("Non-standard codec calculation only possible with Mode 0.")
 
         # generate fake frames
         if self.mode == 0:
@@ -457,8 +451,7 @@ class P1203Pv(object):
                     if self.mode == 3:
                         qp_values = segment["frames"][i]["qpValues"]
                         if not qp_values:
-                            logger.error("No QP values for frame {i} of segment {segment_index}".format(**locals()))
-                            sys.exit(1)
+                            raise P1203StandaloneError("No QP values for frame {i} of segment {segment_index}".format(**locals()))
                         frame["qpValues"] = qp_values
                     # feed frame to MeasurementWindow
                     measurementwindow.add_frame(frame)

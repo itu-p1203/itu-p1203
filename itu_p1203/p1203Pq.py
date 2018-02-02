@@ -26,11 +26,12 @@ from itertools import groupby
 
 from scipy import signal
 import numpy as np
-import sys
 
-from itu_p1203 import log
-import itu_p1203.rfmodel as rfmodel
-import itu_p1203.utils as utils
+from . import log
+from .errors import P1203StandaloneError
+from . import rfmodel
+from . import utils
+
 
 logger = log.setup_custom_logger('main')
 
@@ -77,8 +78,7 @@ class P1203Pq(object):
         self.has_video = bool(O22_len)
 
         if not self.has_video:
-            logger.error("O22 has no scores; Pq model is not valid without video.")
-            sys.exit(1)
+            raise P1203StandaloneError("O22 has no scores; Pq model is not valid without video.")
 
         if not self.has_audio:
             duration = O22_len

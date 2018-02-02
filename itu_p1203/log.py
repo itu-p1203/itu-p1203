@@ -35,7 +35,8 @@ def setup_custom_logger(name, debug=False):
     global loggers
 
     if loggers.get(name):
-        return loggers.get(name)
+        logger = loggers[name]
+        return loggers[name]
 
     formatter = logging.Formatter(
         fmt='%(levelname)s - %(module)s - %(message)s'
@@ -59,6 +60,7 @@ def setup_custom_logger(name, debug=False):
     logging.addLevelName(logging.DEBUG,     "\033[1;35m%s\033[1;0m" % logging.getLevelName(logging.DEBUG))
 
     logger = logging.getLogger(name)
+
     if debug:
         logger.setLevel(logging.DEBUG)
     else:
@@ -67,6 +69,6 @@ def setup_custom_logger(name, debug=False):
     if logger.hasHandlers():
         logger.handlers.clear()
     logger.addHandler(handler)
-    loggers.update(dict(name=logger))
+    loggers[name] = logger
 
     return logger

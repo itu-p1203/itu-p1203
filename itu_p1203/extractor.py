@@ -32,7 +32,11 @@ from collections import OrderedDict
 from fractions import Fraction
 import tempfile
 
-from itu_p1203.utils import which
+from . import utils
+
+
+def print_stderr(msg):
+    print("EXTRACTOR ERROR: {}".format(msg), file=sys.stderr)
 
 
 def shell_call(cmd):
@@ -77,8 +81,8 @@ class Extractor(object):
         current_timestamp = 0
         for segment in self.input_files:
             if not os.path.isfile(segment):
-                print("Input file " + str(segment) +
-                      " does not exist", file=sys.stderr)
+                print_stderr("Input file " + str(segment) +
+                      " does not exist")
                 sys.exit(1)
 
             # extract the lines from this one segment
@@ -141,7 +145,7 @@ class Extractor(object):
                     frame_found = True
                     frame_type = line[-1]
                     if frame_type not in ["I", "P", "B"]:
-                        print("Wrong frame type parsed: " + str(frame_type))
+                        print_stderr("Wrong frame type parsed: " + str(frame_type))
                         sys.exit(1)
                     frame_index += 1
                     # print("Frame parsed, type " + frame_type + ", index: " + str(frame_index))
@@ -194,19 +198,19 @@ class Extractor(object):
         if not os.path.isfile(ffmpeg_debug_script):
 
             # else, try to get from PATH
-            ffmpeg_debug_script = which("ffmpeg-debug-qp")
+            ffmpeg_debug_script = utils.which("ffmpeg_debug_qp")
 
             if not ffmpeg_debug_script:
-                print("Cannot find ffmpeg-debug-qp, neither in the subfolder 'ffmpeg-debug-qp', nor in your $PATH. " +
-                      "Please install from https://github.com/slhck/ffmpeg-debug-qp", file=sys.stderr)
+                print_stderr("Cannot find ffmpeg_debug_qp, neither in the subfolder 'ffmpeg-debug-qp', nor in your $PATH. " +
+                      "Please install from https://github.com/slhck/ffmpeg-debug-qp")
                 sys.exit(1)
 
         tmp_file_debug_output = Extractor.get_tempfilename()
 
         # Extract QP values from ffmpeg
         extract_cmd = "{ffmpeg_debug_script} {segment} 2> {tmp_file_debug_output}".format(**locals())
-        print("Running command to extract QPs ...", file=sys.stderr)
-        print(extract_cmd, file=sys.stderr)
+        print_stderr("Running command to extract QPs ...")
+        print_stderr(extract_cmd)
         shell_call(extract_cmd)
 
         data = Extractor.parse_qp_data(tmp_file_debug_output)
@@ -233,7 +237,7 @@ class Extractor(object):
         elif info_type == "frame":
             cmd = "ffprobe -loglevel error -select_streams v -show_frames -show_entries frame=pkt_pts_time,pkt_dts_time,pkt_duration_time,pkt_size,pict_type -of json '{segment}'"
         else:
-            print("wrong info type, can be 'packet' or 'frame'", file=sys.stderr)
+            print_stderr("wrong info type, can be 'packet' or 'frame'")
             sys.exit(1)
         cmd = cmd.format(segment=segment)
 
@@ -358,13 +362,13 @@ class Extractor(object):
                                 x in enumerate(reversed(hms.split(":"))))
                 video_duration = total_dur + float("0." + msec)
             elif "duration" in info["format"]:
-                print("Warning: could not extract video duration from stream info, use format entry " +
-                      str(segment), file=sys.stderr)
+                print_stderr("Warning: could not extract video duration from stream info, use format entry " +
+                      str(segment))
                 video_duration = float(info["format"]["duration"])
             else:
                 video_duration = None
-                print("Warning: could not extract video duration from " +
-                      str(segment), file=sys.stderr)
+                print_stderr("Warning: could not extract video duration from " +
+                      str(segment))
 
             if 'bit_rate' in video_info:
                 video_bitrate = round(float(video_info['bit_rate']) / 1024.0, 2)
@@ -395,13 +399,13 @@ class Extractor(object):
                                 x in enumerate(reversed(hms.split(":"))))
                 audio_duration = total_dur + float("0." + msec)
             elif "duration" in info["format"]:
-                print("Warning: could not extract audio duration from stream info, use format entry " +
-                      str(segment), file=sys.stderr)
+                print_stderr("Warning: could not extract audio duration from stream info, use format entry " +
+                      str(segment))
                 audio_duration = float(info["format"]["duration"])
             else:
                 audio_duration = None
-                print("Warning: could not extract audio duration from " +
-                      str(segment), file=sys.stderr)
+                print_stderr("Warning: could not extract audio duration from " +
+                      str(segment))
 
             if 'bit_rate' in audio_info:
                 audio_bitrate = round(
@@ -498,7 +502,7 @@ def main(_):
     # argument parsing
     parser = argparse.ArgumentParser(
         description='Extract values of a video for building the JSON report file for P.1203 standalone',
-        epilog="2017",
+        epilog="2018",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
@@ -515,7 +519,7 @@ def main(_):
     # sequential list of input files
     segment_files = argsdict["input"]
     if not segment_files:
-        print("Need at least one input file", file=sys.stderr)
+        print_stderr("Need at least one input file")
         sys.exit(1)
 
     report = Extractor(segment_files, argsdict["mode"]).extract()

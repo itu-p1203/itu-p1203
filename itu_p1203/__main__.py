@@ -24,17 +24,18 @@ SOFTWARE.
 """
 
 import os
-import sys
 import argparse
 import logging
+import sys
 import multiprocessing
 import json
 from multiprocessing import Pool
 
-from itu_p1203.extractor import Extractor
-from itu_p1203 import log
-from itu_p1203.itu_p1203 import P1203Standalone
-import itu_p1203.utils as utils
+from . import log
+from . import utils
+from .itu_p1203 import P1203Standalone
+from .extractor import Extractor
+from .errors import P1203StandaloneError
 
 logger = log.setup_custom_logger('main')
 
@@ -52,8 +53,7 @@ def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_
         print_intermediate {bool} -- print intermediate O.21/O.22 values
     """
     if not os.path.isfile(input_file):
-        logger.error("No such file: {input_file}".format(input_file=input_file))
-        sys.exit(1)
+        raise P1203StandaloneError("No such file: {input_file}".format(input_file=input_file))
 
     file_ext = os.path.splitext(input_file)[1].lower()[1:]
     valid_video_exts = ["avi", "mp4", "mkv", "nut", "mpeg", "mpg"]
@@ -67,11 +67,9 @@ def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_
         try:
             input_report = Extractor([input_file], mode).extract()
         except Exception as e:
-            logger.error("Could not auto-generate input report, error: {e.output}".format(e=e))
-            sys.exit(1)
+            raise P1203StandaloneError("Could not auto-generate input report, error: {e.output}".format(e=e))
     else:
-        logger.error("Could not guess what kind of input file this is: {input_file}".format(input_file=input_file))
-        sys.exit(1)
+        raise P1203StandaloneError("Could not guess what kind of input file this is: {input_file}".format(input_file=input_file))
 
     # create model ...
     itu_p1203 = P1203Standalone(
@@ -162,11 +160,19 @@ def main():
     if use_multiprocessing:
         pool = Pool(processes=argsdict["cpu_count"])
         params = [(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"]) for input_file in argsdict["input"]]
-        output_results = pool.starmap(extract_from_single_file, params)
+        try:
+            output_results = pool.starmap(extract_from_single_file, params)
+        except Exception as e:
+            logger.error("Error during processing, exiting")
+            sys.exit(1)
     else:
         # iterate over input files
         for input_file in argsdict["input"]:
-            result = extract_from_single_file(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"])
+            try:
+                result = extract_from_single_file(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"])
+            except Exception as e:
+                logger.error("Error during processing, exiting")
+                sys.exit(1)
             # append to output
             output_results.append(result)
 

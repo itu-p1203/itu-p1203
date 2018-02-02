@@ -25,12 +25,13 @@ SOFTWARE.
 
 import json
 import datetime
-import sys
 
-from itu_p1203 import log
-from itu_p1203.p1203Pa import P1203Pa
-from itu_p1203.p1203Pv import P1203Pv
-from itu_p1203.p1203Pq import P1203Pq
+from . import log
+from .p1203Pa import P1203Pa
+from .p1203Pv import P1203Pv
+from .p1203Pq import P1203Pq
+from .errors import P1203StandaloneError
+
 
 logger = log.setup_custom_logger('main')
 
@@ -90,8 +91,7 @@ class P1203Standalone:
             }
 
         else:
-            logger.error("No 'I11' or 'O21' found in input report")
-            sys.exit(1)
+            raise P1203StandaloneError("No 'I11' or 'O21' found in input report")
 
         if self.debug:
             print(json.dumps(self.audio, indent=True, sort_keys=True))
@@ -107,8 +107,7 @@ class P1203Standalone:
         # estimate quality from segments
         if 'I13' in self.input_report.keys():
             if 'segments' not in self.input_report["I13"]:
-                logger.error("No video segments defined, check your input format")
-                sys.exit(1)
+                raise P1203StandaloneError("No video segments defined, check your input format")
 
             segments = self.input_report["I13"]["segments"]
 
@@ -140,8 +139,7 @@ class P1203Standalone:
             }
 
         else:
-            logger.error("No 'I13' or 'O22' found in input report")
-            sys.exit(1)
+            raise P1203StandaloneError("No 'I13' or 'O22' found in input report")
 
         if self.debug:
             print(json.dumps(self.video, indent=True, sort_keys=True))

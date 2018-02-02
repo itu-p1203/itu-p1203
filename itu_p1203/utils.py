@@ -29,7 +29,8 @@ import os
 import sys
 import numpy as np
 
-from itu_p1203 import log
+from .errors import P1203StandaloneError
+from . import log
 
 logger = log.setup_custom_logger('main')
 
@@ -159,8 +160,7 @@ def resolution_to_number(string):
     try:
         return int(string.split("x")[0]) * int(string.split("x")[1])
     except Exception as e:
-        logger.error("Wrong specification of resolution {string}: {e}".format(**locals()))
-        sys.exit(1)
+        raise P1203StandaloneError("Wrong specification of resolution {string}: {e}".format(**locals()))
 
 
 def check_segment_continuity(segments):
@@ -201,8 +201,7 @@ def get_chunk_hash(frame, type="video"):
     elif type == "audio":
         return hash(str(frame["bitrate"]) + str(frame["codec"]))
     else:
-        logger.error("Wrong type for frame: " + str(type))
-        sys.exit(1)
+        raise P1203StandaloneError("Wrong type for frame: " + str(type))
 
 
 def get_chunk(frames, output_sample_index, type="video"):
