@@ -197,8 +197,7 @@ class Extractor(object):
             ffmpeg_debug_script = which("ffmpeg-debug-qp")
 
             if not ffmpeg_debug_script:
-                print("Cannot find " + str(ffmpeg_debug_script) +
-                      ", neither in the subfolder 'ffmpeg-debug-qp', nor in your $PATH. " +
+                print("Cannot find ffmpeg-debug-qp, neither in the subfolder 'ffmpeg-debug-qp', nor in your $PATH. " +
                       "Please install from https://github.com/slhck/ffmpeg-debug-qp", file=sys.stderr)
                 sys.exit(1)
 
