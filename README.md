@@ -228,7 +228,7 @@ The list of frames contains every frame in the sequence, in decoding order. The 
   "frameSize": 18102,   # in Bytes
   "qpValues": [
     # optional list of QP values in frame, one per macroblock
-    # when present, will enable mode 3
+    # when present, will enable mode 3 (mode 2 will never be enabled automatically)
   ]
 }
 ```

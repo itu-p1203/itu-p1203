@@ -209,9 +209,9 @@ class P1203Pv(object):
         return score
 
     @staticmethod
-    def video_model_function_mode3(coding_res, display_res, framerate, frames, quant=None, avg_qp_per_frame=[]):
+    def video_model_function_mode2(coding_res, display_res, framerate, frames, quant=None, avg_qp_per_noni_frame=[]):
         """
-        Mode 1 model
+        Mode 2 model
 
         Arguments:
             coding_res {int} -- number of pixels in coding resolution
@@ -219,22 +219,80 @@ class P1203Pv(object):
             framerate {float} -- frame rate
             frames {list} -- frames
             quant {float} -- quant parameter, only used for debugging [default: None]
-            avg_qp_per_frame {list} -- average QP per frame, only used for debugging [default: []]
+            avg_qp_per_noni_frame {list} -- average QP per non-I frame, only used for debugging [default: []]
+        Returns:
+            float -- O22 score
+        """
+
+        if not quant:
+            if not avg_qp_per_noni_frame:
+                types = []
+                qp_values = []
+                for frame in frames:
+                    qp_values.append(frame["qpValues"])
+                    frame_type = frame["type"]
+                    if frame_type not in ["I", "P", "B"]:
+                        raise P1203StandaloneError("frame type " + str(frame_type) + " not valid; must be I/P/B")
+                    types.append(frame_type)
+
+                qppb = []
+                for index, frame_type in enumerate(types):
+                    if frame_type == "P" or frame_type == "B":
+                        qppb.extend(qp_values[index])
+                avg_qp = np.mean(qppb)
+            else:
+                avg_qp = np.mean(avg_qp_per_noni_frame)
+            quant = avg_qp / 51.0
+
+        mos_cod_v = P1203Pv.VIDEO_COEFFS[0] + P1203Pv.VIDEO_COEFFS[1] * math.exp(P1203Pv.VIDEO_COEFFS[2] * quant)
+        mos_cod_v = max(min(mos_cod_v, 5), 1)
+        deg_cod_v = 100 - utils.r_from_mos(mos_cod_v)
+        deg_cod_v = max(min(deg_cod_v, 100), 0)
+
+        # scaling, framerate degradation
+        deg_scal_v = P1203Pv.degradation_due_to_upscaling(coding_res, display_res)
+        deg_frame_rate_v = P1203Pv.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
+
+        # degradation integration
+        score = P1203Pv.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
+
+        logger.debug(json.dumps({
+            'coding_res': round(coding_res, 2),
+            'display_res': round(display_res, 2),
+            'framerate': round(framerate, 2),
+            'quant': round(quant, 2),
+            'mos_cod_v': round(mos_cod_v, 2),
+            'deg_cod_v': round(deg_cod_v, 2),
+            'deg_scal_v': round(deg_scal_v, 2),
+            'deg_frame_rate_v': round(deg_frame_rate_v, 2),
+            'score': round(score, 2)
+        }, indent=True))
+
+        return score
+
+    @staticmethod
+    def video_model_function_mode3(coding_res, display_res, framerate, frames, quant=None, avg_qp_per_noni_frame=[]):
+        """
+        Mode 3 model
+
+        Arguments:
+            coding_res {int} -- number of pixels in coding resolution
+            display_res {int} -- number of display resolution pixels
+            framerate {float} -- frame rate
+            frames {list} -- frames
+            quant {float} -- quant parameter, only used for debugging [default: None]
+            avg_qp_per_noni_frame {list} -- average QP per non-I frame, only used for debugging [default: []]
         Returns:
             float -- O22 score
         """
 
         if not quant:
             # iterate through all frames and collect information
-            if not avg_qp_per_frame:
-                sizes = []
+            if not avg_qp_per_noni_frame:
                 types = []
                 qp_values = []
                 for frame in frames:
-                    frame_size = utils.calculate_compensated_size(frame["type"], frame["size"], frame["dts"])
-                    sizes.append(int(frame_size))
                     qp_values.append(frame["qpValues"])
-
                     frame_type = frame["type"]
                     if frame_type not in ["I", "P", "B"]:
                         raise P1203StandaloneError("frame type " + str(frame_type) + " not valid; must be I/P/B")
@@ -254,7 +312,7 @@ class P1203Pv(object):
                             qppb = []
                 avg_qp = np.mean(qppb)
             else:
-                avg_qp = np.mean(avg_qp_per_frame)
+                avg_qp = np.mean(avg_qp_per_noni_frame)
             quant = avg_qp / 51.0
 
         mos_cod_v = P1203Pv.VIDEO_COEFFS[0] + P1203Pv.VIDEO_COEFFS[1] * math.exp(P1203Pv.VIDEO_COEFFS[2] * quant)
@@ -326,6 +384,14 @@ class P1203Pv(object):
                 frames
             )
             self.o22.append(score)
+
+        elif self.mode == 2:
+            score = P1203Pv.video_model_function_mode2(
+                utils.resolution_to_number(first_frame["resolution"]),
+                utils.resolution_to_number(self.display_res),
+                first_frame["fps"],
+                frames
+            )
 
         elif self.mode == 3:
             score = P1203Pv.video_model_function_mode3(

@@ -1,5 +1,14 @@
 # History
 
+## v1.1.7 (2018-01-31)
+
+- Fix API for mode 3 function to indicate that non-I frames are to be used
+- Add explicit mode 2 function
+
+## v1.1.6 (2018-01-31)
+
+- Minor updates
+
 ## v1.1.5 (2018-01-31)
 
 - Minor updates
@@ -23,7 +32,6 @@
 ## v1.1 (2017-12-06)
 
 - Initial release according to P.1203 updates from ITU SG12 meeting, Sept. 2017
-
 
 ## v1.0
 
