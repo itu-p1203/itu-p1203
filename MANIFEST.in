@@ -1,0 +1,6 @@
+include README.md
+include LICENSE.md
+include test/*
+include doc/*
+include itu_p1203/trees/*
+recursive-include itu_p1203/trees/ *

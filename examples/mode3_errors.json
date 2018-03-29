@@ -1,0 +1,227 @@
+{
+    "I11": {
+        "segments": [
+            {
+                "bitrate": 125.11,
+                "codec": "aac",
+                "duration": 8.024,
+                "start": 0
+            }
+        ],
+        "streamId": 42
+    },
+    "I13": {
+        "segments": [
+            {
+                "bitrate": 1781.76,
+                "codec": "h264",
+                "duration": 8.024,
+                "fps": 29.97002997002997,
+                "frames": [
+                    {
+                        "frameSize": "19867",
+                        "frameType": "I",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "4176",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "11788",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "4570",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "9538",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "9302",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "4380",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "9822",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "10342",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "1690",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "8631",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "9811",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "4936",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "9620",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "11217",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "13971",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "5898",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "3611",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "8219",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "1401",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "10035",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "27524",
+                        "frameType": "I",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "4615",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "1966",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "11504",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "4264",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "11280",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "3887",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "8497",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "5505",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "11572",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "10283",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "1460",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "10067",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "5086",
+                        "frameType": "B",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "10846",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "11439",
+                        "frameType": "P",
+                        "qpValues": []
+                    },
+                    {
+                        "frameSize": "10760",
+                        "frameType": "B",
+                        "qpValues": []
+                    }
+                ],
+                "resolution": "960x540",
+                "start": 0
+            }
+        ],
+        "streamId": 42
+    },
+    "I23": {
+        "stalling": [],
+        "streamId": 42
+    },
+    "IGen": {
+        "device": "pc",
+        "displaySize": "1920x1080",
+        "viewingDistance": "150cm"
+    }
+}
