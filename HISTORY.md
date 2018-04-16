@@ -1,5 +1,10 @@
 # History
 
+## v1.1.10 (2018-04-16)
+
+- Method documentation error in P1203Pq constructor
+- Remove debugging print statement
+
 ## v1.1.9 (2018-03-22)
 
 - Description changes

@@ -1,4 +1,4 @@
-__version__ = "1.1.9"
+__version__ = "1.1.10"
 
 from .p1203Pa import P1203Pa
 from .p1203Pv import P1203Pv
