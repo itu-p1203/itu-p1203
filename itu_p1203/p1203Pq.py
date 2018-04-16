@@ -46,8 +46,8 @@ class P1203Pq(object):
         Arguments:
             O21 {list} -- list of O21 scores
             O22 {list} -- list of O22 scores
-            l_buff {list} -- locations of buffering events in media time (in seconds) [default: []]]
-            p_buff {list} -- durations of buffering events [default: []]]
+            l_buff {list} -- durations of buffering events [default: []]]
+            p_buff {list} -- locations of buffering events in media time (in seconds) [default: []]]
             device {str} -- pc or mobile
         """
         self.O21 = np.array(O21)
