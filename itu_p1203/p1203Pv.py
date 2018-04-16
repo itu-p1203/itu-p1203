@@ -406,7 +406,6 @@ class P1203Pv(object):
         """ check if the segments are using valid codecs,
             in P1203 only h264 is allowed
         """
-        print("ORG")
         codecs = list(set([s["codec"] for s in self.segments]))
         for c in codecs:
             if c != "h264":
