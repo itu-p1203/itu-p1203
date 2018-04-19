@@ -286,9 +286,9 @@ For evaluation of non-standard codecs, you can use the [extension provided by TU
 If you use this software in your research, you must:
 
 1. Include the link to this repository
-2. Cite the following publication:
+2. Cite the following publications:
 
-   A. Raake, M.-N. Garcia, W. Robitza, P. List, S. Göring, and B. Feiten, “A bitstream-based, scalable video-quality model for HTTP adaptive streaming: ITU-T P.1203.1,” in Ninth International Conference on Quality of Multimedia Experience (QoMEX), (Erfurt), 2017.
+   Raake, A., Garcia, M.-N., Robitza, W., List, P., Goring, S., & Feiten, B. (2017). A bitstream-based, scalable video-quality model for HTTP adaptive streaming: ITU-T P.1203.1. In 2017 Ninth International Conference on Quality of Multimedia Experience (QoMEX). Erfurt
 
         @inproceedings{Raake2017,
         address = {Erfurt},
@@ -301,6 +301,18 @@ If you use this software in your research, you must:
         title = {{A bitstream-based, scalable video-quality model for HTTP adaptive streaming: ITU-T P.1203.1}},
         url = {http://ieeexplore.ieee.org/document/7965631/},
         year = {2017}
+        }
+
+    Robitza, W., Göring, S., Raake, A., Lindegren, D., Heikkilä, G., Gustafsson, J., List, P., Feiten, B., Wüstenhagen, U., Garcia, M.-N., Yamagishi, K., Broom, S. (2018). HTTP Adaptive Streaming QoE Estimation with ITU-T Rec. P.1203 – Open Databases and Software. In 9th ACM Multimedia Systems Conference. Amsterdam.
+
+        @inproceedings{Robitza2017d,
+        address = {Amsterdam},
+        author = {Robitza, Werner and G{\"{o}}ring, Steve and Raake, Alexander and Lindegren, David and Heikkil{\"{a}}, Gunnar and Gustafsson, J{\"{o}}rgen and List, Peter and Feiten, Bernhard and W{\"{u}}stenhagen, Ulf and Garcia, Marie-Neige and Yamagishi, Kazuhisa and Broom, Simon},
+        booktitle = {9th ACM Multimedia Systems Conference},
+        doi = {10.1145/3204949.3208124},
+        isbn = {9781450351928},
+        title = {{HTTP Adaptive Streaming QoE Estimation with ITU-T Rec. P.1203 – Open Databases and Software}},
+        year = {2018}
         }
 
 Development of this software has been partly funded by the European Union’s Horizon 2020 research and innovation programme under the Marie Skłodowska-Curie grant agreement No 643072, Project [QoE-Net](http://www.qoenet-itn.eu/).
