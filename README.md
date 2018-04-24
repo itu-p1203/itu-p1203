@@ -279,7 +279,7 @@ For more, see the example usage in `itu_p1203/__main__.py`.
 
 ## Extensions
 
-For evaluation of non-standard codecs, you can use the [extension provided by TU Ilmenau](https://github.com/Telecommunication-Telemedia-Assessment/itu-p1203-codecextension)
+For evaluation of non-standard codecs (H.265/HEVC or VP9), you can use the [extension provided by TU Ilmenau](https://github.com/Telecommunication-Telemedia-Assessment/itu-p1203-codecextension).
 
 ## Acknowledgement
 
@@ -288,7 +288,7 @@ If you use this software in your research, you must:
 1. Include the link to this repository
 2. Cite the following publications:
 
-   Raake, A., Garcia, M.-N., Robitza, W., List, P., Goring, S., & Feiten, B. (2017). A bitstream-based, scalable video-quality model for HTTP adaptive streaming: ITU-T P.1203.1. In 2017 Ninth International Conference on Quality of Multimedia Experience (QoMEX). Erfurt
+   Raake, A., Garcia, M.-N., Robitza, W., List, P., Goring, S., & Feiten, B. (2017). A bitstream-based, scalable video-quality model for HTTP adaptive streaming: ITU-T P.1203.1. In 2017 Ninth International Conference on Quality of Multimedia Experience (QoMEX). Erfurt.
 
         @inproceedings{Raake2017,
         address = {Erfurt},
