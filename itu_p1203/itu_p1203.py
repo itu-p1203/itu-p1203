@@ -32,7 +32,7 @@ from .p1203Pv import P1203Pv
 from .p1203Pq import P1203Pq
 from .errors import P1203StandaloneError
 
-
+import logging
 logger = log.setup_custom_logger('main')
 
 
@@ -41,7 +41,7 @@ class P1203Standalone:
     Class for calculating P1203 based on JSON input files
     """
 
-    def __init__(self, input_report, debug=False, Pa=P1203Pa, Pv=P1203Pv, Pq=P1203Pq):
+    def __init__(self, input_report, debug=False, Pa=P1203Pa, Pv=P1203Pv, Pq=P1203Pq, quiet=False):
         """
         Initialize a standalone model run based on JSON input files
 
@@ -53,6 +53,7 @@ class P1203Standalone:
             Pa -- used short time audio quality estimation module (default P1203Pa)
             Pv -- used short time video quality estimation module (default P1203Pv)
             Pq -- used audio visual integration module (default P1203Pq)
+            quiet {bool} -- squelch all logger messages
 
         """
         self.input_report = input_report
@@ -65,6 +66,9 @@ class P1203Standalone:
         self.Pa = Pa if Pa is not None else P1203Pa
         self.Pv = Pv if Pv is not None else P1203Pv
         self.Pq = Pq if Pq is not None else P1203Pq
+
+        if quiet:
+            logger.setLevel(logging.CRITICAL)
 
     def calculate_pa(self):
         """

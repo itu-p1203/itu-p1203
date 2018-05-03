@@ -40,7 +40,7 @@ from .errors import P1203StandaloneError
 logger = log.setup_custom_logger('main')
 
 
-def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_pv=False, print_intermediate=False, modules={}):
+def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_pv=False, print_intermediate=False, modules={}, quiet=False):
     """
     Extract the report based on a single input file (JSON or video)
 
@@ -51,8 +51,9 @@ def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_
         only_pa {bool} -- only run Pa module
         only_pv {bool} -- only run Pv module
         print_intermediate {bool} -- print intermediate O.21/O.22 values
-        modules: you can specify Pa, Pv, Pq classnames, that will be used, default are the P1203 modules
-            e.g. modules={"Pa": OtherPaModule}
+        modules {dict} -- you can specify Pa, Pv, Pq classnames, that will be used
+                          default are the P1203 modules, e.g. modules={"Pa": OtherPaModule}
+        quiet {bool} -- Squelch logger messages
     """
     if not os.path.isfile(input_file):
         raise P1203StandaloneError("No such file: {input_file}".format(input_file=input_file))
@@ -80,6 +81,7 @@ def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_
         Pa=modules.get("Pa", None),
         Pv=modules.get("Pv", None),
         Pq=modules.get("Pq", None),
+        quiet=quiet
     )
 
     # ... and run it
@@ -93,12 +95,14 @@ def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_
     return (input_file, output)
 
 
-def main(modules={}):
+def main(modules={}, quiet=False):
     """
-    Runs standalone P.1203 version,
+    Runs standalone P.1203 version from the command-line.
 
-    you can specify other Pa, Pv, Pq modules, e.g.
-        modules = {"Pa": myownPaModule}
+    Keyword arguments:
+
+        modules {dict} -- You can specify other Pa, Pv, Pq modules, e.g. modules = {"Pa": myownPaModule}
+        quiet {bool} -- Squelch logger messages
     """
     from . import __version__
 
@@ -167,19 +171,19 @@ def main(modules={}):
 
     if use_multiprocessing:
         pool = Pool(processes=argsdict["cpu_count"])
-        params = [(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules) for input_file in argsdict["input"]]
+        params = [(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules, quiet) for input_file in argsdict["input"]]
         try:
             output_results = pool.starmap(extract_from_single_file, params)
         except Exception as e:
-            logger.error("Error during processing, exiting")
+            logger.error("Error during processing, exiting: {}".format(e))
             sys.exit(1)
     else:
         # iterate over input files
         for input_file in argsdict["input"]:
             try:
-                result = extract_from_single_file(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules)
+                result = extract_from_single_file(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules, quiet)
             except Exception as e:
-                logger.error("Error during processing, exiting")
+                logger.error("Error during processing, exiting: {}".format(e))
                 sys.exit(1)
             # append to output
             output_results.append(result)
