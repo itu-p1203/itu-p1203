@@ -8,6 +8,10 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
+# get version
+with open(path.join(here, 'itu_p1203', '__init__.py')) as version_file:
+    version = eval(version_file.read().split("\n")[0].split("=")[1].strip())
+
 # Get the long description from the README file
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
@@ -25,7 +29,7 @@ except ImportError:
 
 setup(
     name='p1203-standalone',
-    version=itu_p1203.__version__,
+    version=version,
     description="ITU-T P.1203 Standalone Model",
     long_description=long_description + '\n\n' + history,
     # author="Werner Robitza",
