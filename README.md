@@ -196,7 +196,7 @@ For audio, `segments` contains a list of audio segments to be analyzed. Each seg
 ```
 {
   "codec": "aaclc",   # audio codec, any of [mp2, ac3, aaclc, heaac]
-  "start": 0.0,       # start timestamp
+  "start": 0.0,       # media start timestamp
   "duration": 5.0,    # duration
   "bitrate": 192.0    # bitrate in kBit/s
 }
@@ -209,7 +209,7 @@ For video, `segments` contains a list of video segments to be analyzed. Each seg
 ```
 {
   "codec": "h264",       # only "h264" supported in standard
-  "start": 0.0,          # start timestamp in s
+  "start": 0.0,          # media start timestamp in s
   "duration": 5.0,       # duration in s
   "res": "1920x1080",    # resolution as "widthxheight", e.g. "1920x1080"
   "bitrate": 5000,       # bitrate in kBit/s
