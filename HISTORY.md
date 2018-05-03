@@ -1,5 +1,9 @@
 # History
 
+## v1.1.11 (2018-05-03)
+
+- Allow quiet running
+
 ## v1.1.10 (2018-04-16)
 
 - Method documentation error in P1203Pq constructor
