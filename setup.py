@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import itu_p1203
 from setuptools import setup
 # To use a consistent encoding
 from codecs import open
