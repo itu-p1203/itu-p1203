@@ -1,5 +1,9 @@
 # History
 
+## v1.1.12 (2018-05-23)
+
+- Fix bug in import (setup.py)
+
 ## v1.1.11 (2018-05-03)
 
 - Allow quiet running
