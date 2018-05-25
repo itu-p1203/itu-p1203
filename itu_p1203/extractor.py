@@ -156,7 +156,7 @@ class Extractor(object):
                     })
                     continue
                 if frame_found and "[h264" in line and "pkt_size" not in line:
-                    if set(line.split("] ")[1]) - set("0123456789") != set():
+                    if set(line.split("] ")[1]) - set(" 0123456789") != set():
                         # this line contains something that is not a qp value
                         continue
                     # Now we have a line with qp values.
@@ -164,8 +164,12 @@ class Extractor(object):
                     #   [h264 @ 0x7fadf2008000] 1111111111111111111111111111111111111111
                     # becomes:
                     #   1111111111111111111111111111111111111111
+                    # Note: 
+                    # Single digit qp values are padded with a leading space e.g.:
+                    # [h264 @ 0x7fadf2008000]  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
                     raw_values = re.sub(r'\[[\w\s@]+\]\s', '', line)
-                    qp_values = [int(raw_values[i:i + 2])
+                    # remove the leading space in case of single digit qp values
+                    qp_values = [int(raw_values[i:i + 2].lstrip())
                                  for i in range(0, len(raw_values), 2)]
                     # print("Adding QP values to frame with index " + str(frame_index))
                     all_frame_data[frame_index]["qpValues"].extend(qp_values)
