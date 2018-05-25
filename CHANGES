@@ -1,0 +1,43 @@
+Version 1.1.13:
+ - Fix bug with single-digit QP values
+
+Version 1.1.12:
+ - Fix bug in import (setup.py)
+
+Version 1.1.11:
+ - Allow quiet running
+
+Version 1.1.10:
+ - Method documentation error in P1203Pq constructor
+ - Remove debugging print statement
+
+Version 1.1.9:
+ - Description changes
+
+Version 1.1.8:
+ - Allow specifying "Non-I" as frame type
+
+Version 1.1.7:
+ - Fix API for mode 3 function to indicate that non-I frames are to be used
+ - Add explicit mode 2 function
+
+Version 1.1.6:
+ - Minor updates
+
+Version 1.1.5:
+ - Minor updates
+
+Version 1.1.4:
+ - Minor updates
+
+Version 1.1.3:
+ - Allow easier import of submodules
+
+Version 1.1.2:
+ - Allow using O21 and O22 input directly
+
+Version 1.1.1:
+ - Fix bug in setting different display resolution
+
+Version 1.1:
+ - Initial release according to P.1203 updates from ITU SG12 meeting, Sept. 2017
