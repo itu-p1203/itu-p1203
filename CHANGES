@@ -1,3 +1,6 @@
+Version 1.1.14:
+ - add auto release script
+
 Version 1.1.13:
  - Fix bug with single-digit QP values
 
