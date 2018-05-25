@@ -1,5 +1,9 @@
 # History
 
+## v1.1.13 (2018-05-25)
+
+- Fix bug with single-digit QP values
+
 ## v1.1.12 (2018-05-23)
 
 - Fix bug in import (setup.py)
