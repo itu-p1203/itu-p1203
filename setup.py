@@ -15,8 +15,8 @@ with open(path.join(here, 'itu_p1203', '__init__.py')) as version_file:
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-# Get the history from the HISTORY file
-with open(path.join(here, 'HISTORY.md'), encoding='utf-8') as f:
+# Get the history from the CHANGES file
+with open(path.join(here, 'CHANGES'), encoding='utf-8') as f:
     history = f.read()
 
 try:
