@@ -173,11 +173,22 @@ class P1203Standalone:
         except Exception:
             logger.warning("Device not defined in input report, assuming PC")
 
+        l_buff = [x[1] for x in stalling]
+        if stalling[0] is not None and stalling[0][0] != 0:
+            p_buff = [x[0] - stalling[0][0] for x in stalling]
+            logger.warning(
+                "First stalling event does not start at 0, will shift the position of stalling events. "
+                "If you want to avoid this, add a stalling event at position 0 with duration 0. "
+                "New stalling positions are: {}".format(p_buff)
+            )
+        else:
+            p_buff = [x[0] for x in stalling]
+
         self.integration = self.Pq(
             O21=self.audio["audio"]["O21"],
             O22=self.video["video"]["O22"],
-            l_buff=[x[1] for x in stalling],
-            p_buff=[x[0] - stalling[0][0] for x in stalling],
+            l_buff=l_buff,
+            p_buff=p_buff,
             device=device
         ).calculate()
 
