@@ -174,7 +174,7 @@ class P1203Standalone:
             logger.warning("Device not defined in input report, assuming PC")
 
         l_buff = [x[1] for x in stalling]
-        if stalling[0] is not None and stalling[0][0] != 0:
+        if stalling and len(stalling[0]) and stalling[0][0] != 0:
             p_buff = [x[0] - stalling[0][0] for x in stalling]
             logger.warning(
                 "First stalling event does not start at 0, will shift the position of stalling events. "
