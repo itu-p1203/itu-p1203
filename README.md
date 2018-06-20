@@ -9,6 +9,8 @@ This evaluation software implements the following standards:
 - ITU-T Rec. P.1203.2: Parametric bitstream-based quality assessment of progressive download and adaptive audiovisual streaming services over reliable transport - Audio quality estimation module
 - ITU-T Rec. P.1203.3: Parametric bitstream-based quality assessment of progressive download and adaptive audiovisual streaming services over reliable transport - Quality integration module
 
+**Note:** ITU-T Rec. P.1203.3 (10/2017) contains an error in Eq. (20), where the exponential is shown to be calculated as `e^(t/(T/t_3))`. The correct formula should read `e^((t/T)/t_3))`. This software reflects the correct interpretation of the equation, namely to normalize the timestamp by the total sequence duration (and not to divide the total sequence duration by the coefficient `t_3`). This notice will be removed once the standard has been corrected.
+
 ## General Description
 
 The software takes the following input:
