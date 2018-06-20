@@ -98,7 +98,7 @@ def get_rebuf_stats(l_buff, p_buff, duration):
 
 def calculate(O21, O22, l_buff, p_buff, duration):
     if len(l_buff) and len(p_buff):
-        if p_buff[0] == [0]:
+        if p_buff[0] == 0:
             initial_buffering_length = l_buff[0]
         else:
             initial_buffering_length = 0
