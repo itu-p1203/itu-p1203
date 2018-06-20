@@ -1,3 +1,7 @@
+Version 1.2.0:
+ - fix detection of initial buffering for RF model
+ - fix coefficient for exponential function
+
 Version 1.1.15:
  - warn if the first stalling event is not starting at 0
  - fix setup script
