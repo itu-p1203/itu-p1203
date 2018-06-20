@@ -34,11 +34,18 @@ The higher the mode, the higher the accuracy of the prediction.
 
 ## Requirements
 
-* Python 3, ffprobe/ffmpeg and pip3
-* For running locally without pip: `pip3 install numpy scipy pandas`
-* For development (for code analysis and improving): `pip3 install pylint`
+* Python 3 and pip3
+  * Modern Linux distributions should come with Python 3. If not, [pyenv](https://github.com/pyenv/pyenv) is recommended to get a user-level Python 3 installation.
+  * Under macOS, use [Homebrew](https://brew.sh/) and `brew install python` and read the printed messages.
+  * For installation under Windows please follow the guide in [windows/README.md](windows/README.md).
 
-For installation under Windows please follow the guide in [windows/README.md](windows/README.md).
+* Additional Python packages:
+  * For running the software locally without pip, install the dependencies: `pip3 install --user numpy scipy pandas`, or if you are using Ubuntu (or similar), run `sudo apt install python3-numpy python3-scipy python3-pandas`.
+  * For development (for code analysis and improving): `pip3 install --user pylint`
+
+* ffprobe/ffmpeg (only needed for Mode 3)
+  * Download a static build from [ffmpeg](http://ffmpeg.org/download.html)
+  * Place it in your `$PATH`
 
 ## Installation via `pip3`
 
@@ -46,7 +53,9 @@ From this directory, run:
 
     pip3 install .
 
-Then you will get a `p1203-standalone` executable on your system. You can import the libraries with `itu_p1203`.
+Then you will get a `p1203-standalone` executable on your system. You can import the libraries with `itu_p1203` from Python.
+
+You can uninstall the model with `pip3 uninstall p1203-standalone`.
 
 ## CLI Usage
 
