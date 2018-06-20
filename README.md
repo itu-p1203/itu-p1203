@@ -345,7 +345,7 @@ NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS 
 Main developers:
 
 * Steve Göring, Technische Universität Ilmenau
-* Werner Robitza, Deutsche Telekom AG
+* Werner Robitza, Technische Universität Ilmenau
 
 Contributors:
 
