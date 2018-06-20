@@ -193,7 +193,7 @@ class P1203Pq(object):
         O34_diff = list(O34)
         for i in range(duration):
             # Eq. 5
-            w_diff = utils.exponential(11, c1, 0, c2, duration-i-1)
+            w_diff = utils.exponential(1, c1, 0, c2, duration-i-1)
             O34_diff[i] = (O34[i] - O35_baseline) * w_diff
 
         # Eq. 6
