@@ -1,3 +1,8 @@
+Version 1.2.1:
+ - minor bug in detecting stalling
+ - minor readme improvements
+ - add disclaimer in README
+
 Version 1.2.0:
  - fix detection of initial buffering for RF model
  - fix coefficient for exponential function
