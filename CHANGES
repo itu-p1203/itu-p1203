@@ -1,3 +1,10 @@
+Version 1.2.2:
+ - ask user to accept terms before running
+ - clarify acknowledgement terms
+ - clarify error in standard
+ - change affiliation
+ - fix citation key
+
 Version 1.2.1:
  - minor bug in detecting stalling
  - minor readme improvements
