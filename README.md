@@ -294,7 +294,7 @@ For evaluation of non-standard codecs (H.265/HEVC or VP9), you can use the [exte
 
 ## Acknowledgement
 
-If you use this software in your research, you must:
+If you use this software, or derivates of it, in your research, you must:
 
 1. Include the link to this repository
 2. Cite the following publications:
