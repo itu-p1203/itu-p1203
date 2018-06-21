@@ -30,6 +30,8 @@ import sys
 import multiprocessing
 import json
 from multiprocessing import Pool
+from os.path import expanduser
+import textwrap
 
 from . import log
 from . import utils
@@ -38,6 +40,20 @@ from .extractor import Extractor
 from .errors import P1203StandaloneError
 
 logger = log.setup_custom_logger('main')
+
+
+def has_user_signed_acknowledgment():
+    home = expanduser("~")
+    return os.path.isfile(os.path.join(home, '.itu_p1203'))
+
+
+def sign_acknowledgement():
+    home = expanduser("~")
+    try:
+        with open(os.path.join(home, '.itu_p1203'), 'w') as file_name:
+            file_name.write('\n')
+    except Exception as e:
+        logger.error("Coult not create file in home directory. Please use --accept-notice to silence the message.")
 
 
 def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_pv=False, print_intermediate=False, modules={}, quiet=False):
@@ -156,8 +172,76 @@ def main(modules={}, quiet=False):
         action='version',
         version=str(__version__)
     )
+    parser.add_argument(
+        '--accept-notice',
+        action='store_true',
+        help="accept license and acknowledgement terms"
+    )
 
     argsdict = vars(parser.parse_args())
+
+    # check if user signed acknowledgement
+    if not argsdict["accept_notice"] and not has_user_signed_acknowledgment():
+        print(
+            textwrap.dedent("""
+            This software is subject to a license.
+            Academic tradition also requires you to cite works you base your
+            own work on. Please carefully read the license terms and the
+            'Acknowledgement' notice in the `README`. They are printed here
+            for your convenience:
+
+            I will accept the license terms:
+
+            > Copyright 2017-2018 Deutsche Telekom AG, Technische Universität Berlin,
+            > Technische Universität Ilmenau, LM Ericsson
+            > 
+            > Permission is hereby granted, free of charge, to use the software for non-
+            > commercial research purposes.
+            > 
+            > Any other use of the software, including commercial use, merging, publishing,
+            > distributing, sublicensing, and/or selling copies of the Software, is
+            > forbidden.
+            > 
+            > For a commercial license, you must contact the respective rights holders of
+            > the standards ITU-T Rec. P.1203, ITU-T Rec. P.1203.1, ITU-T Rec. P.1203.2, and
+            > ITU-T Rec. P.1203.3. See https://www.itu.int/en/ITU-T/ipr/Pages/default.aspx
+            > for more information.
+            > 
+            > NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY
+            > THIS LICENSE. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+            > EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+            > MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+            > EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+            > OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+            > ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+            > DEALINGS IN THE SOFTWARE.
+
+            If I use this software, or derivates of it, in my research, I must:
+
+            1. Include the link to this repository
+            2. Cite the following publications:
+
+                Raake, A., Garcia, M.-N., Robitza, W., List, P., Göring, S., Feiten, B.
+                (2017). A bitstream-based, scalable video-quality model for HTTP adaptive
+                streaming: ITU-T P.1203.1. In 2017 Ninth International Conference on
+                Quality of Multimedia Experience (QoMEX). Erfurt.
+
+                Robitza, W., Göring, S., Raake, A., Lindegren, D., Heikkilä, G.,
+                Gustafsson, J., List, P., Feiten, B., Wüstenhagen, U., Garcia, M.-N.,
+                Yamagishi, K., Broom, S. (2018). HTTP Adaptive Streaming QoE Estimation with
+                ITU-T Rec. P.1203 – Open Databases and Software. In 9th ACM Multimedia Systems
+                Conference. Amsterdam.
+
+            By typing "accept", you will accept these license and acknowledgement terms.
+
+            You can also squelch this notice by passing the --accept-notice option.
+            """))
+        user_input = input("Enter 'accept' to accept: ")
+        if user_input.replace("'", '').strip().lower() == 'accept':
+            sign_acknowledgement()
+        else:
+            logger.error("User did not accept license and acknowledgement terms.")
+            sys.exit()
 
     if argsdict["debug"]:
         logger.setLevel(logging.DEBUG)
