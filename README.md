@@ -223,7 +223,7 @@ For video, `segments` contains a list of video segments to be analyzed. Each seg
   "codec": "h264",       # only "h264" supported in standard
   "start": 0.0,          # media start timestamp in s
   "duration": 5.0,       # duration in s
-  "res": "1920x1080",    # resolution as "widthxheight", e.g. "1920x1080"
+  "resolution": "1920x1080",    # resolution as "widthxheight", e.g. "1920x1080"
   "bitrate": 5000,       # bitrate in kBit/s
   "fps": 24,             # framerate
   "representation": 1,   # representation ID / media quality level ID (optional)
