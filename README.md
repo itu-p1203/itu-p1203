@@ -161,11 +161,12 @@ The input JSON file (see files in `examples`) must have at least the following d
 
 ```
 {
-"I13":                # video input information
+"I13": {              # video input information
     "streamId": 42,   # unique identifier for the stream
     "segments": [
       # list of video segments, see below
     ]
+  }
 }
 ```
 
