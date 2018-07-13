@@ -174,18 +174,18 @@ The following keys and data are optional:
 
 ```
 "IGen": {                         # Generic input information
-    "displaySize": "1920x1080"    # display resolution in pixels, given as `<width>x<height>`
-    "device": "pc"                # pc or mobile, default: "pc"
-    "viewingDistance":            # not used
+    "displaySize": "1920x1080",   # display resolution in pixels, given as `<width>x<height>`
+    "device": "pc",               # pc or mobile, default: "pc"
+    "viewingDistance": 0,         # not used
   }
 "I11": {              # Audio input information
-    "streamId": 42    # unique identifier for the stream
+    "streamId": 42,   # unique identifier for the stream
     "segments": [
       # list of audio segments, see below
     ]
   }
 "I23": {              # Stalling input information
-    "streamId": 42    # unique identifier for the stream
+    "streamId": 42,   # unique identifier for the stream
     "stalling": [
       # pair of `[start timestamp, duration]` for each stalling event
       # where the start timestamp is measured in media time
