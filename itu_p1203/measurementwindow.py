@@ -168,7 +168,12 @@ class MeasurementWindow:
         acc = 0
 
         for index, frame in enumerate(self._frames, start=1):
-            if frame["size"] != None:
+            if "type" in frame.keys() and frame["type"] is not None:
+                f_type = frame["type"]
+            else:
+                f_type = "None"
+
+            if "size" in frame.keys() and frame["size"] is not None:
                 size = frame["size"]
             else:
                 size = "None"
@@ -188,7 +193,7 @@ class MeasurementWindow:
 
             print("\t".join([
                 str(index),
-                str(frame["type"]),
+                str(f_type),
                 str(size),
                 str(pts),
                 str(dts),
