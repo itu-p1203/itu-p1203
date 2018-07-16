@@ -363,6 +363,7 @@ class P1203Pv(object):
                 first_frame["fps"]
             )
             self.o22.append(score)
+            return
 
         elif self.mode == 1:
             # average the bitrate based on the frame sizes, as implemented
@@ -380,6 +381,7 @@ class P1203Pv(object):
                 frames
             )
             self.o22.append(score)
+            return
 
         elif self.mode == 2:
             score = P1203Pv.video_model_function_mode2(
@@ -388,6 +390,8 @@ class P1203Pv(object):
                 first_frame["fps"],
                 frames
             )
+            self.o22.append(score)
+            return
 
         elif self.mode == 3:
             score = P1203Pv.video_model_function_mode3(
@@ -396,11 +400,11 @@ class P1203Pv(object):
                 first_frame["fps"],
                 frames
             )
+            self.o22.append(score)
+            return
 
         else:
             raise P1203StandaloneError("Unsupported mode: {}".format(self.mode))
-
-        self.o22.append(score)
 
     def check_codec(self):
         """ check if the segments are using valid codecs,
