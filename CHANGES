@@ -1,3 +1,11 @@
+Version 1.2.3:
+ - add missing return statement, fixes #7
+ - fix debug print function
+ - Merge pull request #6 from pedosb/master
+ - Missing commas on Readme json
+ - Typo in resolution for input
+ - missing dict specifier in readme input example
+
 Version 1.2.2:
  - ask user to accept terms before running
  - clarify acknowledgement terms
