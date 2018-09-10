@@ -223,15 +223,12 @@ class P1203Standalone:
         except Exception as e:
             pass
 
-        self.overall_result = {
-            "streamId": stream_id,
-            "mode": mode,
-            "O23": self.integration["O23"],
-            "O34": self.integration["O34"],
-            "O35": self.integration["O35"],
-            "O46": self.integration["O46"],
-            "date": datetime.datetime.today().isoformat()
-        }
+        # integration usually consists of O23, O34, O35, O46
+        self.overall_result = self.integration
+
+        self.overall_result["streamId"] = stream_id
+        self.overall_result["mode"] = mode
+        self.overall_result["date"] = datetime.datetime.today().isoformat()
 
         if print_intermediate:
             self.overall_result["O21"] = self.audio["audio"]["O21"]
