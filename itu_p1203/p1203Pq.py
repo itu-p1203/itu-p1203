@@ -52,9 +52,19 @@ class P1203Pq(object):
         """
         self.O21 = np.array(O21)
         self.O22 = np.array(O22)
-        self.l_buff = l_buff
-        self.p_buff = p_buff
         self.device = device
+
+        # filter out stalling events happening outside of media range
+        max_dur = min(len(O21), len(O22))
+        self.l_buff = []
+        self.p_buff = []
+
+        for l, p in zip(l_buff, p_buff):
+            logger.warn("Excluding stalling event at position " + str(p_buff) + ", since it is outside of media range")
+            if p > max_dur:
+                continue
+            self.l_buff.append(l)
+            self.p_buff.append(p)
 
     def calculate(self):
         """
