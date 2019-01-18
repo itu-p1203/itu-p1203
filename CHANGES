@@ -1,3 +1,7 @@
+Version 1.2.6:
+ - exclude zero-duration stalling events
+ - fix position of warning message
+
 Version 1.2.5:
  - restrict position of stalling events to inside media range
 
