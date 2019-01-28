@@ -1,3 +1,6 @@
+Version 1.2.7:
+ - round during segment continuity check
+
 Version 1.2.6:
  - exclude zero-duration stalling events
  - fix position of warning message
