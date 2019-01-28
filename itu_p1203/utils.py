@@ -163,21 +163,22 @@ def resolution_to_number(string):
         raise P1203StandaloneError("Wrong specification of resolution {string}: {e}".format(**locals()))
 
 
-def check_segment_continuity(segments):
+def check_segment_continuity(segments, type="video"):
     """
     Check if segments are contiguous, in the sense of each segment
     starting where the last one ended
 
     Arguments:
         segments {list} -- list of segments
+        type {string} -- video or audio
     """
     last_segment_end = 0
     for i in range(1, len(segments)):
         prev_segment = segments[i-1]
-        last_segment_end = prev_segment["start"] + prev_segment["duration"]
-        this_segment_start = segments[i]["start"]
+        last_segment_end = round(prev_segment["start"] + prev_segment["duration"], 2)
+        this_segment_start = round(segments[i]["start"], 2)
         if last_segment_end != this_segment_start:
-            logger.warning("Segment starts at {this_segment_start} but last one ended at {last_segment_end}".format(**locals()))
+            logger.warning("{type} segment starts at {this_segment_start} but last one ended at {last_segment_end}".format(**locals()))
     logger.debug("Checked segment continuity")
 
 

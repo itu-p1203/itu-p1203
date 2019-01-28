@@ -86,7 +86,7 @@ class P1203Pa(object):
                 }
             }
         """
-        utils.check_segment_continuity(self.segments)
+        utils.check_segment_continuity(self.segments, "audio")
 
         measurementwindow = MeasurementWindow()
         measurementwindow.set_score_callback(self.model_callback)

@@ -429,7 +429,7 @@ class P1203Pv(object):
             }
         """
 
-        utils.check_segment_continuity(self.segments)
+        utils.check_segment_continuity(self.segments, "video")
 
         measurementwindow = MeasurementWindow()
         measurementwindow.set_score_callback(self.model_callback)
