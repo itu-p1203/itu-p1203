@@ -55,7 +55,7 @@ class Extractor(object):
     Video extractor class based on ffmpeg/ffprobe
     """
 
-    def __init__(self, input_files, mode):
+    def __init__(self, input_files, mode, qp_logfile=None):
         """
         Initialize a new extractor
 
@@ -68,6 +68,7 @@ class Extractor(object):
             raise SystemExit("Wrong mode passed")
         self.mode = mode
         self.report = {}
+        self.qp_logfile = qp_logfile
 
     def extract(self):
         """
@@ -88,7 +89,7 @@ class Extractor(object):
             # extract the lines from this one segment
             (segment_info_video, segment_info_audio, duration) = \
                 Extractor.get_segment_info_lines(
-                    segment, mode=self.mode, timestamp=current_timestamp)
+                    segment, mode=self.mode, timestamp=current_timestamp, qp_logfile=self.qp_logfile)
             segment_list_video.append(segment_info_video)
             if segment_info_audio:
                 segment_list_audio.append(segment_info_audio)
@@ -123,39 +124,57 @@ class Extractor(object):
         return tmp.name
 
     @staticmethod
-    def parse_qp_data(logfile):
+    def _parse_qp_data(logfile):
         """
-        Parse data from the QP logfile that ffmpeg-debug-qp generates.
-        Returns a list of frame information.
+        Efficient parsing of the data, yields per-frame data.
         """
-        all_frame_data = []
         with open(logfile) as f:
             frame_index = -1
-            frame_found = False
+            first_frame_found = False
+            has_current_frame_data = False
+
+            frame_type = None
+            frame_size = None
+            frame_qp_values = []
+
             for line in f:
                 line = line.strip()
                 # skip all non-relevant lines
                 if "[h264" not in line and "pkt_size" not in line:
                     continue
+
                 # skip irrelevant other lines
                 if "nal_unit_type" in line or "Reinit context" in line:
                     continue
+
                 # start a new frame
                 if "New frame" in line:
-                    frame_found = True
+                    if has_current_frame_data:
+                        # yield the current frame
+                        yield {
+                            "frameType": frame_type,
+                            "frameSize": frame_size,
+                            "qpValues": frame_qp_values
+                        }
+
+                    first_frame_found = True
+
                     frame_type = line[-1]
                     if frame_type not in ["I", "P", "B"]:
                         print_stderr("Wrong frame type parsed: " + str(frame_type))
                         sys.exit(1)
                     frame_index += 1
-                    # print("Frame parsed, type " + frame_type + ", index: " + str(frame_index))
-                    all_frame_data.append({
-                        "frameType": frame_type,
-                        "qpValues": [],
-                        "frameSize": 0
-                    })
+                    # initialize empty for the moment
+                    frame_qp_values = []
+                    frame_size = 0
+                    has_current_frame_data = True
                     continue
-                if frame_found and "[h264" in line and "pkt_size" not in line:
+
+                if not first_frame_found:
+                    # continue parsing
+                    continue
+
+                if "[h264" in line and "pkt_size" not in line:
                     if set(line.split("] ")[1]) - set(" 0123456789") != set():
                         # this line contains something that is not a qp value
                         continue
@@ -169,19 +188,32 @@ class Extractor(object):
                     # [h264 @ 0x7fadf2008000]  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
                     raw_values = re.sub(r'\[[\w\s@]+\]\s', '', line)
                     # remove the leading space in case of single digit qp values
-                    qp_values = [int(raw_values[i:i + 2].lstrip())
+                    line_qp_values = [int(raw_values[i:i + 2].lstrip())
                                  for i in range(0, len(raw_values), 2)]
                     # print("Adding QP values to frame with index " + str(frame_index))
-                    all_frame_data[frame_index]["qpValues"].extend(qp_values)
+                    frame_qp_values.extend(line_qp_values)
                     continue
                 if "pkt_size" in line:
                     frame_size = re.findall(r'\d+', line)[0]
-                    all_frame_data[frame_index]["frameSize"] = frame_size
 
-        return all_frame_data
+            # yield last frame
+            if has_current_frame_data:
+                yield {
+                    "frameType": frame_type,
+                    "frameSize": frame_size,
+                    "qpValues": frame_qp_values
+                }
 
     @staticmethod
-    def get_video_frame_info_ffmpeg(segment):
+    def parse_qp_data(logfile):
+        """
+        Parse data from the QP logfile that ffmpeg-debug-qp generates.
+        Returns a list of frame information.
+        """
+        return list(Extractor._parse_qp_data(logfile))
+
+    @staticmethod
+    def get_video_frame_info_ffmpeg_debug_qp(segment, qp_logfile=None):
         """
         Obtain the video frame info using the ffmpeg-debug-qp script.
 
@@ -190,6 +222,11 @@ class Extractor(object):
             - `size`: Size of the packet in bytes (including SPS, PPS for first frame, and AUD units for subsequent frames)
             - `qpValues`: List of QP values
         """
+        if qp_logfile:
+            if os.path.isfile(qp_logfile):
+                return Extractor.parse_qp_data(qp_logfile)
+            else:
+                print_stderr("Logfile " + str(qp_logfile) + " not found! Falling back to ffmpeg-debug-qp parsing.")
 
         # try to get from source distribution
         ffmpeg_debug_script = os.path.abspath(
@@ -217,9 +254,12 @@ class Extractor(object):
         print_stderr(extract_cmd)
         shell_call(extract_cmd)
 
-        data = Extractor.parse_qp_data(tmp_file_debug_output)
-
-        os.remove(tmp_file_debug_output)
+        try:
+            data = Extractor.parse_qp_data(tmp_file_debug_output)
+        except Exception as e:
+            raise e
+        finally:
+            os.remove(tmp_file_debug_output)
 
         return data
 
@@ -446,7 +486,7 @@ class Extractor(object):
         return size
 
     @staticmethod
-    def get_segment_info_lines(segment, mode=0, timestamp=0):
+    def get_segment_info_lines(segment, mode=0, timestamp=0, qp_logfile=None):
         """
         Return (list, list, duration), where each list contains the info for the
         video or audio part of the passed segment, and the duration of the segment.
@@ -454,6 +494,7 @@ class Extractor(object):
 
         mode: 0 or 1
         timestamp: start timestamp for the segments
+        qp_logfile: Existing QP debug log file generated by ffmpeg-debug-qp
         """
         segment_info = Extractor.get_segment_info(segment)
         format_info = Extractor.get_format_info(segment)
@@ -491,7 +532,7 @@ class Extractor(object):
             video_segment_info_json["frames"] = frame_stats_json
 
         if mode in [2, 3]:
-            frame_stats = Extractor.get_video_frame_info_ffmpeg(segment)
+            frame_stats = Extractor.get_video_frame_info_ffmpeg_debug_qp(segment, qp_logfile)
             video_segment_info_json["frames"] = frame_stats
 
         return (video_segment_info_json, audio_segment_info_json, format_info["duration"])
@@ -515,6 +556,10 @@ def main(_):
         choices=[0, 1, 2, 3],
         help="build report for this specified mode"
     )
+    parser.add_argument(
+        '-q', '--qp-logfile', type=str,
+        help="existing logfile generated by ffmpeg_debug_qp"
+    )
     parser.add_argument('input', type=str,
                         help="Input video file(s)", nargs='*')
 
@@ -526,7 +571,7 @@ def main(_):
         print_stderr("Need at least one input file")
         sys.exit(1)
 
-    report = Extractor(segment_files, argsdict["mode"]).extract()
+    report = Extractor(segment_files, argsdict["mode"], argsdict["qp_logfile"]).extract()
 
     print(json.dumps(report, sort_keys=True, indent=4))
 
