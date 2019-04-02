@@ -69,6 +69,11 @@ class Extractor(object):
             raise SystemExit("Wrong mode passed")
         self.mode = mode
         self.report = {}
+
+        if len(input_files) > 1 and qp_logfile:
+            print_stderr("QP Logfile only supported for one segment!")
+            sys.exit(1)
+
         self.qp_logfile = qp_logfile
 
     def extract(self):
