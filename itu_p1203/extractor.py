@@ -31,6 +31,7 @@ import json
 from collections import OrderedDict
 from fractions import Fraction
 import tempfile
+import gzip
 
 from . import utils
 
@@ -124,85 +125,96 @@ class Extractor(object):
         return tmp.name
 
     @staticmethod
+    # https://stackoverflow.com/q/41525690
+    def _file_line_gen(filename):
+        if filename.endswith(".gz"):
+            open_fn = gzip.open
+        else:
+            open_fn = open
+
+        with open_fn(filename, "rb") as f:
+            for line in f:
+                yield line
+
+    @staticmethod
     def _parse_qp_data(logfile):
         """
         Efficient parsing of the data, yields per-frame data.
         """
-        with open(logfile) as f:
-            frame_index = -1
-            first_frame_found = False
-            has_current_frame_data = False
+        frame_index = -1
+        first_frame_found = False
+        has_current_frame_data = False
 
-            frame_type = None
-            frame_size = None
-            frame_qp_values = []
+        frame_type = None
+        frame_size = None
+        frame_qp_values = []
 
-            for line in f:
-                line = line.strip()
-                # skip all non-relevant lines
-                if "[h264" not in line and "pkt_size" not in line:
+        for line in Extractor._file_line_gen(logfile):
+            line = line.decode("utf-8").strip()
+            # skip all non-relevant lines
+            if "[h264" not in line and "pkt_size" not in line:
+                continue
+
+            # skip irrelevant other lines
+            if "nal_unit_type" in line or "Reinit context" in line:
+                continue
+
+            # start a new frame
+            if "New frame" in line:
+                if has_current_frame_data:
+                    # yield the current frame
+                    yield {
+                        "frameType": frame_type,
+                        "frameSize": frame_size,
+                        "qpValues": frame_qp_values
+                    }
+
+                first_frame_found = True
+
+                frame_type = line[-1]
+                if frame_type not in ["I", "P", "B"]:
+                    print_stderr("Wrong frame type parsed: " + str(frame_type))
+                    sys.exit(1)
+                frame_index += 1
+                # initialize empty for the moment
+                frame_qp_values = []
+                frame_size = 0
+                has_current_frame_data = True
+                continue
+
+            if not first_frame_found:
+                # continue parsing
+                continue
+
+            if "[h264" in line and "pkt_size" not in line:
+                if set(line.split("] ")[1]) - set(" 0123456789") != set():
+                    # this line contains something that is not a qp value
                     continue
+                # Now we have a line with qp values.
+                # Strip the first part off the string, e.g.
+                #   [h264 @ 0x7fadf2008000] 1111111111111111111111111111111111111111
+                # becomes:
+                #   1111111111111111111111111111111111111111
+                # Note: 
+                # Single digit qp values are padded with a leading space e.g.:
+                # [h264 @ 0x7fadf2008000]  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+                raw_values = re.sub(r'\[[\w\s@]+\]\s', '', line)
+                # remove the leading space in case of single digit qp values
+                line_qp_values = [int(raw_values[i:i + 2].lstrip())
+                             for i in range(0, len(raw_values), 2)]
+                # print("Adding QP values to frame with index " + str(frame_index))
+                frame_qp_values.extend(line_qp_values)
+                continue
+            if "pkt_size" in line:
+                frame_size = re.findall(r'\d+', line)[0]
 
-                # skip irrelevant other lines
-                if "nal_unit_type" in line or "Reinit context" in line:
-                    continue
-
-                # start a new frame
-                if "New frame" in line:
-                    if has_current_frame_data:
-                        # yield the current frame
-                        yield {
-                            "frameType": frame_type,
-                            "frameSize": frame_size,
-                            "qpValues": frame_qp_values
-                        }
-
-                    first_frame_found = True
-
-                    frame_type = line[-1]
-                    if frame_type not in ["I", "P", "B"]:
-                        print_stderr("Wrong frame type parsed: " + str(frame_type))
-                        sys.exit(1)
-                    frame_index += 1
-                    # initialize empty for the moment
-                    frame_qp_values = []
-                    frame_size = 0
-                    has_current_frame_data = True
-                    continue
-
-                if not first_frame_found:
-                    # continue parsing
-                    continue
-
-                if "[h264" in line and "pkt_size" not in line:
-                    if set(line.split("] ")[1]) - set(" 0123456789") != set():
-                        # this line contains something that is not a qp value
-                        continue
-                    # Now we have a line with qp values.
-                    # Strip the first part off the string, e.g.
-                    #   [h264 @ 0x7fadf2008000] 1111111111111111111111111111111111111111
-                    # becomes:
-                    #   1111111111111111111111111111111111111111
-                    # Note: 
-                    # Single digit qp values are padded with a leading space e.g.:
-                    # [h264 @ 0x7fadf2008000]  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-                    raw_values = re.sub(r'\[[\w\s@]+\]\s', '', line)
-                    # remove the leading space in case of single digit qp values
-                    line_qp_values = [int(raw_values[i:i + 2].lstrip())
-                                 for i in range(0, len(raw_values), 2)]
-                    # print("Adding QP values to frame with index " + str(frame_index))
-                    frame_qp_values.extend(line_qp_values)
-                    continue
-                if "pkt_size" in line:
-                    frame_size = re.findall(r'\d+', line)[0]
-
-            # yield last frame
-            if has_current_frame_data:
-                yield {
-                    "frameType": frame_type,
-                    "frameSize": frame_size,
-                    "qpValues": frame_qp_values
-                }
+        # yield last frame
+        if has_current_frame_data:
+            yield {
+                "frameType": frame_type,
+                "frameSize": frame_size,
+                "qpValues": frame_qp_values
+            }
 
     @staticmethod
     def parse_qp_data(logfile):
