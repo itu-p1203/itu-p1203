@@ -1,3 +1,11 @@
+Version 1.2.8:
+ - add Windows compatibility
+ - allow calculating average QP as shortcut in extractor
+ - add warning if multiple segments are used with one qp logfile
+ - add support for .gz files for QP values
+ - update helper script to use existing qp values, if calculated
+ - update notice about error in P.1203.3 standard
+
 Version 1.2.7:
  - round during segment continuity check
 
