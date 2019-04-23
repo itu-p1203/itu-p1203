@@ -34,16 +34,16 @@ The higher the mode, the higher the accuracy of the prediction.
 
 ## Requirements
 
-* Python 3 and pip3
+* Python 3.5 or higher and `pip3`
   * Modern Linux distributions should come with Python 3. If not, [pyenv](https://github.com/pyenv/pyenv) is recommended to get a user-level Python 3 installation.
   * Under macOS, use [Homebrew](https://brew.sh/) and `brew install python` and read the printed messages.
-  * For installation under Windows please follow the guide in [windows/README.md](windows/README.md).
+  * For installation under Windows, please install Python from the official website
 
 * Additional Python packages:
-  * For running the software locally without pip, install the dependencies: `pip3 install --user numpy scipy pandas`, or if you are using Ubuntu (or similar), run `sudo apt install python3-numpy python3-scipy python3-pandas`.
-  * For development (for code analysis and improving): `pip3 install --user pylint`
+  * For running the software locally without pip, install the dependencies: `pip3 install --user -r requirements.txt`.
+  * Under Windows, you can also download the requirements [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/) and install the wheel for your architecture directly
 
-* ffprobe/ffmpeg (only needed for Mode 3)
+* `ffprobe`/`ffmpeg` (only needed for Mode 3)
   * Download a static build from [ffmpeg](http://ffmpeg.org/download.html)
   * Place it in your `$PATH`
 

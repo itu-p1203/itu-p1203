@@ -32,6 +32,7 @@ from collections import OrderedDict
 from fractions import Fraction
 import tempfile
 import gzip
+import subprocess
 
 from . import utils
 
@@ -49,15 +50,24 @@ def print_stderr(msg):
     print("EXTRACTOR: {}".format(msg), file=sys.stderr)
 
 
-def shell_call(cmd):
+def run_command(cmd, dry_run=False, verbose=False):
     """
-    Run a command and return output of stdout as result.
+    Run a command directly
     """
-    from subprocess import check_output
-    try:
-        return str(check_output(cmd, shell=True), "utf-8")
-    except:
-        return ""
+    if dry_run or verbose:
+        print_stderr("[cmd] " + " ".join(cmd))
+        if dry_run:
+            return
+
+    process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+
+    if process.returncode == 0:
+        return stdout.decode("utf-8"), stderr.decode("utf-8")
+    else:
+        print_stderr("[error] running command: {}".format(" ".join(cmd)))
+        print_stderr(stderr.decode("utf-8"))
+        sys.exit(1)
 
 
 class Extractor(object):
@@ -276,10 +286,19 @@ class Extractor(object):
         tmp_file_debug_output = Extractor.get_tempfilename()
 
         # Extract QP values from ffmpeg
-        extract_cmd = "{ffmpeg_debug_script} {segment} 2> {tmp_file_debug_output}".format(**locals())
+        extract_cmd = [
+            ffmpeg_debug_script,
+            segment
+        ]
         print_stderr("Running command to extract QPs ...")
         print_stderr(extract_cmd)
-        shell_call(extract_cmd)
+
+        try:
+            with open(tmp_file_debug_output, "wb") as out_f:
+                subprocess.run(extract_cmd, stderr=out_f)
+        except Exception as e:
+            print_stderr("Error running ffmpeg_debug_qp: " + str(e))
+            sys.exit(1)
 
         try:
             data = Extractor.parse_qp_data(tmp_file_debug_output, use_average)
@@ -304,15 +323,30 @@ class Extractor(object):
             - `duration`: Duration of the frame in `s.msec`
         """
         if info_type == "packet":
-            cmd = "ffprobe -loglevel error -select_streams v -show_packets -show_entries packet=pts_time,dts_time,duration_time,size,flags -of json '{segment}'"
+            cmd = [
+                "ffprobe",
+                "-loglevel", "error",
+                "-select_streams", "v",
+                "-show_packets",
+                "-show_entries", "packet=pts_time,dts_time,duration_time,size,flags"
+                "-of", "json",
+                segment
+            ]
         elif info_type == "frame":
-            cmd = "ffprobe -loglevel error -select_streams v -show_frames -show_entries frame=pkt_pts_time,pkt_dts_time,pkt_duration_time,pkt_size,pict_type -of json '{segment}'"
+            cmd = [
+                "ffprobe",
+                "-loglevel", "error",
+                "-select_streams", "v",
+                "-show_frames",
+                "-show_entries", "frame=pkt_pts_time,pkt_dts_time,pkt_duration_time,pkt_size,pict_type"
+                "-of", "json",
+                segment
+            ]
         else:
             print_stderr("wrong info type, can be 'packet' or 'frame'")
             sys.exit(1)
-        cmd = cmd.format(segment=segment)
 
-        stdout = shell_call(cmd)
+        stdout, _ = run_command(cmd)
         info = json.loads(stdout)[info_type + "s"]
 
         # Assemble info into OrderedDict
@@ -364,9 +398,8 @@ class Extractor(object):
         - `bit_rate`
         - `probe_score`
         """
-        cmd = "ffprobe -loglevel error -show_format -of json '{segment}'"
-        cmd = cmd.format(segment=segment)
-        stdout = shell_call(cmd)
+        cmd = ["ffprobe", "-loglevel", "error", "-show_format", "-of", "json", segment]
+        stdout, _ = run_command(cmd)
         info = json.loads(stdout)["format"]
 
         # conversions
@@ -397,17 +430,10 @@ class Extractor(object):
         - `audio_codec`: Audio codec name (`aac`)
         - `audio_bitrate`: Bitrate of the video stream in kBit/s
         """
-        if sys.platform == "darwin":
-            cmd = "stat -f '%z' '{segment}'"
-        else:
-            cmd = "stat -c '%s' '{segment}'"
-        cmd = cmd.format(segment=segment)
-        stdout = shell_call(cmd)
-        segment_size = int(stdout.strip())
+        segment_size = os.path.getsize(segment)
 
-        cmd = "ffprobe -loglevel error -show_streams -show_format -of json '{segment}'"
-        cmd = cmd.format(segment=segment)
-        stdout = shell_call(cmd)
+        cmd = ["ffprobe", "-loglevel", "error", "-show_streams", "-show_format", "-of", "json", segment]
+        stdout, _ = run_command(cmd)
         info = json.loads(stdout)
 
         has_video = False
@@ -506,9 +532,15 @@ class Extractor(object):
         stream_type: either "video" or "audio"
         """
         switch = "v" if stream_type == "video" else "a"
-        cmd = "ffprobe -loglevel error -select_streams " + switch + \
-            " -show_entries packet=size -of compact=p=0:nk=1 '{segment}'"
-        stdout = shell_call(cmd.format(segment=segment))
+        cmd = [
+            "ffprobe",
+            "-loglevel", "error",
+            "-select_streams", switch,
+            "-show_entries", "packet=size",
+            "-of", "compact=p=0:nk=1",
+            segment
+        ]
+        stdout, _ = run_command(cmd)
         size = sum([int(l) for l in stdout.split("\n") if l != ""])
         return size
 
