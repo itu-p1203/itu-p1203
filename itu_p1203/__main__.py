@@ -61,7 +61,7 @@ def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_
     Extract the report based on a single input file (JSON or video)
 
     Arguments:
-        input_file {str} -- input file (JSON or video file)
+        input_file {str} -- input file (JSON or video file, or STDIN if "-")
         mode {int} -- 0, 1, 2, 3 depending on extraction mode wanted
         debug {bool} -- whether to run in debug mode
         only_pa {bool} -- only run Pa module
@@ -71,24 +71,28 @@ def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_
                           default are the P1203 modules, e.g. modules={"Pa": OtherPaModule}
         quiet {bool} -- Squelch logger messages
     """
-    if not os.path.isfile(input_file):
+    if input_file != "-" and not os.path.isfile(input_file):
         raise P1203StandaloneError("No such file: {input_file}".format(input_file=input_file))
 
-    file_ext = os.path.splitext(input_file)[1].lower()[1:]
-    valid_video_exts = ["avi", "mp4", "mkv", "nut", "mpeg", "mpg"]
-
-    # normal case, handle JSON files
-    if file_ext == "json":
-        input_report = utils.read_json_without_comments(input_file)
-    # convert input video to required format
-    elif file_ext in valid_video_exts:
-        logger.debug("Running extract_from_segment_files to get input report: {} mode {}".format(input_file, mode))
-        try:
-            input_report = Extractor([input_file], mode).extract()
-        except Exception as e:
-            raise P1203StandaloneError("Could not auto-generate input report, error: {e.output}".format(e=e))
+    if input_file == "-":
+        stdin = sys.stdin.read()
+        input_report = json.loads(stdin)
     else:
-        raise P1203StandaloneError("Could not guess what kind of input file this is: {input_file}".format(input_file=input_file))
+        file_ext = os.path.splitext(input_file)[1].lower()[1:]
+        valid_video_exts = ["avi", "mp4", "mkv", "nut", "mpeg", "mpg"]
+
+        # normal case, handle JSON files
+        if file_ext == "json":
+            input_report = utils.read_json_without_comments(input_file)
+        # convert input video to required format
+        elif file_ext in valid_video_exts:
+            logger.debug("Running extract_from_segment_files to get input report: {} mode {}".format(input_file, mode))
+            try:
+                input_report = Extractor([input_file], mode).extract()
+            except Exception as e:
+                raise P1203StandaloneError("Could not auto-generate input report, error: {e.output}".format(e=e))
+        else:
+            raise P1203StandaloneError("Could not guess what kind of input file this is: {input_file}".format(input_file=input_file))
 
     # create model ...
     itu_p1203 = P1203Standalone(
@@ -132,7 +136,7 @@ def main(modules={}, quiet=False):
         'input',
         type=str,
         nargs="+",
-        help="input report JSON file(s) or video file(s), format see README"
+        help="input report JSON file(s) or video file(s), or STDIN if '-', format see README"
     )
     parser.add_argument(
         '-m', '--mode',
@@ -254,6 +258,10 @@ def main(modules={}, quiet=False):
         use_multiprocessing = True
 
     if use_multiprocessing:
+        if any(input_file == "-" for input_file in argsdict["input"]):
+            logger.error("You can only use STDIN with single-threaded processing. Use --cpu-count 1.")
+            sys.exit(1)
+
         pool = Pool(processes=argsdict["cpu_count"])
         params = [(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules, quiet) for input_file in argsdict["input"]]
         try:

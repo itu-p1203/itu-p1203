@@ -67,7 +67,7 @@ p1203-standalone [-h] [-m {0,1,2,3}] [--debug] [--only-pa] [--only-pv]
 P.1203 standalone implementation
 
 positional arguments:
-  input                 input report JSON file(s) or video file(s), format see README
+  input                 input report JSON file(s) or video file(s), or STDIN if '-', format see README
 
 optional arguments:
   -h, --help            show this help message and exit
