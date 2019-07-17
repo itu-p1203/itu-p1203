@@ -328,7 +328,7 @@ class Extractor(object):
                 "-loglevel", "error",
                 "-select_streams", "v",
                 "-show_packets",
-                "-show_entries", "packet=pts_time,dts_time,duration_time,size,flags"
+                "-show_entries", "packet=pts_time,dts_time,duration_time,size,flags",
                 "-of", "json",
                 segment
             ]
@@ -338,7 +338,7 @@ class Extractor(object):
                 "-loglevel", "error",
                 "-select_streams", "v",
                 "-show_frames",
-                "-show_entries", "frame=pkt_pts_time,pkt_dts_time,pkt_duration_time,pkt_size,pict_type"
+                "-show_entries", "frame=pkt_pts_time,pkt_dts_time,pkt_duration_time,pkt_size,pict_type",
                 "-of", "json",
                 segment
             ]
