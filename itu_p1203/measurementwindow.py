@@ -112,6 +112,11 @@ class MeasurementWindow:
         # 180.23, then last score will be at 180.
         final_sample_timestamp = math.floor(self._acc_pvs_dur)
 
+        # Minor bugfix: if in mode 0, rounding up would be better, do this instead.
+        # This can happen if frames only sum up to 0.9999999 and not the next second.
+        if self._acc_pvs_dur - final_sample_timestamp > 0.99:
+            final_sample_timestamp = math.ceil(self._acc_pvs_dur)
+
         # The window is aat [160.23, 180.23] now
         # Next output timestamp is 171
         output_sample_timestamp = self._last_score_output_at + 1
