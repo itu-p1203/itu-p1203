@@ -164,7 +164,11 @@ class P1203Standalone:
         logger.debug("Calculating integration module ...")
 
         stalling = []
-        if "I23" in self.input_report.keys() and "stalling" in self.input_report["I23"].keys():
+        if (
+            "I23" in self.input_report.keys() and
+            "stalling" in self.input_report["I23"].keys() and
+            self.input_report["I23"]["stalling"] is not None
+        ):
             stalling = self.input_report["I23"]["stalling"]
 
         device = "pc"
