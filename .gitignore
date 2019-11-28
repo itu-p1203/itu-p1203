@@ -22,3 +22,6 @@ wheels/
 .installed.cfg
 *.egg
 tmp/*
+
+test/*.cprof
+test/*.pdf
