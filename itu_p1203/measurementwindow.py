@@ -24,7 +24,7 @@ SOFTWARE.
 """
 
 import math
-from . import log
+from itu_p1203 import log
 
 logger = log.setup_custom_logger('main')
 

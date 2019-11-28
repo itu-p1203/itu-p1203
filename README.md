@@ -55,7 +55,7 @@ From this directory, run:
 
 Then you will get a `p1203-standalone` executable on your system. You can import the libraries with `itu_p1203` from Python.
 
-You can uninstall the model with `pip3 uninstall p1203-standalone`.
+You can uninstall the model with `pip3 uninstall itu_p1203`.
 
 ## CLI Usage
 

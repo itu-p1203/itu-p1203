@@ -29,8 +29,8 @@ import os
 import sys
 import numpy as np
 
-from .errors import P1203StandaloneError
-from . import log
+from itu_p1203.errors import P1203StandaloneError
+from itu_p1203 import log
 
 logger = log.setup_custom_logger('main')
 

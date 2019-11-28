@@ -22,7 +22,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 import os
 import argparse
 import logging
@@ -33,11 +32,11 @@ from multiprocessing import Pool
 from os.path import expanduser
 import textwrap
 
-from . import log
-from . import utils
-from .itu_p1203 import P1203Standalone
-from .extractor import Extractor
-from .errors import P1203StandaloneError
+from itu_p1203 import log
+from itu_p1203 import utils
+from itu_p1203.p1203_standalone import P1203Standalone
+from itu_p1203.extractor import Extractor
+from itu_p1203.errors import P1203StandaloneError
 
 logger = log.setup_custom_logger('main')
 
@@ -124,7 +123,7 @@ def main(modules={}, quiet=False):
         modules {dict} -- You can specify other Pa, Pv, Pq modules, e.g. modules = {"Pa": myownPaModule}
         quiet {bool} -- Squelch logger messages
     """
-    from . import __version__
+    from itu_p1203 import __version__
 
     # argument parsing
     parser = argparse.ArgumentParser(

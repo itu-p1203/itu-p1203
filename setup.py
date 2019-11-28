@@ -27,7 +27,7 @@ except ImportError:
     print("pypandoc module not found, could not convert Markdown to RST")
 
 setup(
-    name='p1203-standalone',
+    name='itu_p1203',
     version=version,
     description="ITU-T P.1203 Standalone Model",
     long_description=long_description + '\n\n' + history,

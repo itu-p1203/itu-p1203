@@ -27,10 +27,10 @@ from itertools import groupby
 from scipy import signal
 import numpy as np
 
-from . import log
-from .errors import P1203StandaloneError
-from . import rfmodel
-from . import utils
+from itu_p1203 import log
+from itu_p1203.errors import P1203StandaloneError
+from itu_p1203 import rfmodel
+from itu_p1203 import utils
 
 
 logger = log.setup_custom_logger('main')
