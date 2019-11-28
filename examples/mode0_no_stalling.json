@@ -3,25 +3,25 @@
         "segments": [
             {
                 "bitrate": 331.46,
-                "codec": "aac",
+                "codec": "aaclc",
                 "duration": 5.48,
                 "start": 0
             },
             {
                 "bitrate": 333.02,
-                "codec": "aac",
+                "codec": "aaclc",
                 "duration": 5.0,
                 "start": 5.48
             },
             {
                 "bitrate": 333.2,
-                "codec": "aac",
+                "codec": "aaclc",
                 "duration": 5.0,
                 "start": 10.48
             },
             {
                 "bitrate": 333.57,
-                "codec": "aac",
+                "codec": "aaclc",
                 "duration": 4.598,
                 "start": 15.48
             }

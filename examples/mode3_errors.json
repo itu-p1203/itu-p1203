@@ -3,7 +3,7 @@
         "segments": [
             {
                 "bitrate": 125.11,
-                "codec": "aac",
+                "codec": "aaclc",
                 "duration": 8.024,
                 "start": 0
             }
