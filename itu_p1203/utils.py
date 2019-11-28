@@ -198,9 +198,9 @@ def get_chunk_hash(frame, type="video"):
     if "representation" in frame.keys():
         return frame["representation"]
     if type == "video":
-        return hash(str(frame["bitrate"]) + str(frame["codec"]) + str(frame["fps"]))
+        return str(frame["bitrate"]) + str(frame["codec"]) + str(frame["fps"])
     elif type == "audio":
-        return hash(str(frame["bitrate"]) + str(frame["codec"]))
+        return str(frame["bitrate"]) + str(frame["codec"])
     else:
         raise P1203StandaloneError("Wrong type for frame: " + str(type))
 
