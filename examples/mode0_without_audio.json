@@ -1,0 +1,54 @@
+{
+    "I11": {
+        "segments": [
+
+        ],
+        "streamId": 42
+    },
+    "I13": {
+        "segments": [
+            {
+                "bitrate": 691.72,
+                "codec": "h264",
+                "duration": 5.48,
+                "fps": 25.0,
+                "resolution": "1920x1080",
+                "start": 0
+            },
+            {
+                "bitrate": 4158.04,
+                "codec": "h264",
+                "duration": 5.0,
+                "fps": 25.0,
+                "resolution": "1920x1080",
+                "start": 5.48
+            },
+            {
+                "bitrate": 7172.66,
+                "codec": "h264",
+                "duration": 5.0,
+                "fps": 25.0,
+                "resolution": "1920x1080",
+                "start": 10.48
+            },
+            {
+                "bitrate": 6593.59,
+                "codec": "h264",
+                "duration": 4.598,
+                "fps": 25.0,
+                "resolution": "1920x1080",
+                "start": 15.48
+            }
+        ],
+        "streamId": 42
+    },
+    "I23": {
+        "stalling": [[0, 2], [5, 2]],
+        "streamId": 42
+    },
+    "IGen": {
+        "device": "pc",
+        "displaySize": "1920x1080",
+        "viewingDistance": "150cm"
+    }
+}

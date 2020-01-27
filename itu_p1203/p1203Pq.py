@@ -53,9 +53,15 @@ class P1203Pq(object):
         self.O21 = np.array(O21)
         self.O22 = np.array(O22)
         self.device = device
+        # if one of the two is empty, choose the longer one
+        self.has_audio = bool(len(self.O21))
+        self.has_video = bool(len(self.O22))
 
         # filter out stalling events happening outside of media range
-        max_dur = min(len(O21), len(O22))
+        if self.has_audio:
+            max_dur = min(len(O21), len(O22))
+        else:
+            max_dur = len(O22)
         self.l_buff = []
         self.p_buff = []
 
@@ -85,10 +91,6 @@ class P1203Pq(object):
         # Clause 3.2.2
         O21_len = len(self.O21)
         O22_len = len(self.O22)
-
-        # if one of the two is empty, choose the longer one
-        self.has_audio = bool(O21_len)
-        self.has_video = bool(O22_len)
 
         if not self.has_video:
             raise P1203StandaloneError("O22 has no scores; Pq model is not valid without video.")
