@@ -1,3 +1,8 @@
+Version 1.5.0:
+ - remove python 3.8 compatibility, see #16
+ - add missing handheld/mobile conversion
+ - python 3.7 and 3.8
+
 Version 1.4.1:
  - do not prune stalling events if there is no audio
 
