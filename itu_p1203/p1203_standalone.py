@@ -134,9 +134,16 @@ class P1203Standalone:
             except Exception:
                 logger.warning("No stream ID specified")
 
+            device = "pc"
+            try:
+                device = self.input_report["IGen"]["device"]
+            except Exception:
+                logger.warning("Device not defined in input report, assuming PC")
+
             self.video = self.Pv(
                 segments=segments,
                 display_res=display_res,
+                device=device,
                 stream_id=stream_id
             ).calculate()
 

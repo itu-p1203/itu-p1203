@@ -9,6 +9,8 @@ This evaluation software implements the following standards:
 - ITU-T Rec. P.1203.2: Parametric bitstream-based quality assessment of progressive download and adaptive audiovisual streaming services over reliable transport - Audio quality estimation module
 - ITU-T Rec. P.1203.3: Parametric bitstream-based quality assessment of progressive download and adaptive audiovisual streaming services over reliable transport - Quality integration module
 
+**News:** Version 1.5.0 fixes an issue where mobile/handheld device scores were not correctly compensated for. Any calculations with device type "mobile" performed with versions <1.5.0 are therefore not valid and must be re-computed.
+
 **Note:** An older version of the standard, ITU-T Rec. P.1203.3 (10/2017), contained an error in Eq. (20), where the exponential was calculated as `e^(t/(T/t_3))`. The correct formula should have read `e^(((t-1)/T)/t_3))`. This software reflects the correct interpretation of the equation, namely to normalize the timestamp by the total sequence duration (and not to divide the total sequence duration by the coefficient `t_3`). This has been updated in ITU-T Rec. P.1203.3 (01/19).
 
 ## General Description
@@ -175,7 +177,7 @@ The following keys and data are optional:
 ```
 "IGen": {                         # Generic input information
     "displaySize": "1920x1080",   # display resolution in pixels, given as `<width>x<height>`
-    "device": "pc",               # pc or mobile, default: "pc"
+    "device": "pc",               # pc, handheld, or mobile
     "viewingDistance": 0,         # not used
   }
 "I11": {              # Audio input information

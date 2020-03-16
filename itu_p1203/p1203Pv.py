@@ -337,6 +337,18 @@ class P1203Pv(object):
 
         return score
 
+    @staticmethod
+    def handheld_adjustment(score):
+        """
+        Compensate for mobile viewing devices.
+        """
+        # clause 8.4.1 eq. (13)
+        htv_1 = -0.60293
+        htv_2 = 2.12382
+        htv_3 = -0.36936
+        htv_4 = 0.03409
+        return max(min(htv_1 + htv_2 * score + htv_3 * score**2 + htv_4 * score**3, 5), 1)
+
     def model_callback(self, output_sample_timestamp, frames):
         """
         Function that receives frames from measurement window, to call the model
@@ -362,9 +374,6 @@ class P1203Pv(object):
                 bitrate,
                 first_frame["fps"]
             )
-            self.o22.append(score)
-            return
-
         elif self.mode == 1:
             # average the bitrate based on the frame sizes, as implemented
             # in submitted model code
@@ -380,9 +389,6 @@ class P1203Pv(object):
                 first_frame["fps"],
                 frames
             )
-            self.o22.append(score)
-            return
-
         elif self.mode == 2:
             score = P1203Pv.video_model_function_mode2(
                 utils.resolution_to_number(first_frame["resolution"]),
@@ -390,9 +396,6 @@ class P1203Pv(object):
                 first_frame["fps"],
                 frames
             )
-            self.o22.append(score)
-            return
-
         elif self.mode == 3:
             score = P1203Pv.video_model_function_mode3(
                 utils.resolution_to_number(first_frame["resolution"]),
@@ -400,11 +403,14 @@ class P1203Pv(object):
                 first_frame["fps"],
                 frames
             )
-            self.o22.append(score)
-            return
-
         else:
             raise P1203StandaloneError("Unsupported mode: {}".format(self.mode))
+
+        # mobile adjustments
+        if self.device in ["mobile", "handheld"]:
+            score = P1203Pv.handheld_adjustment(score)
+
+        self.o22.append(score)
 
     def check_codec(self):
         """ check if the segments are using valid codecs,
@@ -518,17 +524,19 @@ class P1203Pv(object):
             }
         }
 
-    def __init__(self, segments, display_res="1920x1080", stream_id=None):
+    def __init__(self, segments, display_res="1920x1080", device="pc", stream_id=None):
         """
         Initialize Pv model with input JSON data
 
         Arguments:
             segments {list} -- list of segments according to specification
             display_res {str} -- display resolution as "wxh" (default: "1920x1080")
+            device {str} -- "pc" or "mobile" (default: "pc")
             stream_id {str} -- stream ID (default: {None})
         """
         self.segments = segments
         self.display_res = display_res
+        self.device = device
         self.stream_id = stream_id
         self.o22 = []
         self.mode = None
