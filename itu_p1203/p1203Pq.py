@@ -38,7 +38,31 @@ logger = log.setup_custom_logger('main')
 
 class P1203Pq(object):
 
-    def __init__(self, O21, O22, l_buff=[], p_buff=[], device="pc"):
+    COEFFS = {
+        "c_ref7": 0.48412879,
+        "c_ref8": 10,
+        "av1": -0.00069084,
+        "av2": 0.15374283,
+        "av3": 0.97153861,
+        "av4": 0.02461776,
+        "t1": 0.00666620027943848,
+        "t2": 0.0000404018840273729,
+        "t3": 0.156497800436237,
+        "t4": 0.143179744942738,
+        "t5": 0.0238641564518876,
+        "c1": 1.87403625,
+        "c2": 7.85416481,
+        "c23": 0.01853820,
+        "s1": 9.35158684,
+        "s2": 0.91890815,
+        "s3": 11.0567558,
+        "comp1": 0.67756080,
+        "comp2": -8.05533303,
+        "comp3": 0.17332553,
+        "comp4": -0.01035647,
+    }
+
+    def __init__(self, O21, O22, l_buff=[], p_buff=[], device="pc", coeffs={}):
         """Initialize P.1203 model
 
         Initialize the model with variables extracted from input JSON file
@@ -49,6 +73,7 @@ class P1203Pq(object):
             l_buff {list} -- durations of buffering events [default: []]]
             p_buff {list} -- locations of buffering events in media time (in seconds) [default: []]]
             device {str} -- pc or mobile
+            coeffs {dict} -- model coefficients, will overwrite defaults if same key is used [default: {}]
         """
         self.O21 = np.array(O21)
         self.O22 = np.array(O22)
@@ -74,6 +99,8 @@ class P1203Pq(object):
                 continue
             self.l_buff.append(l)
             self.p_buff.append(p)
+
+        self.coeffs = {**self.COEFFS, **coeffs}
 
     def calculate(self):
         """
@@ -108,12 +135,10 @@ class P1203Pq(object):
 
         # ---------------------------------------------------------------------
         # Clause 8.1.1.1
-        c_ref7 = 0.48412879
-        c_ref8 = 10
 
         # calculate weighted total stalling length
         total_stall_len = sum(
-            [l_buff * utils.exponential(1, c_ref7, 0, c_ref8, duration - p_buff)
+            [l_buff * utils.exponential(1, self.coeffs["c_ref7"], 0, self.coeffs["c_ref8"], duration - p_buff)
              for p_buff, l_buff in zip(self.p_buff, self.l_buff)]
         )
 
@@ -178,23 +203,14 @@ class P1203Pq(object):
         # ---------------------------------------------------------------------
         # Eq. 19-21
         O35_denominator = O35_numerator = 0
-        av1 = -0.00069084
-        av2 = 0.15374283
-        av3 = 0.97153861
-        av4 = 0.02461776
-        t1 = 0.00666620027943848
-        t2 = 0.0000404018840273729
-        t3 = 0.156497800436237
-        t4 = 0.143179744942738
-        t5 = 0.0238641564518876
         O34 = np.zeros(duration)
         for t in range(duration):
             O34[t] = np.maximum(np.minimum(
-                av1 + av2 * self.O21[t] + av3 * self.O22[t] + av4 * self.O21[t] * self.O22[t],
+                self.coeffs["av1"] + self.coeffs["av2"] * self.O21[t] + self.coeffs["av3"] * self.O22[t] + self.coeffs["av4"] * self.O21[t] * self.O22[t],
                 5), 1)
             temp = O34[t]
-            w1 = t1 + t2 * np.exp((t / float(duration)) / t3)
-            w2 = t4 - t5 * temp
+            w1 = self.coeffs["t1"] + self.coeffs["t2"] * np.exp((t / float(duration)) / self.coeffs["t3"])
+            w2 = self.coeffs["t4"] - self.coeffs["t5"] * temp
 
             O35_numerator += w1 * w2 * temp
             O35_denominator += w1 * w2
@@ -202,28 +218,22 @@ class P1203Pq(object):
 
         # ---------------------------------------------------------------------
         # Clause 8.1.2.1
-        c1 = 1.87403625
-        c2 = 7.85416481
-        c23 = 0.01853820
         O34_diff = list(O34)
         for i in range(duration):
             # Eq. 5
-            w_diff = utils.exponential(1, c1, 0, c2, duration-i-1)
+            w_diff = utils.exponential(1, self.coeffs["c1"], 0, self.coeffs["c2"], duration-i-1)
             O34_diff[i] = (O34[i] - O35_baseline) * w_diff
 
         # Eq. 6
         neg_perc = np.percentile(O34_diff, 10, interpolation='linear')
         # Eq. 7
-        negative_bias = np.maximum(0, -neg_perc) * c23
+        negative_bias = np.maximum(0, -neg_perc) * self.coeffs["c23"]
 
         # ---------------------------------------------------------------------
         # Eq. 29
-        s1 = 9.35158684
-        s2 = 0.91890815
-        s3 = 11.0567558
-        stalling_impact = np.exp(- num_stalls / s1) * \
-            np.exp(- total_stall_len / duration / s2) * \
-            np.exp(- avg_stall_interval / duration / s3)
+        stalling_impact = np.exp(- num_stalls / self.coeffs["s1"]) * \
+            np.exp(- total_stall_len / duration / self.coeffs["s2"]) * \
+            np.exp(- avg_stall_interval / duration / self.coeffs["s3"])
         # Eq. 31
         O23 = 1 + 4 * stalling_impact
 
@@ -232,22 +242,18 @@ class P1203Pq(object):
 
         # Eq. 24
         osc_comp = 0
-        comp1 = 0.67756080
-        comp2 = -8.05533303
         osc_test = ((q_dir_changes_longest / duration) < 0.25) and (q_dir_changes_longest < 30)
         if osc_test:
             # Eq. 27
             q_diff = np.maximum(0.0, 1 + np.log10(vid_qual_spread + 0.001))
             # Eq. 23
-            osc_comp = np.maximum(0.0, np.minimum(q_diff * np.exp(comp1 * q_dir_changes_tot + comp2), 1.5))
+            osc_comp = np.maximum(0.0, np.minimum(q_diff * np.exp(self.coeffs["comp1"] * q_dir_changes_tot + self.coeffs["comp2"]), 1.5))
 
         # Eq. 26
         adapt_comp = 0
-        comp3 = 0.17332553
-        comp4 = -0.01035647
         adapt_test = (q_dir_changes_longest / duration) < 0.25
         if adapt_test:
-            adapt_comp = np.maximum(0.0, np.minimum(comp3 * vid_qual_spread * vid_qual_change_rate + comp4, 0.5))
+            adapt_comp = np.maximum(0.0, np.minimum(self.coeffs["comp3"] * vid_qual_spread * vid_qual_change_rate + self.coeffs["comp4"], 0.5))
 
         # Eq. 18
         O35 = O35_baseline - negative_bias - osc_comp - adapt_comp
