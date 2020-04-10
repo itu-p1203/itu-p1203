@@ -1,3 +1,7 @@
+Version 1.5.1:
+ - allow overriding Pq coefficients from class constructor
+ - add fuzzy test comparator
+
 Version 1.5.0:
  - remove python 3.8 compatibility, see #16
  - add missing handheld/mobile conversion
