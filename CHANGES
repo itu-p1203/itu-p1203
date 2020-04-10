@@ -1,3 +1,6 @@
+Version 1.5.2:
+ - fix unit test precision
+
 Version 1.5.1:
  - allow overriding Pq coefficients from class constructor
  - add fuzzy test comparator
