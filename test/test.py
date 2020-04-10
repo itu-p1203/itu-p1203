@@ -105,7 +105,7 @@ class TestP1203Parts(unittest.TestCase):
             expected_output = TEST_OUTPUT[test_case]
             del expected_output["date"]
 
-            assert fuzzy_equal(output, expected_output, 3)
+            assert fuzzy_equal(output, expected_output, 0.0001)
 
     def test_model_functions(self):
         """
