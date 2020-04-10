@@ -44,6 +44,47 @@ if not os.path.isdir(os.path.join(BASEDIR, "examples")):
     sys.exit(1)
 
 
+def fuzzy_equal(d1, d2, precision):
+    """
+    Compare two objects recursively (just as standard '==' except floating point
+    values are compared within given precision.
+
+    Based on https://gist.github.com/durden/4236551, modified to handle lists
+    """
+
+    if len(d1) != len(d2):
+        return False
+
+    if isinstance(d1, list):
+        for v1, v2 in zip(d1, d2):
+            if not abs(v1 - 2) < precision:
+                return False
+    elif isinstance(d1, dict):
+        for k, v in d1.items():
+            # Make sure all the keys are equal
+            if k not in d2:
+                return False
+
+            # Fuzzy float comparison
+            if isinstance(v, float) and isinstance(d2[k], float):
+                if not abs(v - d2[k]) < precision:
+                    return False
+
+            # Recursive compare if there are nested dicts
+            elif isinstance(v, dict):
+                if not fuzzy_equal(v, d2[k], precision):
+                    return False
+
+            # Fall back to default
+            elif v != d2[k]:
+                return False
+    else:
+        if not abs(d1 - d2) < precision:
+            return False
+
+    return True
+
+
 class TestP1203Parts(unittest.TestCase):
     def test_output(self):
         """
@@ -64,7 +105,7 @@ class TestP1203Parts(unittest.TestCase):
             expected_output = TEST_OUTPUT[test_case]
             del expected_output["date"]
 
-            self.assertEqual(output, expected_output)
+            assert fuzzy_equal(output, expected_output, 3)
 
     def test_model_functions(self):
         """
