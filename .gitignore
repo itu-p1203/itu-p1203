@@ -25,3 +25,5 @@ tmp/*
 
 test/*.cprof
 test/*.pdf
+
+.vscode
