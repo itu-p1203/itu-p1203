@@ -1,3 +1,6 @@
+Version 1.6.1:
+ - add amendment 1 for p.1203.3
+
 Version 1.6.0:
  - add linearization from Eq. 30 of P.1203.3
  - add vscode to gitignore
