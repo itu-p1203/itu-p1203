@@ -60,6 +60,8 @@ class P1203Pq(object):
         "comp2": -8.05533303,
         "comp3": 0.17332553,
         "comp4": -0.01035647,
+        "f1": 0.02833052,
+        "f2": 0.98117059
     }
 
     def __init__(self, O21, O22, l_buff=[], p_buff=[], device="pc", coeffs={}):
@@ -266,6 +268,9 @@ class P1203Pq(object):
         # Eq. 28
         rf_score = rfmodel.calculate(self.O21, self.O22, self.l_buff, self.p_buff, duration)
         O46 = 0.75 * np.maximum(np.minimum(mos, 5), 1) + 0.25 * rf_score
+
+        # Eq. 30
+        O46 = self.coeffs["f1"] + self.coeffs["f2"] * O46
 
         return {
             "O23": O23,
