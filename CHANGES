@@ -1,3 +1,7 @@
+Version 1.6.0:
+ - add linearization from Eq. 30 of P.1203.3
+ - add vscode to gitignore
+
 Version 1.5.2:
  - fix unit test precision
 
