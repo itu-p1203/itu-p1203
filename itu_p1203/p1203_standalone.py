@@ -41,7 +41,7 @@ class P1203Standalone:
     Class for calculating P1203 based on JSON input files
     """
 
-    def __init__(self, input_report, debug=False, Pa=P1203Pa, Pv=P1203Pv, Pq=P1203Pq, quiet=False):
+    def __init__(self, input_report, debug=False, Pa=P1203Pa, Pv=P1203Pv, Pq=P1203Pq, quiet=False, amendment_1_audiovisual=False, amendment_1_stalling=False):
         """
         Initialize a standalone model run based on JSON input files
 
@@ -54,7 +54,8 @@ class P1203Standalone:
             Pv -- used short time video quality estimation module (default P1203Pv)
             Pq -- used audio visual integration module (default P1203Pq)
             quiet {bool} -- squelch all logger messages
-
+            amendment_1_audiovisual {bool} -- enable the fix from Amendment 1, Clause 8.2 (default: False)
+            amendment_1_stalling {bool} -- enable the fix from Amendment 1, Clause 8.4 (default: False)
         """
         self.input_report = input_report
         self.debug = debug
@@ -66,6 +67,9 @@ class P1203Standalone:
         self.Pa = Pa if Pa is not None else P1203Pa
         self.Pv = Pv if Pv is not None else P1203Pv
         self.Pq = Pq if Pq is not None else P1203Pq
+
+        self.amendment_1_audiovisual = amendment_1_audiovisual
+        self.amendment_1_stalling = amendment_1_stalling
 
         if quiet:
             logger.setLevel(logging.CRITICAL)
@@ -200,7 +204,9 @@ class P1203Standalone:
             O22=self.video["video"]["O22"],
             l_buff=l_buff,
             p_buff=p_buff,
-            device=device
+            device=device,
+            amendment_1_audiovisual=self.amendment_1_audiovisual,
+            amendment_1_stalling=self.amendment_1_stalling
         ).calculate()
 
         return self.integration

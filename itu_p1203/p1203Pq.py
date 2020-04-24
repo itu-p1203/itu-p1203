@@ -45,6 +45,7 @@ class P1203Pq(object):
         "av2": 0.15374283,
         "av3": 0.97153861,
         "av4": 0.02461776,
+        "amd_1_a_threshold": 2.0,
         "t1": 0.00666620027943848,
         "t2": 0.0000404018840273729,
         "t3": 0.156497800436237,
@@ -56,6 +57,8 @@ class P1203Pq(object):
         "s1": 9.35158684,
         "s2": 0.91890815,
         "s3": 11.0567558,
+        "amd_1_a1": -0.066667,
+        "amd_1_a2": 2.0,
         "comp1": 0.67756080,
         "comp2": -8.05533303,
         "comp3": 0.17332553,
@@ -64,7 +67,7 @@ class P1203Pq(object):
         "f2": 0.98117059
     }
 
-    def __init__(self, O21, O22, l_buff=[], p_buff=[], device="pc", coeffs={}):
+    def __init__(self, O21, O22, l_buff=[], p_buff=[], device="pc", coeffs={}, amendment_1_audiovisual=False, amendment_1_stalling=False):
         """Initialize P.1203 model
 
         Initialize the model with variables extracted from input JSON file
@@ -76,10 +79,16 @@ class P1203Pq(object):
             p_buff {list} -- locations of buffering events in media time (in seconds) [default: []]]
             device {str} -- pc or mobile
             coeffs {dict} -- model coefficients, will overwrite defaults if same key is used [default: {}]
+            amendment_1_audiovisual {bool} -- enable the fix from Amendment 1, Clause 8.2 (default: False)
+            amendment_1_stalling {bool} -- enable the fix from Amendment 1, Clause 8.4 (default: False)
         """
         self.O21 = np.array(O21)
         self.O22 = np.array(O22)
         self.device = device
+
+        self.amendment_1_audiovisual = amendment_1_audiovisual
+        self.amendment_1_stalling = amendment_1_stalling
+
         # if one of the two is empty, choose the longer one
         self.has_audio = bool(len(self.O21))
         self.has_video = bool(len(self.O22))
@@ -210,6 +219,11 @@ class P1203Pq(object):
             O34[t] = np.maximum(np.minimum(
                 self.coeffs["av1"] + self.coeffs["av2"] * self.O21[t] + self.coeffs["av3"] * self.O22[t] + self.coeffs["av4"] * self.O21[t] * self.O22[t],
                 5), 1)
+
+            if self.amendment_1_audiovisual:
+                # Eq. 17a
+                O34[t] = (1 - max(0, self.coeffs["amd_1_a_threshold"] - self.O21[t])) * (O34[t] - 1) + 1
+
             temp = O34[t]
             w1 = self.coeffs["t1"] + self.coeffs["t2"] * np.exp((t / float(duration)) / self.coeffs["t3"])
             w2 = self.coeffs["t4"] - self.coeffs["t5"] * temp
@@ -268,6 +282,10 @@ class P1203Pq(object):
         # Eq. 28
         rf_score = rfmodel.calculate(self.O21, self.O22, self.l_buff, self.p_buff, duration)
         O46 = 0.75 * np.maximum(np.minimum(mos, 5), 1) + 0.25 * rf_score
+
+        if self.amendment_1_stalling:
+            q_fac = min(max(self.coeffs["amd_1_a1"] * total_stall_len + self.coeffs["amd_1_a2"], 0), 1)
+            O46 = 1 + (O46 - 1) * q_fac
 
         # Eq. 30
         O46 = self.coeffs["f1"] + self.coeffs["f2"] * O46

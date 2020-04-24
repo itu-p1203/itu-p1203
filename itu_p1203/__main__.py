@@ -55,7 +55,7 @@ def sign_acknowledgement():
         logger.error("Coult not create file in home directory. Please use --accept-notice to silence the message.")
 
 
-def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_pv=False, print_intermediate=False, modules={}, quiet=False):
+def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_pv=False, print_intermediate=False, modules={}, quiet=False, amendment_1_audiovisual=False, amendment_1_stalling=False):
     """
     Extract the report based on a single input file (JSON or video)
 
@@ -69,6 +69,8 @@ def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_
         modules {dict} -- you can specify Pa, Pv, Pq classnames, that will be used
                           default are the P1203 modules, e.g. modules={"Pa": OtherPaModule}
         quiet {bool} -- Squelch logger messages
+        amendment_1_audiovisual {bool} -- enable the fix from Amendment 1, Clause 8.2 (default: False)
+        amendment_1_stalling {bool} -- enable the fix from Amendment 1, Clause 8.4 (default: False)
     """
     if input_file != "-" and not os.path.isfile(input_file):
         raise P1203StandaloneError("No such file: {input_file}".format(input_file=input_file))
@@ -100,7 +102,9 @@ def extract_from_single_file(input_file, mode, debug=False, only_pa=False, only_
         Pa=modules.get("Pa", None),
         Pv=modules.get("Pv", None),
         Pq=modules.get("Pq", None),
-        quiet=quiet
+        quiet=quiet,
+        amendment_1_audiovisual=amendment_1_audiovisual,
+        amendment_1_stalling=amendment_1_stalling
     )
 
     # ... and run it
@@ -179,6 +183,16 @@ def main(modules={}, quiet=False):
         '--accept-notice',
         action='store_true',
         help="accept license and acknowledgement terms"
+    )
+    parser.add_argument(
+        '--amendment-1-audiovisual',
+        action='store_true',
+        help="enable audiovisual compensation from P.1203.3 Amendment 1"
+    )
+    parser.add_argument(
+        '--amendment-1-stalling',
+        action='store_true',
+        help="enable stalling compensation from P.1203.3 Amendment 1"
     )
 
     argsdict = vars(parser.parse_args())
@@ -262,7 +276,7 @@ def main(modules={}, quiet=False):
             sys.exit(1)
 
         pool = Pool(processes=argsdict["cpu_count"])
-        params = [(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules, quiet) for input_file in argsdict["input"]]
+        params = [(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules, quiet, argsdict["amendment_1_audiovisual"], argsdict["amendment_1_stalling"]) for input_file in argsdict["input"]]
         try:
             output_results = pool.starmap(extract_from_single_file, params)
         except Exception as e:
@@ -272,7 +286,7 @@ def main(modules={}, quiet=False):
         # iterate over input files
         for input_file in argsdict["input"]:
             try:
-                result = extract_from_single_file(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules, quiet)
+                result = extract_from_single_file(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules, quiet, argsdict["amendment_1_audiovisual"], argsdict["amendment_1_stalling"])
             except Exception as e:
                 logger.error("Error during processing, exiting: {}".format(e))
                 sys.exit(1)

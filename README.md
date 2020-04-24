@@ -12,6 +12,7 @@ This evaluation software implements the following standards:
 **News:**
 
 - Version 1.6.0 fixes an issue with the final linearization (P.1203.3 Eq. 30) not being applied. Any calculations performed with earlier versions must be re-computed.
+- Version 1.6.1 includes support for the P.1203.3 Amendment 1 "Adjustment of the audiovisual quality" which introduces an adjustment of the audiovisual quality of ITU-T P.1203.3 for the case of very low audio quality and long stalling events.
 - Version 1.5.0 fixes an issue where mobile/handheld device scores were not correctly compensated for. Any calculations with device type "mobile" performed with versions <1.5.0 are therefore not valid and must be re-computed.
 
 **Note:** An older version of the standard, ITU-T Rec. P.1203.3 (10/2017), contained an error in Eq. (20), where the exponential was calculated as `e^(t/(T/t_3))`. The correct formula should have read `e^(((t-1)/T)/t_3))`. This software reflects the correct interpretation of the equation, namely to normalize the timestamp by the total sequence duration (and not to divide the total sequence duration by the coefficient `t_3`). This has been updated in ITU-T Rec. P.1203.3 (01/19).
@@ -65,11 +66,9 @@ You can uninstall the model with `pip3 uninstall itu_p1203`.
 ## CLI Usage
 
 ```
-p1203-standalone [-h] [-m {0,1,2,3}] [--debug] [--only-pa] [--only-pv]
-          [--print-intermediate] [--cpu-count CPU_COUNT] [--version]
-          input [input ...]
-
-P.1203 standalone implementation
+usage: p1203-standalone [-h] [-m {0,1,2,3}] [--debug] [--only-pa] [--only-pv] [--print-intermediate] [--cpu-count CPU_COUNT] [--version] [--accept-notice]
+                   [--amendment-1-audiovisual] [--amendment-1-stalling]
+                   input [input ...]
 
 positional arguments:
   input                 input report JSON file(s) or video file(s), or STDIN if '-', format see README
@@ -77,14 +76,19 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
   -m {0,1,2,3}, --mode {0,1,2,3}
-                        mode to run for extraction in case video files are
-                        loaded (default: 1)
+                        mode to run for extraction in case video files are loaded (default: 1)
   --debug               some debug output (default: False)
   --only-pa             just print Pa O.21 values (default: False)
   --only-pv             just print Pv O.22 values (default: False)
   --print-intermediate  print intermediate O.21/O.22 values (default: False)
-  --cpu-count CPU_COUNT thread/CPU count (default: 8)
+  --cpu-count CPU_COUNT
+                        thread/CPU count (default: 8)
   --version             show program's version number and exit
+  --accept-notice       accept license and acknowledgement terms (default: False)
+  --amendment-1-audiovisual
+                        enable audiovisual compensation from P.1203.3 Amendment 1 (default: False)
+  --amendment-1-stalling
+                        enable stalling compensation from P.1203.3 Amendment 1 (default: False)
 ```
 
 The program will output a valid JSON report with the following structure:
