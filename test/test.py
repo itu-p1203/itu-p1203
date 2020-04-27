@@ -8,6 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../')
 from itu_p1203 import __version__
 from itu_p1203 import P1203Standalone
 from itu_p1203 import P1203Pv
+from itu_p1203 import P1203Pq
 import itu_p1203.utils as utils
 
 BASEDIR = os.path.abspath(
@@ -174,7 +175,17 @@ class TestP1203Parts(unittest.TestCase):
                     failed += 1
 
         self.assertTrue(failed == 0)
-
+    def test_pq(self):
+        res = P1203Pq(
+            O21=[1,2,3,4],
+            O22=[2,3,4,1],
+            l_buff=[1,2],
+            p_buff=[2,3],
+            device="pc",
+            amendment_1_audiovisual=False,
+            amendment_1_stalling=False
+        ).calculate()
+        self.assertTrue(res["O46"] == 1.6962865586232978)
 
 if __name__ == '__main__':
     unittest.main()
