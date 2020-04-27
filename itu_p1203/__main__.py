@@ -271,6 +271,7 @@ def main(modules={}, quiet=False):
         use_multiprocessing = True
 
     if use_multiprocessing:
+        multiprocessing.set_start_method("fork")
         if any(input_file == "-" for input_file in argsdict["input"]):
             logger.error("You can only use STDIN with single-threaded processing. Use --cpu-count 1.")
             sys.exit(1)
