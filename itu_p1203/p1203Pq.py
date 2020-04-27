@@ -113,6 +113,38 @@ class P1203Pq(object):
 
         self.coeffs = {**self.COEFFS, **coeffs}
 
+    def _calc_stalling_impact(self, num_stalls, total_stall_len, duration, avg_stall_interval):
+        # Eq. 29
+        stalling_impact = np.exp(-num_stalls / self.coeffs["s1"]) * \
+            np.exp(-total_stall_len / duration / self.coeffs["s2"]) * \
+            np.exp(-avg_stall_interval / duration / self.coeffs["s3"])
+        return stalling_impact
+
+    def _calc_stalling_features(self, duration):
+        # Clause 8.1.1.1
+        # calculate weighted total stalling length
+        total_stall_len = sum(
+            [l_buff * utils.exponential(1, self.coeffs["c_ref7"], 0, self.coeffs["c_ref8"], duration - p_buff)
+             for p_buff, l_buff in zip(self.p_buff, self.l_buff)]
+        )
+        # calculate average stalling interval
+        avg_stall_interval = 0
+        num_stalls = len(self.l_buff)
+        if num_stalls > 1:
+            avg_stall_interval = sum([b - a for a, b in zip(self.p_buff, self.p_buff[1:])]) / (len(self.l_buff) - 1)
+
+        return total_stall_len, num_stalls, avg_stall_interval
+
+    def _calc_video_quality_change_rate(self, duration):
+        # Clause 8.1.2.3
+        vid_qual_change_rate = float(0)
+        for i in range(1, duration):
+            diff = self.O22[i] - self.O22[i-1]
+            if diff > 0.2 or diff < -0.2:
+                vid_qual_change_rate += 1
+        vid_qual_change_rate = vid_qual_change_rate / duration
+        return vid_qual_change_rate
+
     def calculate(self):
         """
         Calculate O46 and other diagnostic values according to P.1203.3
@@ -144,93 +176,20 @@ class P1203Pq(object):
             else:
                 duration = O21_len
 
-        # ---------------------------------------------------------------------
-        # Clause 8.1.1.1
-
-        # calculate weighted total stalling length
-        total_stall_len = sum(
-            [l_buff * utils.exponential(1, self.coeffs["c_ref7"], 0, self.coeffs["c_ref8"], duration - p_buff)
-             for p_buff, l_buff in zip(self.p_buff, self.l_buff)]
-        )
-
-        # calculate average stalling interval
-        avg_stall_interval = 0
-        num_stalls = len(self.l_buff)
-        if num_stalls > 1:
-            avg_stall_interval = sum([b - a for a, b in zip(self.p_buff, self.p_buff[1:])]) / (len(self.l_buff) - 1)
+        total_stall_len, num_stalls, avg_stall_interval = self._calc_stalling_features(duration)
 
         # ---------------------------------------------------------------------
         # Clause 8.1.2.2
         vid_qual_spread = max(self.O22) - min(self.O22)
 
-        # ---------------------------------------------------------------------
-        # Clause 8.1.2.3
-        vid_qual_change_rate = float(0)
-        for i in range(1, duration):
-            diff = self.O22[i] - self.O22[i-1]
-            if diff > 0.2 or diff < -0.2:
-                vid_qual_change_rate += 1
-        vid_qual_change_rate = vid_qual_change_rate / duration
+        # ---
+        vid_qual_change_rate = self._calc_video_quality_change_rate(duration)
 
         # ---------------------------------------------------------------------
-        # Clause 8.1.2.4 and 8.1.2.5
-        QC = []
-
-        ma_order = 5
-        ma_kernel = np.ones(ma_order) / ma_order
-        padding_beg = np.asarray([self.O22[0]] * (ma_order - 1))
-        padding_end = np.asarray([self.O22[-1]] * (ma_order - 1))
-        padded_O22 = np.append(np.append(padding_beg, self.O22), padding_end)
-        ma_filtered = signal.convolve(padded_O22, ma_kernel, mode='valid').tolist()
-
-        step = 3
-        for current_score, next_score in zip(ma_filtered[0::step], ma_filtered[step::step]):
-            thresh = 0.2
-            if (next_score - current_score) > thresh:
-                QC.append(1)
-            elif -thresh < (next_score - current_score) < thresh:
-                QC.append(0)
-            else:
-                QC.append(-1)
-
-        lens = []
-        for index, val in enumerate(QC):
-            if val != 0:
-                if lens and lens[-1][1] != val:
-                    lens.append([index, val])
-                if not lens:
-                    lens.append([index, val])
-        if lens:
-            lens.insert(0, [0, 0])
-            lens.append([len(QC), 0])
-            distances = [b[0] - a[0] for a, b in zip(lens, lens[1:])]
-            longest_period = max(distances) * step
-        else:
-            longest_period = len(QC) * step
-        q_dir_changes_longest = longest_period
-
-        q_dir_changes_tot = sum(1 for k, g in groupby([s for s in QC if s != 0]))
+        q_dir_changes_longest, q_dir_changes_tot = self._calc_qdir()
 
         # ---------------------------------------------------------------------
-        # Eq. 19-21
-        O35_denominator = O35_numerator = 0
-        O34 = np.zeros(duration)
-        for t in range(duration):
-            O34[t] = np.maximum(np.minimum(
-                self.coeffs["av1"] + self.coeffs["av2"] * self.O21[t] + self.coeffs["av3"] * self.O22[t] + self.coeffs["av4"] * self.O21[t] * self.O22[t],
-                5), 1)
-
-            if self.amendment_1_audiovisual:
-                # Eq. 17a
-                O34[t] = (1 - max(0, self.coeffs["amd_1_a_threshold"] - self.O21[t])) * (O34[t] - 1) + 1
-
-            temp = O34[t]
-            w1 = self.coeffs["t1"] + self.coeffs["t2"] * np.exp((t / float(duration)) / self.coeffs["t3"])
-            w2 = self.coeffs["t4"] - self.coeffs["t5"] * temp
-
-            O35_numerator += w1 * w2 * temp
-            O35_denominator += w1 * w2
-        O35_baseline = O35_numerator / O35_denominator
+        O34, O35_baseline = self._calc_034_035_baseline(duration)
 
         # ---------------------------------------------------------------------
         # Clause 8.1.2.1
@@ -245,25 +204,11 @@ class P1203Pq(object):
         # Eq. 7
         negative_bias = np.maximum(0, -neg_perc) * self.coeffs["c23"]
 
-        # ---------------------------------------------------------------------
-        # Eq. 29
-        stalling_impact = np.exp(- num_stalls / self.coeffs["s1"]) * \
-            np.exp(- total_stall_len / duration / self.coeffs["s2"]) * \
-            np.exp(- avg_stall_interval / duration / self.coeffs["s3"])
+        stalling_impact = self._calc_stalling_impact(num_stalls, total_stall_len, duration, avg_stall_interval)
         # Eq. 31
         O23 = 1 + 4 * stalling_impact
 
-        # ---------------------------------------------------------------------
-        # Clause 8.3
-
-        # Eq. 24
-        osc_comp = 0
-        osc_test = ((q_dir_changes_longest / duration) < 0.25) and (q_dir_changes_longest < 30)
-        if osc_test:
-            # Eq. 27
-            q_diff = np.maximum(0.0, 1 + np.log10(vid_qual_spread + 0.001))
-            # Eq. 23
-            osc_comp = np.maximum(0.0, np.minimum(q_diff * np.exp(self.coeffs["comp1"] * q_dir_changes_tot + self.coeffs["comp2"]), 1.5))
+        osc_comp = self._calc_and_test_osc(duration, q_dir_changes_longest, q_dir_changes_tot, vid_qual_spread)
 
         # Eq. 26
         adapt_comp = 0
@@ -296,3 +241,76 @@ class P1203Pq(object):
             "O35": float(O35),
             "O46": float(O46)
         }
+
+    def _calc_034_035_baseline(self, duration):
+        # Eq. 19-21
+        O35_denominator = O35_numerator = 0
+        O34 = np.zeros(duration)
+        for t in range(duration):
+            O34[t] = np.maximum(np.minimum(
+                self.coeffs["av1"] + self.coeffs["av2"] * self.O21[t] + self.coeffs["av3"] * self.O22[t] + self.coeffs[
+                    "av4"] * self.O21[t] * self.O22[t],
+                5), 1)
+
+            if self.amendment_1_audiovisual:
+                # Eq. 17a
+                O34[t] = (1 - max(0, self.coeffs["amd_1_a_threshold"] - self.O21[t])) * (O34[t] - 1) + 1
+
+            temp = O34[t]
+            w1 = self.coeffs["t1"] + self.coeffs["t2"] * np.exp((t / float(duration)) / self.coeffs["t3"])
+            w2 = self.coeffs["t4"] - self.coeffs["t5"] * temp
+
+            O35_numerator += w1 * w2 * temp
+            O35_denominator += w1 * w2
+        O35_baseline = O35_numerator / O35_denominator
+        return O34, O35_baseline
+
+    def _calc_and_test_osc(self, duration, q_dir_changes_longest, q_dir_changes_tot, vid_qual_spread):
+        # ---------------------------------------------------------------------
+        # Clause 8.3
+        # Eq. 24
+        osc_comp = 0
+        osc_test = ((q_dir_changes_longest / duration) < 0.25) and (q_dir_changes_longest < 30)
+        if osc_test:
+            # Eq. 27
+            q_diff = np.maximum(0.0, 1 + np.log10(vid_qual_spread + 0.001))
+            # Eq. 23
+            osc_comp = np.maximum(0.0, np.minimum(
+                q_diff * np.exp(self.coeffs["comp1"] * q_dir_changes_tot + self.coeffs["comp2"]), 1.5))
+        return osc_comp
+
+    def _calc_qdir(self):
+        # Clause 8.1.2.4 and 8.1.2.5
+        QC = []
+        ma_order = 5
+        ma_kernel = np.ones(ma_order) / ma_order
+        padding_beg = np.asarray([self.O22[0]] * (ma_order - 1))
+        padding_end = np.asarray([self.O22[-1]] * (ma_order - 1))
+        padded_O22 = np.append(np.append(padding_beg, self.O22), padding_end)
+        ma_filtered = signal.convolve(padded_O22, ma_kernel, mode='valid').tolist()
+        step = 3
+        for current_score, next_score in zip(ma_filtered[0::step], ma_filtered[step::step]):
+            thresh = 0.2
+            if (next_score - current_score) > thresh:
+                QC.append(1)
+            elif -thresh < (next_score - current_score) < thresh:
+                QC.append(0)
+            else:
+                QC.append(-1)
+        lens = []
+        for index, val in enumerate(QC):
+            if val != 0:
+                if lens and lens[-1][1] != val:
+                    lens.append([index, val])
+                if not lens:
+                    lens.append([index, val])
+        if lens:
+            lens.insert(0, [0, 0])
+            lens.append([len(QC), 0])
+            distances = [b[0] - a[0] for a, b in zip(lens, lens[1:])]
+            longest_period = max(distances) * step
+        else:
+            longest_period = len(QC) * step
+        q_dir_changes_longest = longest_period
+        q_dir_changes_tot = sum(1 for k, g in groupby([s for s in QC if s != 0]))
+        return q_dir_changes_longest, q_dir_changes_tot
