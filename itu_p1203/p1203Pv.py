@@ -36,8 +36,36 @@ logger = log.setup_custom_logger('main')
 
 
 class P1203Pv(object):
-    VIDEO_COEFFS = (4.66, -0.07, 4.06, 0.642, -2.293, 0.186)
-    MOBILE_COEFFS = (0.7, 0.85)
+    _COEFFS = {
+        "u1": 72.61,
+        "u2": 0.32,
+        "t1": 30.98,
+        "t2": 1.29,
+        "t3": 64.65,
+        "q1": 4.66,
+        "q2": -0.07,
+        "q3": 4.06,
+        "mode0": {
+            "a1": 11.9983519,
+            "a2": -2.99991847,
+            "a3": 41.2475074001,
+            "a4": 0.13183165961,
+        },
+        "mode1": {
+            "a1": 5.00011566,
+            "a2": -1.19630824,
+            "a3": 41.3585049,
+            "a4": 0,
+            "c0": -0.91562479,
+            "c1": 0,
+            "c2": -3.28579526,
+            "c3": 20.4098663,
+        },
+        "htv_1": -0.60293,
+        "htv_2": 2.12382,
+        "htv_3": -0.36936,
+        "htv_4": 0.03409,
+    }
 
     def degradation_due_to_upscaling(self, coding_res, display_res):
         """
@@ -45,8 +73,8 @@ class P1203Pv(object):
         """
         scale_factor = display_res / coding_res
         scale_factor = max(scale_factor, 1)
-        u1 = 72.61
-        u2 = 0.32
+        u1 = self.coeffs["u1"]
+        u2 = self.coeffs["u2"]
         deg_scal_v = u1 * np.log10(u2 * (scale_factor - 1.0) + 1.0)
         deg_scal_v = utils.constrain(deg_scal_v, 0.0, 100.0)
         return deg_scal_v
@@ -55,9 +83,9 @@ class P1203Pv(object):
         """
         Degradation due to frame rate reduction
         """
-        t1 = 30.98
-        t2 = 1.29
-        t3 = 64.65
+        t1 = self.coeffs["t1"]
+        t2 = self.coeffs["t2"]
+        t3 = self.coeffs["t3"]
         deg_frame_rate_v = 0
         if framerate < 24:
             deg_frame_rate_v = (100 - deg_cod_v - deg_scal_v) * (t1 - t2 * framerate) / (t3 + framerate)
@@ -71,7 +99,6 @@ class P1203Pv(object):
         deg_all = utils.constrain(deg_cod_v + deg_scal_v + deg_frame_rate_v, 0.0, 100.0)
         qv = 100 - deg_all
         return utils.mos_from_r(qv)
-
 
     def video_model_function_mode0(self, coding_res, display_res, bitrate_kbps_segment_size, framerate):
         """
@@ -88,13 +115,13 @@ class P1203Pv(object):
         """
 
         # compression degradation
-        a1 = 11.9983519
-        a2 = -2.99991847
-        a3 = 41.2475074001
-        a4 = 0.13183165961
-        q1 = 4.66
-        q2 = -0.07
-        q3 = 4.06
+        a1 = self.coeffs["mode0"]["a1"]
+        a2 = self.coeffs["mode0"]["a2"]
+        a3 = self.coeffs["mode0"]["a3"]
+        a4 = self.coeffs["mode0"]["a4"]
+        q1 = self.coeffs["q1"]
+        q2 = self.coeffs["q2"]
+        q3 = self.coeffs["q3"]
         quant = a1 + a2 * np.log(a3 + np.log(bitrate_kbps_segment_size) + np.log(bitrate_kbps_segment_size * bitrate_kbps_segment_size / (coding_res * framerate) + a4))
         mos_cod_v = q1 + q2 * np.exp(q3 * quant)
         mos_cod_v = utils.constrain(mos_cod_v, 1.0, 5.0)
@@ -138,13 +165,13 @@ class P1203Pv(object):
             float -- O22 score
         """
         # compression degradation
-        a1 = 5.00011566
-        a3 = 41.3585049
-        a2 = -1.19630824
-        a4 = 0
-        q1 = 4.66
-        q2 = -0.07
-        q3 = 4.06
+        a1 = self.coeffs["mode1"]["a1"]
+        a2 = self.coeffs["mode1"]["a2"]
+        a3 = self.coeffs["mode1"]["a3"]
+        a4 = self.coeffs["mode1"]["a4"]
+        q1 = self.coeffs["q1"]
+        q2 = self.coeffs["q2"]
+        q3 = self.coeffs["q3"]
         quant = a1 + a2 * np.log(a3 + np.log(bitrate_kbps_segment_size) + np.log(bitrate_kbps_segment_size * bitrate_kbps_segment_size / (coding_res * framerate) + a4))
         mos_cod_v = q1 + q2 * np.exp(q3 * quant)
         mos_cod_v = utils.constrain(mos_cod_v, 1.0, 5.0)
@@ -152,10 +179,10 @@ class P1203Pv(object):
         # if iframe ratio is already set (debug mode)
 
         # complexity correction
-        c0 = -0.91562479
-        c1 = 0
-        c2 = -3.28579526
-        c3 = 20.4098663
+        c0 = self.coeffs["mode1"]["c0"]
+        c1 = self.coeffs["mode1"]["c1"]
+        c2 = self.coeffs["mode1"]["c2"]
+        c3 = self.coeffs["mode1"]["c3"]
         if not iframe_ratio:
             i_sizes = []
             noni_sizes = []
@@ -235,7 +262,11 @@ class P1203Pv(object):
                 avg_qp = np.mean(avg_qp_per_noni_frame)
             quant = avg_qp / 51.0
 
-        mos_cod_v = self.VIDEO_COEFFS[0] + self.VIDEO_COEFFS[1] * math.exp(self.VIDEO_COEFFS[2] * quant)
+        q1 = self.coeffs["q1"]
+        q2 = self.coeffs["q2"]
+        q3 = self.coeffs["q3"]
+
+        mos_cod_v = q1 + q2 * math.exp(q3 * quant)
         mos_cod_v = max(min(mos_cod_v, 5), 1)
         deg_cod_v = 100 - utils.r_from_mos(mos_cod_v)
         deg_cod_v = max(min(deg_cod_v, 100), 0)
@@ -305,7 +336,11 @@ class P1203Pv(object):
                 avg_qp = np.mean(avg_qp_per_noni_frame)
             quant = avg_qp / 51.0
 
-        mos_cod_v = self.VIDEO_COEFFS[0] + self.VIDEO_COEFFS[1] * math.exp(self.VIDEO_COEFFS[2] * quant)
+        q1 = self.coeffs["q1"]
+        q2 = self.coeffs["q2"]
+        q3 = self.coeffs["q3"]
+
+        mos_cod_v = q1 + q2 * math.exp(q3 * quant)
         mos_cod_v = max(min(mos_cod_v, 5), 1)
         deg_cod_v = 100 - utils.r_from_mos(mos_cod_v)
         deg_cod_v = max(min(deg_cod_v, 100), 0)
@@ -336,10 +371,10 @@ class P1203Pv(object):
         Compensate for mobile viewing devices.
         """
         # clause 8.4.1 eq. (13)
-        htv_1 = -0.60293
-        htv_2 = 2.12382
-        htv_3 = -0.36936
-        htv_4 = 0.03409
+        htv_1 = self.coeffs["htv_1"]
+        htv_2 = self.coeffs["htv_2"]
+        htv_3 = self.coeffs["htv_3"]
+        htv_4 = self.coeffs["htv_4"]
         return max(min(htv_1 + htv_2 * score + htv_3 * score**2 + htv_4 * score**3, 5), 1)
 
     def model_callback(self, output_sample_timestamp, frames):
@@ -517,7 +552,7 @@ class P1203Pv(object):
             }
         }
 
-    def __init__(self, segments, display_res="1920x1080", device="pc", stream_id=None):
+    def __init__(self, segments, display_res="1920x1080", device="pc", stream_id=None, coeffs={}):
         """
         Initialize Pv model with input JSON data
 
@@ -526,6 +561,7 @@ class P1203Pv(object):
             display_res {str} -- display resolution as "wxh" (default: "1920x1080")
             device {str} -- "pc" or "mobile" (default: "pc")
             stream_id {str} -- stream ID (default: {None})
+            coeffs {dict} -- model coefficients, will overwrite defaults if same key is used [default: {}]
         """
         self.segments = segments
         self.display_res = display_res
@@ -533,6 +569,8 @@ class P1203Pv(object):
         self.stream_id = stream_id
         self.o22 = []
         self.mode = None
+        # update possible new coeffs that are passed in the method
+        self.coeffs = {**self._COEFFS, **coeffs}
 
 
 if __name__ == '__main__':
