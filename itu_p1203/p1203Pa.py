@@ -40,18 +40,17 @@ class P1203Pa(object):
     COEFFS_A2 = {'mp2': -0.02, 'ac3': -0.03, 'aaclc': -0.05, 'heaac': -0.11}
     COEFFS_A3 = {'mp2': 15.48, 'ac3': 15.70, 'aaclc': 14.60, 'heaac': 20.06}
 
-    @staticmethod
-    def audio_model_function(codec, bitrate):
+    def audio_model_function(self, codec, bitrate):
         """
         Calculate MOS value based on codec and bitrate.
 
         - codec: used audio codec, must be one of mp2, ac3, aaclc, heaac
         - bitrate: used audio bitrate in kBit/s
         """
-        if codec not in P1203Pa.VALID_CODECS:
-            raise P1203StandaloneError("Unsupported audio codec {}, use any of {}".format(codec, P1203Pa.VALID_CODECS))
+        if codec not in self.VALID_CODECS:
+            raise P1203StandaloneError("Unsupported audio codec {}, use any of {}".format(codec, self.VALID_CODECS))
 
-        q_cod_a = P1203Pa.COEFFS_A1[codec] * math.exp(P1203Pa.COEFFS_A2[codec] * bitrate) + P1203Pa.COEFFS_A3[codec]
+        q_cod_a = self.COEFFS_A1[codec] * math.exp(self.COEFFS_A2[codec] * bitrate) + self.COEFFS_A3[codec]
         qa = 100 - q_cod_a
         mos_audio = utils.mos_from_r(qa)
         return mos_audio
@@ -71,7 +70,7 @@ class P1203Pa(object):
         # since for audio, only codec and bitrate change per chunk, we don't need individual frame stats,
         # we can can just calculate the score for the whole chunk
         first_frame = chunk[0]
-        score = P1203Pa.audio_model_function(first_frame["codec"], first_frame["bitrate"])
+        score = self.audio_model_function(first_frame["codec"], first_frame["bitrate"])
         self.o21.append(score)
 
     def calculate(self):

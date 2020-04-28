@@ -39,8 +39,7 @@ class P1203Pv(object):
     VIDEO_COEFFS = (4.66, -0.07, 4.06, 0.642, -2.293, 0.186)
     MOBILE_COEFFS = (0.7, 0.85)
 
-    @staticmethod
-    def degradation_due_to_upscaling(coding_res, display_res):
+    def degradation_due_to_upscaling(self, coding_res, display_res):
         """
         Degradation due to upscaling
         """
@@ -52,8 +51,7 @@ class P1203Pv(object):
         deg_scal_v = utils.constrain(deg_scal_v, 0.0, 100.0)
         return deg_scal_v
 
-    @staticmethod
-    def degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate):
+    def degradation_due_to_frame_rate_reduction(self, deg_cod_v, deg_scal_v, framerate):
         """
         Degradation due to frame rate reduction
         """
@@ -66,8 +64,7 @@ class P1203Pv(object):
         deg_frame_rate_v = utils.constrain(deg_frame_rate_v, 0.0, 100.0)
         return deg_frame_rate_v
 
-    @staticmethod
-    def degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v):
+    def degradation_integration(self, mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v):
         """
         Integrate the three degradations
         """
@@ -75,8 +72,8 @@ class P1203Pv(object):
         qv = 100 - deg_all
         return utils.mos_from_r(qv)
 
-    @staticmethod
-    def video_model_function_mode0(coding_res, display_res, bitrate_kbps_segment_size, framerate):
+
+    def video_model_function_mode0(self, coding_res, display_res, bitrate_kbps_segment_size, framerate):
         """
         Mode 0 model
 
@@ -105,11 +102,11 @@ class P1203Pv(object):
         deg_cod_v = utils.constrain(deg_cod_v, 0.0, 100.0)
 
         # scaling, framerate degradation
-        deg_scal_v = P1203Pv.degradation_due_to_upscaling(coding_res, display_res)
-        deg_frame_rate_v = P1203Pv.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
+        deg_scal_v = self.degradation_due_to_upscaling(coding_res, display_res)
+        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
 
         # degradation integration
-        score = P1203Pv.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
+        score = self.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
 
         logger.debug(json.dumps({
             'coding_res': round(coding_res, 2),
@@ -125,8 +122,7 @@ class P1203Pv(object):
 
         return score
 
-    @staticmethod
-    def video_model_function_mode1(coding_res, display_res, bitrate_kbps_segment_size, framerate, frames, iframe_ratio=None):
+    def video_model_function_mode1(self, coding_res, display_res, bitrate_kbps_segment_size, framerate, frames, iframe_ratio=None):
         """
         Mode 1 model
 
@@ -182,11 +178,11 @@ class P1203Pv(object):
         deg_cod_v = utils.constrain(deg_cod_v, 0.0, 100.0)
 
         # scaling, framerate degradation
-        deg_scal_v = P1203Pv.degradation_due_to_upscaling(coding_res, display_res)
-        deg_frame_rate_v = P1203Pv.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
+        deg_scal_v = self.degradation_due_to_upscaling(coding_res, display_res)
+        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
 
         # degradation integration
-        score = P1203Pv.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
+        score = self.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
 
         logger.debug(json.dumps({
             'coding_res': round(coding_res, 2),
@@ -204,8 +200,7 @@ class P1203Pv(object):
 
         return score
 
-    @staticmethod
-    def video_model_function_mode2(coding_res, display_res, framerate, frames, quant=None, avg_qp_per_noni_frame=[]):
+    def video_model_function_mode2(self, coding_res, display_res, framerate, frames, quant=None, avg_qp_per_noni_frame=[]):
         """
         Mode 2 model
 
@@ -240,17 +235,17 @@ class P1203Pv(object):
                 avg_qp = np.mean(avg_qp_per_noni_frame)
             quant = avg_qp / 51.0
 
-        mos_cod_v = P1203Pv.VIDEO_COEFFS[0] + P1203Pv.VIDEO_COEFFS[1] * math.exp(P1203Pv.VIDEO_COEFFS[2] * quant)
+        mos_cod_v = self.VIDEO_COEFFS[0] + self.VIDEO_COEFFS[1] * math.exp(self.VIDEO_COEFFS[2] * quant)
         mos_cod_v = max(min(mos_cod_v, 5), 1)
         deg_cod_v = 100 - utils.r_from_mos(mos_cod_v)
         deg_cod_v = max(min(deg_cod_v, 100), 0)
 
         # scaling, framerate degradation
-        deg_scal_v = P1203Pv.degradation_due_to_upscaling(coding_res, display_res)
-        deg_frame_rate_v = P1203Pv.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
+        deg_scal_v = self.degradation_due_to_upscaling(coding_res, display_res)
+        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
 
         # degradation integration
-        score = P1203Pv.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
+        score = self.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
 
         logger.debug(json.dumps({
             'coding_res': round(coding_res, 2),
@@ -266,8 +261,7 @@ class P1203Pv(object):
 
         return score
 
-    @staticmethod
-    def video_model_function_mode3(coding_res, display_res, framerate, frames, quant=None, avg_qp_per_noni_frame=[]):
+    def video_model_function_mode3(self, coding_res, display_res, framerate, frames, quant=None, avg_qp_per_noni_frame=[]):
         """
         Mode 3 model
 
@@ -311,17 +305,17 @@ class P1203Pv(object):
                 avg_qp = np.mean(avg_qp_per_noni_frame)
             quant = avg_qp / 51.0
 
-        mos_cod_v = P1203Pv.VIDEO_COEFFS[0] + P1203Pv.VIDEO_COEFFS[1] * math.exp(P1203Pv.VIDEO_COEFFS[2] * quant)
+        mos_cod_v = self.VIDEO_COEFFS[0] + self.VIDEO_COEFFS[1] * math.exp(self.VIDEO_COEFFS[2] * quant)
         mos_cod_v = max(min(mos_cod_v, 5), 1)
         deg_cod_v = 100 - utils.r_from_mos(mos_cod_v)
         deg_cod_v = max(min(deg_cod_v, 100), 0)
 
         # scaling, framerate degradation
-        deg_scal_v = P1203Pv.degradation_due_to_upscaling(coding_res, display_res)
-        deg_frame_rate_v = P1203Pv.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
+        deg_scal_v = self.degradation_due_to_upscaling(coding_res, display_res)
+        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
 
         # degradation integration
-        score = P1203Pv.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
+        score = self.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
 
         logger.debug(json.dumps({
             'coding_res': round(coding_res, 2),
@@ -337,8 +331,7 @@ class P1203Pv(object):
 
         return score
 
-    @staticmethod
-    def handheld_adjustment(score):
+    def handheld_adjustment(self, score):
         """
         Compensate for mobile viewing devices.
         """
@@ -368,7 +361,7 @@ class P1203Pv(object):
         if self.mode == 0:
             # average the bitrate for all of the segments
             bitrate = np.mean([f["bitrate"] for f in frames])
-            score = P1203Pv.video_model_function_mode0(
+            score = self.video_model_function_mode0(
                 utils.resolution_to_number(first_frame["resolution"]),
                 utils.resolution_to_number(self.display_res),
                 bitrate,
@@ -382,7 +375,7 @@ class P1203Pv(object):
             ]
             duration = np.sum([f["duration"] for f in frames])
             bitrate = np.sum(compensated_sizes) * 8 / duration / 1000
-            score = P1203Pv.video_model_function_mode1(
+            score = self.video_model_function_mode1(
                 utils.resolution_to_number(first_frame["resolution"]),
                 utils.resolution_to_number(self.display_res),
                 bitrate,
@@ -390,14 +383,14 @@ class P1203Pv(object):
                 frames
             )
         elif self.mode == 2:
-            score = P1203Pv.video_model_function_mode2(
+            score = self.video_model_function_mode2(
                 utils.resolution_to_number(first_frame["resolution"]),
                 utils.resolution_to_number(self.display_res),
                 first_frame["fps"],
                 frames
             )
         elif self.mode == 3:
-            score = P1203Pv.video_model_function_mode3(
+            score = self.video_model_function_mode3(
                 utils.resolution_to_number(first_frame["resolution"]),
                 utils.resolution_to_number(self.display_res),
                 first_frame["fps"],
@@ -408,7 +401,7 @@ class P1203Pv(object):
 
         # mobile adjustments
         if self.device in ["mobile", "handheld"]:
-            score = P1203Pv.handheld_adjustment(score)
+            score = self.handheld_adjustment(score)
 
         self.o22.append(score)
 

@@ -167,7 +167,8 @@ class TestP1203Parts(unittest.TestCase):
 
         for mode, mode_tests in tests.items():
             for test_data in mode_tests:
-                fun = getattr(P1203Pv, "video_model_function_" + mode)
+                pv = P1203Pv([])
+                fun = getattr(pv, "video_model_function_" + mode)
                 ret = round(fun(*test_data["args"]), 3)
                 mos = test_data["mos"]
                 if abs(ret - mos) > 0.01:
@@ -175,6 +176,7 @@ class TestP1203Parts(unittest.TestCase):
                     failed += 1
 
         self.assertTrue(failed == 0)
+
     def test_pq(self):
         res = P1203Pq(
             O21=[1,2,3,4],
