@@ -16,7 +16,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Get the history from the CHANGES file
-with open(path.join(here, 'CHANGES'), encoding='utf-8') as f:
+with open(path.join(here, 'CHANGELOG.md'), encoding='utf-8') as f:
     history = f.read()
 
 try:
@@ -52,7 +52,8 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7'
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8'
     ],
     entry_points={
         'console_scripts': [
