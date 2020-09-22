@@ -75,4 +75,4 @@ git tag -a -f -m "Tag version ${INPUT_STRING}." "v$INPUT_STRING"
 
 # push to remote
 echo -e "$PUSHING_MSG"
-# git push && git push --tags
+git push && git push --tags
