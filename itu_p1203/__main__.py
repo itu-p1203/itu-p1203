@@ -281,7 +281,7 @@ def main(modules={}, quiet=False):
         try:
             output_results = pool.starmap(extract_from_single_file, params)
         except Exception as e:
-            logger.error("Error during processing, exiting: {}".format(e))
+            logger.error("Error during processing, exiting: {}".format(e), exc_info=True)
             sys.exit(1)
     else:
         # iterate over input files
@@ -289,7 +289,7 @@ def main(modules={}, quiet=False):
             try:
                 result = extract_from_single_file(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules, quiet, argsdict["amendment_1_audiovisual"], argsdict["amendment_1_stalling"])
             except Exception as e:
-                logger.error("Error during processing, exiting: {}".format(e))
+                logger.error("Error during processing, exiting: {}".format(e), exc_info=True)
                 sys.exit(1)
             # append to output
             output_results.append(result)
