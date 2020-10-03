@@ -407,7 +407,10 @@ class Extractor(object):
         info["nb_programs"] = int(info["nb_programs"])
         info["duration"] = float(info["duration"])
         info["size"] = int(info["size"])
-        info["bit_rate"] = int(info["bit_rate"])
+        try:
+        	info["bit_rate"] = int(info["bit_rate"])
+        except KeyError:
+        	info["bit_rate"] = 0
 
         return info
 
