@@ -24,6 +24,7 @@ SOFTWARE.
 """
 
 import math
+from functools import lru_cache
 
 from itu_p1203 import log
 from itu_p1203 import utils
@@ -40,6 +41,7 @@ class P1203Pa(object):
     COEFFS_A2 = {'mp2': -0.02, 'ac3': -0.03, 'aaclc': -0.05, 'heaac': -0.11}
     COEFFS_A3 = {'mp2': 15.48, 'ac3': 15.70, 'aaclc': 14.60, 'heaac': 20.06}
 
+    @lru_cache
     def audio_model_function(self, codec, bitrate):
         """
         Calculate MOS value based on codec and bitrate.

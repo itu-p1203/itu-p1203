@@ -25,6 +25,7 @@ SOFTWARE.
 
 import math
 import numpy as np
+from functools import lru_cache
 import json
 
 from itu_p1203 import log
@@ -100,6 +101,7 @@ class P1203Pv(object):
         qv = 100 - deg_all
         return utils.mos_from_r(qv)
 
+    @lru_cache
     def video_model_function_mode0(self, coding_res, display_res, bitrate_kbps_segment_size, framerate):
         """
         Mode 0 model
