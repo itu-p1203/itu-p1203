@@ -5,7 +5,7 @@
 cd "$(dirname "$0")"
 
 rm -f output.cprof output.pdf && \
-PYTHONPATH=. \
+PYTHONPATH=../ \
 python3 \
     -m cProfile \
         -s cumtime \
@@ -14,8 +14,7 @@ python3 \
         --cpu-count 1 \
         --print-intermediate \
         ../examples/request.json \
-    > /dev/null 2>&1 && \
-gprof2dot \
-    -f pstats \
-    output.cprof | \
-dot -Tpdf -o output.pdf
+    > /dev/null 2>&1
+
+gprof2dot -f pstats output.cprof | \
+    dot -Tpdf -o output.pdf

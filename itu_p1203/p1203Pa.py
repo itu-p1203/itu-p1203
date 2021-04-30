@@ -67,7 +67,7 @@ class P1203Pa(object):
             frames {list} -- list of frames from measurement window
         """
         output_sample_index = [i for i, f in enumerate(frames) if f["dts"] < output_sample_timestamp][-1]
-        chunk = utils.get_chunk(frames, output_sample_index, type="audio")
+        chunk = utils.get_chunk(frames, output_sample_index, type="audio", onlyfirst=True)
 
         # since for audio, only codec and bitrate change per chunk, we don't need individual frame stats,
         # we can can just calculate the score for the whole chunk

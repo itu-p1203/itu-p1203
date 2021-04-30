@@ -181,7 +181,6 @@ def check_segment_continuity(segments, type="video"):
             logger.warning("{type} segment starts at {this_segment_start} but last one ended at {last_segment_end}".format(**locals()))
     logger.debug("Checked segment continuity")
 
-
 def get_chunk_hash(frame, type="video"):
     """
     Return a hash value that uniquely identifies a given frame belonging to
@@ -204,8 +203,7 @@ def get_chunk_hash(frame, type="video"):
     else:
         raise P1203StandaloneError("Wrong type for frame: " + str(type))
 
-
-def get_chunk(frames, output_sample_index, type="video"):
+def get_chunk(frames, output_sample_index, type="video", onlyfirst=False):
     """
     Get chunk with frames with same quality as the frame at the output sample time
 
@@ -213,40 +211,38 @@ def get_chunk(frames, output_sample_index, type="video"):
         frames {list} -- list of frame dicts, each carrying at least the keys: "codec", "bitrate", "framerate"
         output_sample_index {int} -- output sample timestamp index
         type {str} -- type of operation (video or audio) (default: {"video"})
+        onlyfirst {bool} -- if true, only return the first frame
 
     Returns:
         list -- list of frames that should be considered for score calculation
     """
     target_frame = frames[output_sample_index]
+
     # since there is no target quality level with a certain ID, we infer it from the
     # combination of codec, resolution, and framerate
     target_ql = get_chunk_hash(target_frame, type)
-    window = [output_sample_index]
-    if get_chunk_hash(frames[output_sample_index - 1], type) == target_ql:
-        i = output_sample_index - 1
-        window = [i] + window
-        if i-1 != -1:
-            i -= 1
-            while get_chunk_hash(frames[i], type) == get_chunk_hash(frames[i+1], type):
-                window = [i] + window
-                if i-1==-1:
-                    break
-                else:
-                    i-=1
-    if output_sample_index + 1 != len(frames):
-        if get_chunk_hash(frames[output_sample_index + 1], type) == target_ql:
-            i = output_sample_index + 1
-            window.append(i)
-            if i+1 != len(frames):
-                i += 1
-                while get_chunk_hash(frames[i], type) == get_chunk_hash(frames[i-1], type):
-                    window.append(i)
-                    if i+1 == len(frames):
-                        break
-                    else:
-                        i+=1
 
-    return [frames[w] for w in window]
+    window = [output_sample_index]
+    if not onlyfirst:
+        hash_i = target_ql
+        for j in range(output_sample_index - 1, -1, -1):
+            curr_hash = get_chunk_hash(frames[j], type)
+            if curr_hash != hash_i:
+                break
+            window.insert(0, j)
+            hash_i = curr_hash
+
+        hash_i = target_ql
+        for j in range(output_sample_index + 1, len(frames), +1):
+            curr_hash = get_chunk_hash(frames[j], type)
+            if curr_hash != hash_i:
+                break
+            window.append(j)
+            hash_i = curr_hash
+
+    result = [frames[w] for w in window]
+
+    return result
 
 
 def read_json_without_comments(input_file):

@@ -25,6 +25,7 @@ SOFTWARE.
 
 import math
 from itu_p1203 import log
+from itu_p1203.utils import get_chunk_hash
 
 logger = log.setup_custom_logger('main')
 
@@ -94,6 +95,9 @@ class MeasurementWindow:
             removed_frame = self._frames.pop(0)
             self._removed_frames.append(removed_frame)
             self._acc_frame_dur -= removed_frame["duration"]
+
+        # pre-calculate chunk hashes
+        frame["representation"] = get_chunk_hash(frame, "audio") if "fps" not in frame else get_chunk_hash(frame, "video")
 
         self._frames.append(frame)
         self._acc_frame_dur += frame["duration"]

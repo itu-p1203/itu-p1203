@@ -1,1 +1,60 @@
-{"I11":{"segments":[{"start":0,"duration":298.0,"bitrate":128.0,"codec":"aaclc"}]},"I13":{"segments":[{"start":0,"duration":298.0,"bitrate":1000.0,"fps":25.0,"resolution":"1920x1080","codec":"h264"}]},"I23":{"stalling":[[0,2.0]]},"IGen":{"device":"pc","displaySize":"1920x1080","viewingDistance":"150cm"},"stalling_and_chunk_list":{"chunks":[{"level":"unknown","start":0,"duration":298.0,"frame_rate":25.0,"resolution":[1920,1080],"start_wall":"2019-11-28T13:08:30.525+00:00","audio_bitrate":128.0,"video_bitrate":1000.0}],"stalling_events":[[0,2.0]]}}
+{
+  "I11": {
+    "segments": [
+      {
+        "start": 0,
+        "duration": 298.0,
+        "bitrate": 128.0,
+        "codec": "aaclc"
+      }
+    ]
+  },
+  "I13": {
+    "segments": [
+      {
+        "start": 0,
+        "duration": 298.0,
+        "bitrate": 1000.0,
+        "fps": 25.0,
+        "resolution": "1920x1080",
+        "codec": "h264"
+      }
+    ]
+  },
+  "I23": {
+    "stalling": [
+      [
+        0,
+        2.0
+      ]
+    ]
+  },
+  "IGen": {
+    "device": "pc",
+    "displaySize": "1920x1080",
+    "viewingDistance": "150cm"
+  },
+  "stalling_and_chunk_list": {
+    "chunks": [
+      {
+        "level": "unknown",
+        "start": 0,
+        "duration": 298.0,
+        "frame_rate": 25.0,
+        "resolution": [
+          1920,
+          1080
+        ],
+        "start_wall": "2019-11-28T13:08:30.525+00:00",
+        "audio_bitrate": 128.0,
+        "video_bitrate": 1000.0
+      }
+    ],
+    "stalling_events": [
+      [
+        0,
+        2.0
+      ]
+    ]
+  }
+}

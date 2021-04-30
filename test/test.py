@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env pytest
 import os
 import sys
 import unittest
@@ -82,6 +82,12 @@ def fuzzy_equal(d1, d2, precision):
                 if not fuzzy_equal(v, d2[k], precision):
                     return False
 
+            elif isinstance(v, list):
+                for v1, v2 in zip(v, d2[k]):
+                    if not abs(v1 - v2) < precision:
+                        print("Values for {} do not match: {}, {}".format(k, v1, v2))
+                        return False
+
             # Fall back to default
             elif v != d2[k]:
                 print("Values do not match: {}, {}".format(v, d2[k]))
@@ -92,8 +98,8 @@ def fuzzy_equal(d1, d2, precision):
 
     return True
 
+class TestP1203(unittest.TestCase):
 
-class TestP1203Parts(unittest.TestCase):
     def test_amendment(self):
         print("Testing amendment 1 changes")
 
@@ -175,7 +181,7 @@ class TestP1203Parts(unittest.TestCase):
                     print("{mode} test failed, expected {mos}, got {ret}".format(**locals()))
                     failed += 1
 
-        self.assertTrue(failed == 0)
+        assert failed == 0
 
     def test_pq(self):
         res = P1203Pq(
@@ -187,7 +193,7 @@ class TestP1203Parts(unittest.TestCase):
             amendment_1_audiovisual=False,
             amendment_1_stalling=False
         ).calculate()
-        self.assertTrue(res["O46"] == 1.6962865586232978)
+        assert res["O46"] == 1.6962865586232978
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
