@@ -17,6 +17,5 @@ python3 \
     > /dev/null 2>&1 && \
 gprof2dot \
     -f pstats \
-    -z "p1203_standalone:201:calculate_complete" \
     output.cprof | \
 dot -Tpdf -o output.pdf
