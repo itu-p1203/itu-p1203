@@ -1,6 +1,29 @@
 # Changelog
 
 
+## v1.7.1 (2021-04-30)
+
+* Update python requirement.
+
+* Update packages.
+
+* Fix profiling script.
+
+* Simplify release script.
+
+* Fix usage of lru_cache() method.
+
+* Solved issue #26.
+
+* Error handling improvements.
+
+* Add console script to pyproject.toml.
+
+* Remove old changes file.
+
+* Enable auto-push on release.
+
+
 ## v1.7.0 (2020-09-22)
 
 * Update release script.
