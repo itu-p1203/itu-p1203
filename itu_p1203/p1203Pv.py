@@ -391,50 +391,59 @@ class P1203Pv(object):
         logger.debug("Output score at timestamp " + str(output_sample_timestamp))
         output_sample_index = [i for i, f in enumerate(frames) if f["dts"] < output_sample_timestamp][-1]
 
-        # only get the relevant frames from the chunk
-        frames = utils.get_chunk(frames, output_sample_index, type="video")
-
-        first_frame = frames[0]
         if self.mode == 0:
-            # average the bitrate for all of the segments
-            bitrate = np.mean([f["bitrate"] for f in frames])
-            score = self.video_model_function_mode0(
-                utils.resolution_to_number(first_frame["resolution"]),
-                utils.resolution_to_number(self.display_res),
-                bitrate,
-                first_frame["fps"]
-            )
-        elif self.mode == 1:
-            # average the bitrate based on the frame sizes, as implemented
-            # in submitted model code
-            compensated_sizes = [
-                utils.calculate_compensated_size(f["type"], f["size"], f["dts"]) for f in frames
-            ]
-            duration = np.sum([f["duration"] for f in frames])
-            bitrate = np.sum(compensated_sizes) * 8 / duration / 1000
-            score = self.video_model_function_mode1(
-                utils.resolution_to_number(first_frame["resolution"]),
-                utils.resolution_to_number(self.display_res),
-                bitrate,
-                first_frame["fps"],
-                frames
-            )
-        elif self.mode == 2:
-            score = self.video_model_function_mode2(
-                utils.resolution_to_number(first_frame["resolution"]),
-                utils.resolution_to_number(self.display_res),
-                first_frame["fps"],
-                frames
-            )
-        elif self.mode == 3:
-            score = self.video_model_function_mode3(
-                utils.resolution_to_number(first_frame["resolution"]),
-                utils.resolution_to_number(self.display_res),
-                first_frame["fps"],
-                frames
-            )
+            if any("representation" in f for f in frames):
+                frames = utils.get_chunk(frames, output_sample_index, type="video")
+                first_frame = frames[0]
+                bitrate = np.mean([f["bitrate"] for f in frames])
+                score = self.video_model_function_mode0(
+                    utils.resolution_to_number(first_frame["resolution"]),
+                    utils.resolution_to_number(self.display_res),
+                    bitrate,
+                    first_frame["fps"]
+                )
+            else:
+                score = self.video_model_function_mode0(
+                    utils.resolution_to_number(frames[output_sample_index]["resolution"]),
+                    utils.resolution_to_number(self.display_res),
+                    frames[output_sample_index]["bitrate"],
+                    frames[output_sample_index]["fps"]
+                )
         else:
-            raise P1203StandaloneError("Unsupported mode: {}".format(self.mode))
+            # only get the relevant frames from the chunk
+            frames = utils.get_chunk(frames, output_sample_index, type="video")
+            first_frame = frames[0]
+            if self.mode == 1:
+                # average the bitrate based on the frame sizes, as implemented
+                # in submitted model code
+                compensated_sizes = [
+                    utils.calculate_compensated_size(f["type"], f["size"], f["dts"]) for f in frames
+                ]
+                duration = np.sum([f["duration"] for f in frames])
+                bitrate = np.sum(compensated_sizes) * 8 / duration / 1000
+                score = self.video_model_function_mode1(
+                    utils.resolution_to_number(first_frame["resolution"]),
+                    utils.resolution_to_number(self.display_res),
+                    bitrate,
+                    first_frame["fps"],
+                    frames
+                )
+            elif self.mode == 2:
+                score = self.video_model_function_mode2(
+                    utils.resolution_to_number(first_frame["resolution"]),
+                    utils.resolution_to_number(self.display_res),
+                    first_frame["fps"],
+                    frames
+                )
+            elif self.mode == 3:
+                score = self.video_model_function_mode3(
+                    utils.resolution_to_number(first_frame["resolution"]),
+                    utils.resolution_to_number(self.display_res),
+                    first_frame["fps"],
+                    frames
+                )
+            else:
+                raise P1203StandaloneError("Unsupported mode: {}".format(self.mode))
 
         # mobile adjustments
         if self.device in ["mobile", "handheld"]:

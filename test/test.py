@@ -2,6 +2,7 @@
 import os
 import sys
 import unittest
+import json
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../')
 
@@ -119,8 +120,9 @@ class TestP1203(unittest.TestCase):
             expected_output = TEST_OUTPUT[test_case]
             del expected_output["date"]
 
+            print(f"Output: {json.dumps(output, indent=4)}")
+            print(f"Expected: {json.dumps(expected_output, indent=4)}")
             assert fuzzy_equal(output, expected_output, 0.0001)
-
 
     def test_output(self):
         """
@@ -141,6 +143,8 @@ class TestP1203(unittest.TestCase):
             expected_output = TEST_OUTPUT[test_case]
             del expected_output["date"]
 
+            print(f"Output: {json.dumps(output, indent=4)}")
+            print(f"Expected: {json.dumps(expected_output, indent=4)}")
             assert fuzzy_equal(output, expected_output, 0.0001)
 
     def test_model_functions(self):
