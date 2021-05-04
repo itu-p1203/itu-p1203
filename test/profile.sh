@@ -16,5 +16,5 @@ python3 \
         ../examples/request.json \
     > /dev/null 2>&1
 
-gprof2dot -f pstats output.cprof | \
+gprof2dot -f pstats -s output.cprof -n 1 | \
     dot -Tpdf -o output.pdf
