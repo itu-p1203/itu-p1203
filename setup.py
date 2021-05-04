@@ -36,7 +36,7 @@ setup(
     # url='https://example.com/',
     packages=['itu_p1203'],
     include_package_data=True,
-    install_requires=["numpy", "scipy", "pandas"],
+    install_requires=["numpy"],
     package_data={
         '': ['itu_p1203/trees/*']
     },

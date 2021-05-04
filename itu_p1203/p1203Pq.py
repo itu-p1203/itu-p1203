@@ -24,7 +24,6 @@ SOFTWARE.
 
 from itertools import groupby
 
-from scipy import signal
 import numpy as np
 
 from itu_p1203 import log
@@ -287,7 +286,7 @@ class P1203Pq(object):
         padding_beg = np.asarray([self.O22[0]] * (ma_order - 1))
         padding_end = np.asarray([self.O22[-1]] * (ma_order - 1))
         padded_O22 = np.append(np.append(padding_beg, self.O22), padding_end)
-        ma_filtered = signal.convolve(padded_O22, ma_kernel, mode='valid').tolist()
+        ma_filtered = np.convolve(padded_O22, ma_kernel, mode='valid').tolist()
         step = 3
         for current_score, next_score in zip(ma_filtered[0::step], ma_filtered[step::step]):
             thresh = 0.2
