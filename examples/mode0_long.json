@@ -1,0 +1,49 @@
+{
+    "I11": {
+        "segments": [
+            {
+                "bitrate": 192,
+                "codec": "aaclc",
+                "duration": 1800,
+                "start": 0
+            },
+            {
+                "bitrate": 128,
+                "codec": "aaclc",
+                "duration": 1800,
+                "start": 1800
+            }
+        ],
+        "streamId": 42
+    },
+    "I13": {
+        "segments": [
+            {
+                "bitrate": 1000,
+                "codec": "h264",
+                "duration": 1800,
+                "fps": 25.0,
+                "resolution": "1920x1080",
+                "start": 0
+            },
+            {
+                "bitrate": 4500,
+                "codec": "h264",
+                "duration": 1800,
+                "fps": 25.0,
+                "resolution": "1920x1080",
+                "start": 1800
+            }
+        ],
+        "streamId": 42
+    },
+    "I23": {
+        "stalling": [],
+        "streamId": 42
+    },
+    "IGen": {
+        "device": "pc",
+        "displaySize": "1920x1080",
+        "viewingDistance": "150cm"
+    }
+}
