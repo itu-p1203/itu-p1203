@@ -1,6 +1,29 @@
 # Changelog
 
 
+## v1.7.2 (2021-05-04)
+
+* Add further profiling for long sequences.
+
+* Cleanup profile graph.
+
+* Remove unneded dependencies.
+
+* Further speedup for chunk_hash.
+
+* Speed improvements.
+
+  dont know why but under linux it just works with a separate command for the plot
+
+  speedup changes, precache representation names, and further use only first frame in a measurement window for calculation of audio scores
+
+  some speedup in the chunk part
+
+  update unittests
+
+  minor cleanup
+
+
 ## v1.7.1 (2021-04-30)
 
 * Update python requirement.
