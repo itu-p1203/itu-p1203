@@ -11,6 +11,7 @@ This evaluation software implements the following standards:
 
 **News:**
 
+- Version 1.8.0 includes the new P.1203.3 Amendment 1 Appendix 2, which enables simplified model calculation for use with the P.1203.3 model.
 - Version 1.6.0 fixes an issue with the final linearization (P.1203.3 Eq. 30) not being applied. Any calculations performed with earlier versions must be re-computed.
 - Version 1.6.1 includes support for the P.1203.3 Amendment 1 "Adjustment of the audiovisual quality" which introduces an adjustment of the audiovisual quality of ITU-T P.1203.3 for the case of very low audio quality and long stalling events.
 - Version 1.5.0 fixes an issue where mobile/handheld device scores were not correctly compensated for. Any calculations with device type "mobile" performed with versions <1.5.0 are therefore not valid and must be re-computed.
@@ -66,17 +67,23 @@ You can uninstall the model with `pip3 uninstall itu_p1203`.
 ## CLI Usage
 
 ```
-usage: p1203-standalone [-h] [-m {0,1,2,3}] [--debug] [--only-pa] [--only-pv] [--print-intermediate] [--cpu-count CPU_COUNT] [--version] [--accept-notice]
-                   [--amendment-1-audiovisual] [--amendment-1-stalling]
-                   input [input ...]
+usage:  [-h] [-m {0,1,2,3}] [--debug] [--only-pa] [--only-pv]
+        [--print-intermediate] [--cpu-count CPU_COUNT] [--version]
+        [--accept-notice] [--amendment-1-audiovisual]
+        [--amendment-1-stalling] [--amendment-1-app-2]
+        input [input ...]
+
+P.1203 standalone implementation
 
 positional arguments:
-  input                 input report JSON file(s) or video file(s), or STDIN if '-', format see README
+  input                 input report JSON file(s) or video file(s), or STDIN
+                        if '-', format see README
 
 optional arguments:
   -h, --help            show this help message and exit
   -m {0,1,2,3}, --mode {0,1,2,3}
-                        mode to run for extraction in case video files are loaded (default: 1)
+                        mode to run for extraction in case video files are
+                        loaded (default: 1)
   --debug               some debug output (default: False)
   --only-pa             just print Pa O.21 values (default: False)
   --only-pv             just print Pv O.22 values (default: False)
@@ -84,11 +91,16 @@ optional arguments:
   --cpu-count CPU_COUNT
                         thread/CPU count (default: 8)
   --version             show program's version number and exit
-  --accept-notice       accept license and acknowledgement terms (default: False)
+  --accept-notice       accept license and acknowledgement terms (default:
+                        False)
   --amendment-1-audiovisual
-                        enable audiovisual compensation from P.1203.3 Amendment 1 (default: False)
+                        enable audiovisual compensation from P.1203.3
+                        Amendment 1 (default: False)
   --amendment-1-stalling
-                        enable stalling compensation from P.1203.3 Amendment 1 (default: False)
+                        enable stalling compensation from P.1203.3 Amendment 1
+                        (default: False)
+  --amendment-1-app-2   enable simplified model from P.1203.3 Amendment 1
+                        Appendix 2 (default: False)
 ```
 
 The program will output a valid JSON report with the following structure:

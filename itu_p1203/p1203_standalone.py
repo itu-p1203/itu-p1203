@@ -41,7 +41,18 @@ class P1203Standalone:
     Class for calculating P1203 based on JSON input files
     """
 
-    def __init__(self, input_report, debug=False, Pa=P1203Pa, Pv=P1203Pv, Pq=P1203Pq, quiet=False, amendment_1_audiovisual=False, amendment_1_stalling=False):
+    def __init__(
+        self,
+        input_report,
+        debug=False,
+        Pa=P1203Pa,
+        Pv=P1203Pv,
+        Pq=P1203Pq,
+        quiet=False,
+        amendment_1_audiovisual=False,
+        amendment_1_stalling=False,
+        amendment_1_app_2=False
+    ):
         """
         Initialize a standalone model run based on JSON input files
 
@@ -56,6 +67,8 @@ class P1203Standalone:
             quiet {bool} -- squelch all logger messages
             amendment_1_audiovisual {bool} -- enable the fix from Amendment 1, Clause 8.2 (default: False)
             amendment_1_stalling {bool} -- enable the fix from Amendment 1, Clause 8.4 (default: False)
+            amendment_1_app_2 {bool} -- enable the simplified model from Amendment 1, Appendix 2 (default: False),
+                                        ensuring compatibility with P.1204.3
         """
         self.input_report = input_report
         self.debug = debug
@@ -70,6 +83,7 @@ class P1203Standalone:
 
         self.amendment_1_audiovisual = amendment_1_audiovisual
         self.amendment_1_stalling = amendment_1_stalling
+        self.amendment_1_app_2 = amendment_1_app_2
 
         if quiet:
             logger.setLevel(logging.CRITICAL)
@@ -206,7 +220,8 @@ class P1203Standalone:
             p_buff=p_buff,
             device=device,
             amendment_1_audiovisual=self.amendment_1_audiovisual,
-            amendment_1_stalling=self.amendment_1_stalling
+            amendment_1_stalling=self.amendment_1_stalling,
+            amendment_1_app_2=self.amendment_1_app_2
         ).calculate()
 
         return self.integration

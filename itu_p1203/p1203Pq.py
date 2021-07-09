@@ -66,7 +66,18 @@ class P1203Pq(object):
         "f2": 0.98117059
     }
 
-    def __init__(self, O21, O22, l_buff=[], p_buff=[], device="pc", coeffs={}, amendment_1_audiovisual=False, amendment_1_stalling=False):
+    def __init__(
+        self,
+        O21,
+        O22,
+        l_buff=[],
+        p_buff=[],
+        device="pc",
+        coeffs={},
+        amendment_1_audiovisual=False,
+        amendment_1_stalling=False,
+        amendment_1_app_2=False
+    ):
         """Initialize P.1203 model
 
         Initialize the model with variables extracted from input JSON file
@@ -80,6 +91,8 @@ class P1203Pq(object):
             coeffs {dict} -- model coefficients, will overwrite defaults if same key is used [default: {}]
             amendment_1_audiovisual {bool} -- enable the fix from Amendment 1, Clause 8.2 (default: False)
             amendment_1_stalling {bool} -- enable the fix from Amendment 1, Clause 8.4 (default: False)
+            amendment_1_app_2 {bool} -- enable the simplified model from Amendment 1, Appendix 2 (default: False),
+                                        ensuring compatibility with P.1204.3
         """
         self.O21 = np.array(O21)
         self.O22 = np.array(O22)
@@ -87,6 +100,7 @@ class P1203Pq(object):
 
         self.amendment_1_audiovisual = amendment_1_audiovisual
         self.amendment_1_stalling = amendment_1_stalling
+        self.amendment_1_app_2 = amendment_1_app_2
 
         # if one of the two is empty, choose the longer one
         self.has_audio = bool(len(self.O21))
@@ -191,32 +205,36 @@ class P1203Pq(object):
         O34, O35_baseline = self._calc_034_035_baseline(duration)
 
         # ---------------------------------------------------------------------
-        # Clause 8.1.2.1
-        O34_diff = list(O34)
-        for i in range(duration):
-            # Eq. 5
-            w_diff = utils.exponential(1, self.coeffs["c1"], 0, self.coeffs["c2"], duration-i-1)
-            O34_diff[i] = (O34[i] - O35_baseline) * w_diff
+        if self.amendment_1_app_2:
+            O35 = O35_baseline
+        else:
+            # Clause 8.1.2.1
+            O34_diff = list(O34)
+            for i in range(duration):
+                # Eq. 5
+                w_diff = utils.exponential(1, self.coeffs["c1"], 0, self.coeffs["c2"], duration-i-1)
+                O34_diff[i] = (O34[i] - O35_baseline) * w_diff
 
-        # Eq. 6
-        neg_perc = np.percentile(O34_diff, 10, interpolation='linear')
-        # Eq. 7
-        negative_bias = np.maximum(0, -neg_perc) * self.coeffs["c23"]
+            # Eq. 6
+            neg_perc = np.percentile(O34_diff, 10, interpolation='linear')
+            # Eq. 7
+            negative_bias = np.maximum(0, -neg_perc) * self.coeffs["c23"]
 
+            osc_comp = self._calc_and_test_osc(duration, q_dir_changes_longest, q_dir_changes_tot, vid_qual_spread)
+
+            # Eq. 26
+            adapt_comp = 0
+            adapt_test = (q_dir_changes_longest / duration) < 0.25
+            if adapt_test:
+                adapt_comp = np.maximum(0.0, np.minimum(self.coeffs["comp3"] * vid_qual_spread * vid_qual_change_rate + self.coeffs["comp4"], 0.5))
+
+            # Eq. 18
+            O35 = O35_baseline - negative_bias - osc_comp - adapt_comp
+
+        # ---------------------------------------------------------------------
         stalling_impact = self._calc_stalling_impact(num_stalls, total_stall_len, duration, avg_stall_interval)
         # Eq. 31
         O23 = 1 + 4 * stalling_impact
-
-        osc_comp = self._calc_and_test_osc(duration, q_dir_changes_longest, q_dir_changes_tot, vid_qual_spread)
-
-        # Eq. 26
-        adapt_comp = 0
-        adapt_test = (q_dir_changes_longest / duration) < 0.25
-        if adapt_test:
-            adapt_comp = np.maximum(0.0, np.minimum(self.coeffs["comp3"] * vid_qual_spread * vid_qual_change_rate + self.coeffs["comp4"], 0.5))
-
-        # Eq. 18
-        O35 = O35_baseline - negative_bias - osc_comp - adapt_comp
 
         # ---------------------------------------------------------------------
         # Eq. 28
