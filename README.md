@@ -11,7 +11,7 @@ This evaluation software implements the following standards:
 
 **News:**
 
-- Version 1.8.0 includes the new P.1203.3 Amendment 1 Appendix 2, which enables simplified model calculation for use with the P.1203.3 model.
+- Version 1.8.0 includes the new P.1203.3 Amendment 1 Appendix 2, which enables simplified model calculation for use with the P.1204.3 model.
 - Version 1.6.0 fixes an issue with the final linearization (P.1203.3 Eq. 30) not being applied. Any calculations performed with earlier versions must be re-computed.
 - Version 1.6.1 includes support for the P.1203.3 Amendment 1 "Adjustment of the audiovisual quality" which introduces an adjustment of the audiovisual quality of ITU-T P.1203.3 for the case of very low audio quality and long stalling events.
 - Version 1.5.0 fixes an issue where mobile/handheld device scores were not correctly compensated for. Any calculations with device type "mobile" performed with versions <1.5.0 are therefore not valid and must be re-computed.
@@ -28,7 +28,7 @@ The software takes the following input:
 Based on the input, it calculates per-second audio and video quality scores and an overall audiovisual integrated quality score according to the P.1203 standards. The following codecs are supported:
 
 * Audio: AAC-LC, HE-AAC, MP2, AC3
-* Video: H.264
+* Video: H.264 (for other codecs, see [Extensions](#extensions))
 
 When specifying the input, the software automatically decides which "mode" will be used for evaluation:
 
@@ -38,6 +38,8 @@ When specifying the input, the software automatically decides which "mode" will 
 * Mode 3 (bitstream data, 100%): all of mode 1 plus QP values of all frames
 
 The higher the mode, the higher the accuracy of the prediction.
+
+Different Amendments of the official P.1203 recommendation can be enabled; please refer to the ITU-T texts for info. In particular, when using P.1203 with input scores coming from P.1204-type models and not P.1203.1, use the Amendment 1 Appendix II switch.
 
 ## Requirements
 
@@ -105,23 +107,23 @@ optional arguments:
 
 The program will output a valid JSON report with the following structure:
 
-```
+```json
 {
   "path/to/first/input/file": {
     "O21": [
-      # per-second audio quality scores (only if --print-intermediate was used)
+      // per-second audio quality scores (only if --print-intermediate was used)
     ],
     "O22": [
-      # per-second video quality scores (only if --print-intermediate was used)
-    ]
-    "O23": 5.0,     # stalling quality
-    "O34": [
-      # per-second audiovisual quality scores
+      // per-second video quality scores (only if --print-intermediate was used)
     ],
-    "O35": 4.63,    # audiovisual quality score
-    "O46": 4.92,    # overall quality score
-    "mode": 0,      # used mode, either 0, 1, or 3
-    "streamId": 42  # currently unused
+    "O23": 5.0,     // stalling quality
+    "O34": [
+      // per-second audiovisual quality scores
+    ],
+    "O35": 4.63,    // audiovisual quality score
+    "O46": 4.92,    // overall quality score
+    "mode": 0,      // used mode, either 0, 1, or 3
+    "streamId": 42  // currently unused
   },
   "path/to/second/input/file": {
     ...
@@ -180,12 +182,12 @@ python3 -m itu_p1203 segment-1.mp4 segment-2.mp4 --mode 1
 
 The input JSON file (see files in `examples`) must have at least the following data:
 
-```
+```json
 {
-"I13": {              # video input information
-    "streamId": 42,   # unique identifier for the stream
+"I13": {              // video input information
+    "streamId": 42,   // unique identifier for the stream
     "segments": [
-      # list of video segments, see below
+      // list of video segments, see below
     ]
   }
 }
@@ -193,23 +195,24 @@ The input JSON file (see files in `examples`) must have at least the following d
 
 The following keys and data are optional:
 
-```
-"IGen": {                         # Generic input information
-    "displaySize": "1920x1080",   # display resolution in pixels, given as `<width>x<height>`
-    "device": "pc",               # pc, handheld, or mobile
-    "viewingDistance": 0,         # not used
-  }
-"I11": {              # Audio input information
-    "streamId": 42,   # unique identifier for the stream
+```json
+{
+  "IGen": {                         // Generic input information
+    "displaySize": "1920x1080",   // display resolution in pixels, given as `<width>x<height>`
+    "device": "pc",               // pc, handheld, or mobile
+    "viewingDistance": 0,         // not used
+  },
+  "I11": {              // Audio input information
+    "streamId": 42,   // unique identifier for the stream
     "segments": [
-      # list of audio segments, see below
+      // list of audio segments, see below
     ]
-  }
-"I23": {              # Stalling input information
-    "streamId": 42,   # unique identifier for the stream
+  },
+  "I23": {              // Stalling input information
+    "streamId": 42,   // unique identifier for the stream
     "stalling": [
-      # pair of `[start timestamp, duration]` for each stalling event
-      # where the start timestamp is measured in media time
+      // pair of `[start timestamp, duration]` for each stalling event
+      // where the start timestamp is measured in media time
     ]
   }
 }
@@ -226,12 +229,12 @@ As an alternative to giving segment information, the input can also be a list of
 
 For audio, `segments` contains a list of audio segments to be analyzed. Each segment is defined by the following dictionary:
 
-```
+```json
 {
-  "codec": "aaclc",   # audio codec, any of [mp2, ac3, aaclc, heaac]
-  "start": 0.0,       # media start timestamp
-  "duration": 5.0,    # duration
-  "bitrate": 192.0    # bitrate in kBit/s
+  "codec": "aaclc",   // audio codec, any of [mp2, ac3, aaclc, heaac]
+  "start": 0.0,       // media start timestamp
+  "duration": 5.0,    // duration
+  "bitrate": 192.0    // bitrate in kBit/s
 }
 ```
 
@@ -239,18 +242,18 @@ For audio, `segments` contains a list of audio segments to be analyzed. Each seg
 
 For video, `segments` contains a list of video segments to be analyzed. Each segment is defined by the following dictionary, depending on the mode:
 
-```
+```json
 {
-  "codec": "h264",       # only "h264" supported in standard
-  "start": 0.0,          # media start timestamp in s
-  "duration": 5.0,       # duration in s
-  "resolution": "1920x1080",    # resolution as "widthxheight", e.g. "1920x1080"
-  "bitrate": 5000,       # bitrate in kBit/s
-  "fps": 24,             # framerate
-  "representation": 1,   # representation ID / media quality level ID (optional)
+  "codec": "h264",       // only "h264" supported in standard
+  "start": 0.0,          // media start timestamp in s
+  "duration": 5.0,       // duration in s
+  "resolution": "1920x1080",    // resolution as "widthxheight", e.g. "1920x1080"
+  "bitrate": 5000,       // bitrate in kBit/s
+  "fps": 24,             // framerate
+  "representation": 1,   // representation ID / media quality level ID (optional)
   "frames": [
-    # optional list of frames
-    # when present, will enable modes 1, 2 or 3
+    // optional list of frames
+    // when present, will enable modes 1, 2 or 3
   ]
 }
 ```
@@ -259,13 +262,13 @@ The `representation` key is equal to the *Media Quality Level* ID as defined in 
 
 The list of frames contains every frame in the sequence, in decoding order. The object contents depend on the mode, and the software figures out automatically which mode to calculate:
 
-```
+```json
 {
-  "frameType": "I",     # I/Non-I, or I/P/B
-  "frameSize": 18102,   # in Bytes
+  "frameType": "I",     // I/Non-I, or I/P/B
+  "frameSize": 18102,   // in Bytes
   "qpValues": [
-    # optional list of QP values in frame, one per macroblock
-    # when present, will enable mode 3 (mode 2 will never be enabled automatically)
+    // optional list of QP values in frame, one per macroblock
+    // when present, will enable mode 3 (mode 2 will never be enabled automatically)
   ]
 }
 ```
