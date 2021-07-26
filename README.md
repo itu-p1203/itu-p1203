@@ -268,7 +268,13 @@ python3 -m itu_p1203.extractor -m 1 /path/to/segment1.mp4 /path/to/segment2.mp4 
 
 This is what the `itu_p1203` script does in the background if you call it with a video file as argument.
 
-For extracting Mode 3 values, you need the [`ffmpeg-debug-qp`](https://github.com/slhck/ffmpeg-debug-qp) executable installed. **Note:** This procedure is experimental and may not work with all input video files, hence cannot be used to validate an existing implementation.
+For extracting Mode 3 values, you need the [`ffmpeg-debug-qp`](https://github.com/slhck/ffmpeg-debug-qp) executable installed. Then you can extract the QP values directly:
+
+```bash
+python3 -m itu_p1203.extractor --use-average -m 3 /path/to/segment1.mp4 /path/to/segment2.mp4 > mode3.json
+```
+
+**Note:** This procedure is experimental and may not work with all input video files, hence cannot be used to validate an existing implementation.
 
 See `itu_p1203/extractor.py -h` for more info.
 
