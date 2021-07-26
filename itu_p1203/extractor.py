@@ -177,29 +177,46 @@ class Extractor(object):
         for line in Extractor._file_line_gen(logfile):
             line = line.decode("utf-8").strip()
             # skip all non-relevant lines
-            if "[h264" not in line and "pkt_size" not in line:
+            if (
+                "[h264" not in line
+                and "[mpeg2video" not in line
+                and "pkt_size" not in line
+            ):
                 continue
 
             # skip irrelevant other lines
-            if "nal_unit_type" in line or "Reinit context" in line:
+            if (
+                "nal_unit_type" in line
+                or "Reinit context" in line
+                or "Skipping" in line
+            ):
                 continue
 
             # start a new frame
             if "New frame" in line:
                 if has_current_frame_data:
                     # yield the current frame
-                    yield {
-                        "frameType": frame_type,
-                        "frameSize": frame_size,
-                        "qpValues": frame_qp_values if not use_average else [average(frame_qp_values)]
-                    }
+                    frame_data = {"frameType": frame_type, "frameSize": frame_size}
 
-                first_frame_found = True
+                    if use_average:
+                        frame_data["qpValues"] = [average(frame_qp_values)]
+                    else:
+                        frame_data["qpValues"] = frame_qp_values
+
+                    yield frame_data
 
                 frame_type = line[-1]
                 if frame_type not in ["I", "P", "B"]:
-                    print_stderr("Wrong frame type parsed: " + str(frame_type))
-                    sys.exit(1)
+                    print_stderr(
+                        "Wrong frame type parsed: "
+                        + str(frame_type)
+                        + "\n Offending LINE : "
+                        + line
+                    )
+                    continue
+
+                first_frame_found = True
+
                 frame_index += 1
                 # initialize empty for the moment
                 frame_qp_values = []
@@ -211,35 +228,46 @@ class Extractor(object):
                 # continue parsing
                 continue
 
-            if "[h264" in line and "pkt_size" not in line:
-                if set(line.split("] ")[1]) - set(" 0123456789") != set():
+            if ("[h264" in line or "[mpeg2video" in line) and "pkt_size" not in line:
+                if (
+                    set(line.split("] ")[1]) - set(" 0123456789PAiIdDgGS><X+-|?=")
+                    != set()
+                ):
                     # this line contains something that is not a qp value
                     continue
+
                 # Now we have a line with qp values.
                 # Strip the first part off the string, e.g.
+                #   [h264 @ 0x7f9fb4806e00] 25i  26i  25i  30i  25I  25i  25i  25i  28i  26i  25I  26i  28i  32i  25i  25I  25i  25i  28i  26i
+                # becomes:
+                #   25i  26i  25i  30i  25I  25i  25i  25i  28i  26i  25I  26i  28i  32i  25i  25I  25i  25i  28i  26i
                 #   [h264 @ 0x7fadf2008000] 1111111111111111111111111111111111111111
+                # OR
                 # becomes:
                 #   1111111111111111111111111111111111111111
-                # Note: 
+                # Note:
                 # Single digit qp values are padded with a leading space e.g.:
                 # [h264 @ 0x7fadf2008000]  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
-                raw_values = re.sub(r'\[[\w\s@]+\]\s', '', line)
+                raw_values = re.sub(r"\[[\w\s@]+\]\s", "", line)
                 # remove the leading space in case of single digit qp values
-                line_qp_values = [int(raw_values[i:i + 2].lstrip())
-                             for i in range(0, len(raw_values), 2)]
-                # print("Adding QP values to frame with index " + str(frame_index))
+                line_qp_values = [
+                    int(raw_values[i : i + 2].lstrip())
+                    for i in range(0, len(raw_values), 2)
+                ]
                 frame_qp_values.extend(line_qp_values)
                 continue
             if "pkt_size" in line:
-                frame_size = int(re.findall(r'\d+', line)[0])
+                frame_size = int(re.findall(r'\d+', line[line.rfind("pkt_size"):])[0])
 
         # yield last frame
         if has_current_frame_data:
-            yield {
-                "frameType": frame_type,
-                "frameSize": frame_size,
-                "qpValues": frame_qp_values if not use_average else [average(frame_qp_values)]
-            }
+            frame_data = {"frameType": frame_type, "frameSize": frame_size}
+
+            if use_average:
+                frame_data["qpValues"] = [average(frame_qp_values)]
+            else:
+                frame_data["qpValues"] = frame_qp_values
+            yield frame_data
 
     @staticmethod
     def parse_qp_data(logfile, use_average=False):
