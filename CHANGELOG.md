@@ -1,6 +1,19 @@
 # Changelog
 
 
+## v1.8.0 (2021-07-26)
+
+* Update readme.
+
+* Implement P.1203.3 Amendment 1 Appendix 2.
+
+* Improve extractor function.
+
+  uses code from parse_qp_output.py in ffmpeg-debug-qp to improve resilience
+
+* Add example for running extractor for mode 3.
+
+
 ## v1.7.2 (2021-05-04)
 
 * Add further profiling for long sequences.

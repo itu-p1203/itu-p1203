@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "itu-p1203"
-version = "1.7.2"
+version = "1.8.0"
 description = "ITU-T P.1203 Standalone Model"
 authors = ["Your Name <you@example.com>"]
 
