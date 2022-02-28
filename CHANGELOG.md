@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.8.1 (2022-02-28)
+
+* Update Python dependency versions.
+
+
 ## v1.8.0 (2021-07-26)
 
 * Update readme.
