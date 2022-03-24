@@ -33,7 +33,7 @@ from itu_p1203 import utils
 from itu_p1203.errors import P1203StandaloneError
 from itu_p1203.measurementwindow import MeasurementWindow
 
-logger = log.setup_custom_logger('main')
+logger = log.setup_custom_logger('itu_p1203')
 
 
 class P1203Pv(object):

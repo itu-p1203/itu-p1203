@@ -32,7 +32,7 @@ import numpy as np
 from itu_p1203.errors import P1203StandaloneError
 from itu_p1203 import log
 
-logger = log.setup_custom_logger('main')
+logger = log.setup_custom_logger('itu_p1203')
 
 
 MOS_MAX = 4.9

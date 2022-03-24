@@ -38,7 +38,7 @@ from itu_p1203.p1203_standalone import P1203Standalone
 from itu_p1203.extractor import Extractor
 from itu_p1203.errors import P1203StandaloneError
 
-logger = log.setup_custom_logger('main')
+logger = log.setup_custom_logger('itu_p1203')
 
 
 def has_user_signed_acknowledgment():

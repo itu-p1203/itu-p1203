@@ -25,7 +25,7 @@ SOFTWARE.
 
 from itu_p1203 import log
 
-logger = log.setup_custom_logger('main')
+logger = log.setup_custom_logger('itu_p1203')
 
 
 class P1203StandaloneError(Exception):
