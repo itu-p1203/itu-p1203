@@ -116,10 +116,10 @@ class P1203Pq(object):
 
         for l, p in zip(l_buff, p_buff):
             if p > max_dur:
-                logger.warn("Excluding stalling event at position " + str(p) + ", since it is outside of media range (0, " + str(max_dur) + ")")
+                logger.warning("Excluding stalling event at position " + str(p) + ", since it is outside of media range (0, " + str(max_dur) + ")")
                 continue
             if l == 0:
-                logger.warn("Excluding stalling event at position " + str(p) + ", since it has zero duration")
+                logger.warning("Excluding stalling event at position " + str(p) + ", since it has zero duration")
                 continue
             self.l_buff.append(l)
             self.p_buff.append(p)
