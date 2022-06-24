@@ -1,6 +1,13 @@
 # Changelog
 
 
+## v1.8.2 (2022-06-24)
+
+* Implement an internal fast mode for per-segment computation.
+
+* Rename logger.
+
+
 ## v1.8.1 (2022-02-28)
 
 * Update Python dependency versions.
