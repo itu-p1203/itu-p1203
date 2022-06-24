@@ -94,6 +94,14 @@ class P1203Standalone:
 
         Keyword Arguments:
             fast_mode {bool} -- use fast mode (default: {False})
+
+        Returns:
+            dict {
+                "audio": {
+                    "streamId": i11["streamId"],
+                    "O21": o21,
+                }
+            }
         """
         logger.debug("Calculating audio scores ...")
 
@@ -136,6 +144,14 @@ class P1203Standalone:
 
         Keyword Arguments:
             fast_mode {bool} -- use fast mode (default: {False})
+
+        Returns:
+            dict {
+                "video": {
+                    "streamId": i13["streamId"],
+                    "O22": o22,
+                }
+            }
         """
         logger.debug("Calculating video scores ...")
 
@@ -191,6 +207,14 @@ class P1203Standalone:
     def calculate_integration(self):
         """
         Calculate Pq and return integration dict
+
+        Returns:
+            {
+                "O23": O23,
+                "O34": O34.tolist(),
+                "O35": float(O35),
+                "O46": float(O46)
+            }
         """
         logger.debug("Calculating integration module ...")
 
@@ -248,19 +272,23 @@ class P1203Standalone:
         Calculates P.1203 scores based on JSON input file
 
         Arguments:
-            print_intermediate {bool} -- print intermediate O.21/O.22 values
+            print_intermediate {bool} -- print and return intermediate O.21/O.22 values in output dict
             calculate_pa_kwargs {dict} -- kwargs to pass to Pa.calculate()
             calculate_pv_kwargs {dict} -- kwargs to pass to Pv.calculate()
             calculate_integration_kwargs {dict} -- kwargs to pass to Pq.calculate()
 
         Returns:
             dict -- integration output according to spec:
-                "streamId": video["video"]["streamId"],
-                "mode": video["video"]["mode"],
-                "O23": integration_result["O23"],
-                "O34": integration_result["O34"],
-                "O35": integration_result["O35"],
-                "O46": integration_result["O46"]
+                {
+                    "streamId": video["video"]["streamId"],
+                    "mode": video["video"]["mode"],
+                    "O23": integration_result["O23"],
+                    "O34": integration_result["O34"],
+                    "O35": integration_result["O35"],
+                    "O46": integration_result["O46"],
+                    "O21": audio["audio"]["O21"], (only if print_intermediate is True)
+                    "O22": audio["video"]["O22"], (only if print_intermediate is True)
+             }
         """
         self.calculate_pa(**calculate_pa_kwargs)
         self.calculate_pv(**calculate_pv_kwargs)
