@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.8.3 (2022-06-24)
+
+* Add mode to specify displaySize per segment.
+
+
 ## v1.8.2 (2022-06-24)
 
 * Implement an internal fast mode for per-segment computation.
