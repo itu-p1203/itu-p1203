@@ -1,0 +1,81 @@
+{
+    "I11": {
+        "segments": [
+            {
+                "bitrate": 331.46,
+                "codec": "aaclc",
+                "duration": 5.0,
+                "start": 0
+            },
+            {
+                "bitrate": 333.02,
+                "codec": "aaclc",
+                "duration": 5.0,
+                "start": 5.0
+            },
+            {
+                "bitrate": 333.2,
+                "codec": "aaclc",
+                "duration": 5.0,
+                "start": 10.0
+            },
+            {
+                "bitrate": 333.57,
+                "codec": "aaclc",
+                "duration": 5.0,
+                "start": 15.0
+            }
+        ],
+        "streamId": 42
+    },
+    "I13": {
+        "segments": [
+            {
+                "bitrate": 5000,
+                "codec": "h264",
+                "duration": 5.00,
+                "fps": 25.0,
+                "resolution": "1920x1080",
+                "displaySize": "1920x1080",
+                "start": 0
+            },
+            {
+                "bitrate": 5000,
+                "codec": "h264",
+                "duration": 5.00,
+                "fps": 25.0,
+                "resolution": "1920x1080",
+                "displaySize": "1280x720",
+                "start": 5.00
+            },
+            {
+                "bitrate": 5000,
+                "codec": "h264",
+                "duration": 5.00,
+                "fps": 25.0,
+                "resolution": "1920x1080",
+                "displaySize": "1920x1080",
+                "start": 10.00
+            },
+            {
+                "bitrate": 5000,
+                "codec": "h264",
+                "duration": 5.00,
+                "fps": 25.0,
+                "resolution": "1920x1080",
+                "displaySize": "3840x2160",
+                "start": 15.00
+            }
+        ],
+        "streamId": 42
+    },
+    "I23": {
+        "stalling": [],
+        "streamId": 42
+    },
+    "IGen": {
+        "device": "pc",
+        "displaySize": "1920x1080",
+        "viewingDistance": "150cm"
+    }
+}

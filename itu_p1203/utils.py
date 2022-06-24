@@ -187,6 +187,8 @@ def get_chunk_hash(frame, type="video"):
     a quality level. This is determined by the frame having a "representation"
     key. If it does not, a quality level is composed of bitrate, codec, fps.
     For audio, only bitrate counts.
+    If it is a video frame, and a display resolution is given per-frame, then
+    the chunk will additionally consider the display resolution changing.
 
     Arguments:
         type {str} -- video or audio
@@ -197,7 +199,13 @@ def get_chunk_hash(frame, type="video"):
     if "representation" in frame.keys():
         return frame["representation"]
     if type == "video":
-        return str(frame["bitrate"]) + str(frame["codec"]) + str(frame["fps"])
+        chunk_hash = str(frame["bitrate"]) + str(frame["codec"]) + str(frame["fps"])
+        # WR: this should actually be also checked if we have multiple bitrates per resolution, and a nominal bitrate was given
+        # if "resolution" in frame.keys():
+        #     chunk_hash += str(frame["resolution"])
+        if "displaySize" in frame.keys():
+            chunk_hash += str(frame["displaySize"])
+        return chunk_hash
     elif type == "audio":
         return str(frame["bitrate"]) + str(frame["codec"])
     else:

@@ -396,16 +396,17 @@ class P1203Pv(object):
                 frames = utils.get_chunk(frames, output_sample_index, type="video")
                 first_frame = frames[0]
                 bitrate = np.mean([f["bitrate"] for f in frames])
+                display_res = first_frame.get("displaySize") or self.display_res
                 score = self.video_model_function_mode0(
                     utils.resolution_to_number(first_frame["resolution"]),
-                    utils.resolution_to_number(self.display_res),
+                    utils.resolution_to_number(display_res),
                     bitrate,
                     first_frame["fps"]
                 )
             else:
                 score = self.video_model_function_mode0(
                     utils.resolution_to_number(frames[output_sample_index]["resolution"]),
-                    utils.resolution_to_number(self.display_res),
+                    utils.resolution_to_number(frames[output_sample_index].get("displaySize") or self.display_res),
                     frames[output_sample_index]["bitrate"],
                     frames[output_sample_index]["fps"]
                 )
@@ -413,6 +414,7 @@ class P1203Pv(object):
             # only get the relevant frames from the chunk
             frames = utils.get_chunk(frames, output_sample_index, type="video")
             first_frame = frames[0]
+            display_res = first_frame.get("displaySize") or self.display_res
             if self.mode == 1:
                 # average the bitrate based on the frame sizes, as implemented
                 # in submitted model code
@@ -423,7 +425,7 @@ class P1203Pv(object):
                 bitrate = np.sum(compensated_sizes) * 8 / duration / 1000
                 score = self.video_model_function_mode1(
                     utils.resolution_to_number(first_frame["resolution"]),
-                    utils.resolution_to_number(self.display_res),
+                    utils.resolution_to_number(display_res),
                     bitrate,
                     first_frame["fps"],
                     frames
@@ -431,14 +433,14 @@ class P1203Pv(object):
             elif self.mode == 2:
                 score = self.video_model_function_mode2(
                     utils.resolution_to_number(first_frame["resolution"]),
-                    utils.resolution_to_number(self.display_res),
+                    utils.resolution_to_number(display_res),
                     first_frame["fps"],
                     frames
                 )
             elif self.mode == 3:
                 score = self.video_model_function_mode3(
                     utils.resolution_to_number(first_frame["resolution"]),
-                    utils.resolution_to_number(self.display_res),
+                    utils.resolution_to_number(display_res),
                     first_frame["fps"],
                     frames
                 )
@@ -503,8 +505,10 @@ class P1203Pv(object):
                         "bitrate": segment["bitrate"],
                         "codec": segment["codec"],
                         "fps": segment["fps"],
-                        "resolution": segment["resolution"]
+                        "resolution": segment["resolution"],
                     }
+                    if "displaySize" in segment.keys():
+                        frame["displaySize"] = segment["displaySize"]
                     if "representation" in segment.keys():
                         frame.update({"representation": segment["representation"]})
                     # feed frame to MeasurementWindow
@@ -532,6 +536,8 @@ class P1203Pv(object):
                         "size": segment["frames"][i]["frameSize"],
                         "type": segment["frames"][i]["frameType"],
                     }
+                    if "displaySize" in segment.keys():
+                        frame["displaySize"] = segment["displaySize"]
                     if "representation" in segment.keys():
                         frame.update({"representation": segment["representation"]})
                     if self.mode == 3:
