@@ -460,21 +460,10 @@ class P1203Pv(object):
             if c != "h264":
                 raise P1203StandaloneError("Unsupported codec: {}".format(c))
 
-    def calculate(self):
+    def _calculate_with_measurementwindow(self):
         """
-        Calculate video MOS
-
-        Returns:
-            dict {
-                "video": {
-                    "streamId": i13["streamId"],
-                    "mode": mode,
-                    "O22": o22,
-                }
-            }
+        Calculate the score with the measurement window (standardized) approach.
         """
-
-        utils.check_segment_continuity(self.segments, "video")
 
         measurementwindow = MeasurementWindow()
         measurementwindow.set_score_callback(self.model_callback)
@@ -554,6 +543,51 @@ class P1203Pv(object):
                     measurementwindow.add_frame(frame)
                     dts += frame_duration
             measurementwindow.stream_finished()
+
+    def _calculate_fast_mode(self):
+        """
+        Calculate the score using the fast mode.
+        This calculates one O22 value per chunk and repeats it for floor(s) where s = segment duration.
+        """
+        # check which mode can be run
+        if self.mode is not None and self.mode != 0:
+            raise P1203StandaloneError(f"Fast mode only works with mode 0, but it is set to {self.mode}")
+
+        self.mode = 0
+
+        for segment in self.segments:
+            score = self.video_model_function_mode0(
+                    utils.resolution_to_number(segment["resolution"]),
+                    utils.resolution_to_number(self.display_res),
+                    segment["bitrate"],
+                    segment["fps"]
+                )
+            self.o22.extend([score] * math.floor(segment["duration"]))
+
+    def calculate(self, fast_mode=False):
+        """
+        Calculate video MOS
+
+        Returns:
+            dict {
+                "video": {
+                    "streamId": i13["streamId"],
+                    "mode": mode,
+                    "O22": o22,
+                }
+            }
+
+        Parameters:
+            fast_mode {bool} -- if True, use the fast mode of the model (less precise)
+        """
+
+        utils.check_segment_continuity(self.segments, "video")
+
+        if fast_mode:
+            logger.warning("Using fast mode of the model, results may not be accurate to the second")
+            self._calculate_fast_mode()
+        else:
+            self._calculate_with_measurementwindow()
 
         return {
             "video": {

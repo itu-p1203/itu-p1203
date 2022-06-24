@@ -3,6 +3,9 @@ import os
 import sys
 import unittest
 import json
+from timeit import default_timer as timer
+from datetime import timedelta
+import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)) + '/../')
 
@@ -62,9 +65,9 @@ def fuzzy_equal(d1, d2, precision):
         return False
 
     if isinstance(d1, list):
-        for v1, v2 in zip(d1, d2):
+        for idx, (v1, v2) in enumerate(zip(d1, d2)):
             if not abs(v1 - v2) < precision:
-                print("Values do not match: {}, {}".format(v1, v2))
+                print("Values at index {} do not match: {}, {}".format(idx, v1, v2))
                 return False
     elif isinstance(d1, dict):
         for k, v in d1.items():
@@ -85,9 +88,9 @@ def fuzzy_equal(d1, d2, precision):
                     return False
 
             elif isinstance(v, list):
-                for v1, v2 in zip(v, d2[k]):
+                for idx, (v1, v2) in enumerate(zip(v, d2[k])):
                     if not abs(v1 - v2) < precision:
-                        print("Values for {} do not match: {}, {}".format(k, v1, v2))
+                        print("Values for {} at index {} do not match: {}, {}".format(k, idx, v1, v2))
                         return False
 
             # Fall back to default
@@ -216,6 +219,45 @@ class TestP1203(unittest.TestCase):
             amendment_1_stalling=False
         ).calculate()
         assert res["O46"] == 1.6962865586232978
+
+    def test_fast_mode(self):
+        with open(os.path.join(BASEDIR, "examples", "mode0_long.json")) as f:
+            input_report = json.load(f)
+        p = P1203Standalone(input_report)
+
+        start_fast_mode = timer()
+        results_fast_mode = p.calculate_complete(
+            print_intermediate=True,
+            calculate_pa_kwargs={"fast_mode": True},
+            calculate_pv_kwargs={"fast_mode": True},
+        )
+        end_fast_mode = timer()
+        print("Fast mode:    " + str(timedelta(seconds=end_fast_mode-start_fast_mode)))
+
+        start_regular = timer()
+        results_regular = p.calculate_complete(print_intermediate=True)
+        end_regular = timer()
+        print("Regular mode: " + str(timedelta(seconds=end_regular-start_regular)))
+
+        print(
+            "Speedup: " + str(
+                round(
+                    timedelta(seconds=end_regular-start_regular) / 
+                    timedelta(seconds=end_fast_mode-start_fast_mode)
+                )
+            ) + "x"
+        )
+
+        del results_fast_mode["date"]
+        del results_regular["date"]
+
+        # there seems to be an off-by-one error in the regular mode here
+        np.round(results_fast_mode["O22"][1800-10:1800+10], 2)
+        np.round(results_regular["O22"][1800-10:1800+10], 2)
+
+        # assert that results_fast_mode["O46"] and results_regular["O46"] are close
+        assert np.abs(results_fast_mode["O46"] - results_regular["O46"]) < 0.01
+
 
 if __name__ == "__main__":
     unittest.main()

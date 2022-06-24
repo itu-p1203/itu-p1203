@@ -88,9 +88,12 @@ class P1203Standalone:
         if quiet:
             logger.setLevel(logging.CRITICAL)
 
-    def calculate_pa(self):
+    def calculate_pa(self, fast_mode=False):
         """
         Calculate Pa and return audio dict
+
+        Keyword Arguments:
+            fast_mode {bool} -- use fast mode (default: {False})
         """
         logger.debug("Calculating audio scores ...")
 
@@ -108,7 +111,7 @@ class P1203Standalone:
             except Exception:
                 logger.warning("No stream ID specified")
 
-            self.audio = self.Pa(segments, stream_id).calculate()
+            self.audio = self.Pa(segments, stream_id).calculate(fast_mode=fast_mode)
 
         # use existing O21 scores
         elif 'O21' in self.input_report.keys():
@@ -127,9 +130,12 @@ class P1203Standalone:
 
         return self.audio
 
-    def calculate_pv(self):
+    def calculate_pv(self, fast_mode=False):
         """
         Calculate Pv and return video dict
+
+        Keyword Arguments:
+            fast_mode {bool} -- use fast mode (default: {False})
         """
         logger.debug("Calculating video scores ...")
 
@@ -163,7 +169,7 @@ class P1203Standalone:
                 display_res=display_res,
                 device=device,
                 stream_id=stream_id
-            ).calculate()
+            ).calculate(fast_mode=fast_mode)
 
         # use existing O22 scores
         elif 'O22' in self.input_report.keys():
@@ -213,6 +219,11 @@ class P1203Standalone:
         else:
             p_buff = [x[0] for x in stalling]
 
+        if not self.audio:
+            raise P1203StandaloneError("No audio scores found, please run calculate_pa() first")
+        if not self.video:
+            raise P1203StandaloneError("No video scores found, please run calculate_pv() first")
+
         self.integration = self.Pq(
             O21=self.audio["audio"]["O21"],
             O22=self.video["video"]["O22"],
@@ -226,12 +237,21 @@ class P1203Standalone:
 
         return self.integration
 
-    def calculate_complete(self, print_intermediate=False):
+    def calculate_complete(
+        self,
+        print_intermediate=False,
+        calculate_pa_kwargs={},
+        calculate_pv_kwargs={},
+        calculate_integration_kwargs={}
+    ):
         """
         Calculates P.1203 scores based on JSON input file
 
         Arguments:
             print_intermediate {bool} -- print intermediate O.21/O.22 values
+            calculate_pa_kwargs {dict} -- kwargs to pass to Pa.calculate()
+            calculate_pv_kwargs {dict} -- kwargs to pass to Pv.calculate()
+            calculate_integration_kwargs {dict} -- kwargs to pass to Pq.calculate()
 
         Returns:
             dict -- integration output according to spec:
@@ -242,9 +262,14 @@ class P1203Standalone:
                 "O35": integration_result["O35"],
                 "O46": integration_result["O46"]
         """
-        self.calculate_pa()
-        self.calculate_pv()
-        self.calculate_integration()
+        self.calculate_pa(**calculate_pa_kwargs)
+        self.calculate_pv(**calculate_pv_kwargs)
+        self.calculate_integration(**calculate_integration_kwargs)
+
+        if not self.audio:
+            raise P1203StandaloneError("No audio scores found, has calculate_pa() failed?")
+        if not self.video:
+            raise P1203StandaloneError("No video scores found, has calculate_pv() failed?")
 
         # try setting stream ID from input video
         stream_id = -1
@@ -252,8 +277,11 @@ class P1203Standalone:
         try:
             stream_id = self.video["video"]["streamId"]
             mode = self.video["video"]["mode"]
-        except Exception as e:
+        except Exception:
             pass
+
+        if not self.integration:
+            raise P1203StandaloneError("No integration scores found, has calculate_integration() failed?")
 
         # integration usually consists of O23, O34, O35, O46
         self.overall_result = self.integration

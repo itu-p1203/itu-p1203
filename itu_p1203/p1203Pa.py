@@ -75,19 +75,10 @@ class P1203Pa(object):
         score = self.audio_model_function(first_frame["codec"], first_frame["bitrate"])
         self.o21.append(score)
 
-    def calculate(self):
+    def _calculate_with_measurementwindow(self):
         """
-        Calculate audio MOS
-
-        Returns:
-           dict {
-                "audio": {
-                    "streamId": i11["streamId"],
-                    "O21": o21,
-                }
-            }
+        Calculate the score with the measurement window (standardized) approach.
         """
-        utils.check_segment_continuity(self.segments, "audio")
 
         measurementwindow = MeasurementWindow()
         measurementwindow.set_score_callback(self.model_callback)
@@ -119,6 +110,41 @@ class P1203Pa(object):
                 measurementwindow.add_frame(frame)
                 dts += frame_duration
         measurementwindow.stream_finished()
+
+    def _calculate_fast_mode(self):
+        """
+        Calculate the score using the fast mode.
+        This calculates one O21 value per chunk and repeats it for floor(s) where s = segment duration.
+        """
+        for segment in self.segments:
+            score = self.audio_model_function(
+                    segment["codec"],
+                    segment["bitrate"]
+                )
+            self.o21.extend([score] * math.floor(segment["duration"]))
+
+    def calculate(self, fast_mode=False):
+        """
+        Calculate audio MOS
+
+        Returns:
+           dict {
+                "audio": {
+                    "streamId": i11["streamId"],
+                    "O21": o21,
+                }
+            }
+
+        Parameters:
+            fast_mode {bool} -- if True, use the fast mode of the model (less precise)
+        """
+        utils.check_segment_continuity(self.segments, "audio")
+
+        if fast_mode:
+            logger.warning("Using fast mode of the model, results may not be accurate to the second")
+            self._calculate_fast_mode()
+        else:
+            self._calculate_with_measurementwindow()
 
         return {
             "audio": {
