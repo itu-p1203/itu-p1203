@@ -212,7 +212,7 @@ def main(modules={}, quiet=False):
     parser.add_argument(
         '--amendment-1-app-2',
         action='store_true',
-        help="enable simplified model from P.1203.3 Amendment 1 Appendix 2"
+        help="enable simplified model from P.1204.3 Amendment 1 Appendix 2"
     )
 
     argsdict = vars(parser.parse_args())
