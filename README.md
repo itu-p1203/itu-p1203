@@ -101,7 +101,7 @@ optional arguments:
   --amendment-1-stalling
                         enable stalling compensation from P.1203.3 Amendment 1
                         (default: False)
-  --amendment-1-app-2   enable simplified model from P.1203.3 Amendment 1
+  --amendment-1-app-2   enable simplified model from P.1204.3 Amendment 1
                         Appendix 2 (default: False)
 ```
 
