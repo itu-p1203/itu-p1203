@@ -24,8 +24,9 @@ SOFTWARE.
 """
 
 import logging
+from typing import Dict
 
-loggers = {}
+loggers: Dict = {}
 
 
 def setup_custom_logger(name, debug=False):
