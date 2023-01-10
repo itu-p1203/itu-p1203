@@ -1,6 +1,37 @@
 # Changelog
 
 
+## v1.9.0 (2023-01-10)
+
+* Update packages.
+
+* Add minor type annotation.
+
+* Add blame ignore file.
+
+* Format with black and isort.
+
+* Remove executable flag on some files.
+
+* Fix includes and remove manifest.in.
+
+* Export requirements on release.
+
+* Add setup.cfg.
+
+* Fix imports.
+
+* Bump requirement to python 3.8.
+
+* Update __main__.py.
+
+* Fixed small typo in README.md.
+
+* Change .warn to .warning (deprecated)
+
+* Improve docstrings.
+
+
 ## v1.8.3 (2022-06-24)
 
 * Add mode to specify displaySize per segment.
