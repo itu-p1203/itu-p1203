@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.9.1 (2023-01-10)
+
+* Fix author string.
+
+
 ## v1.9.0 (2023-01-10)
 
 * Update packages.
