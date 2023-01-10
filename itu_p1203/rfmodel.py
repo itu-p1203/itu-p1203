@@ -23,15 +23,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import numpy as np
 import os
+
+import numpy as np
 
 
 def execute_trees(features, path):
     res_all = []
     for fn in os.listdir(path):
         if fn.endswith(".csv") and fn.startswith("tree"):
-            tree_matrix = np.genfromtxt(os.path.join(path, fn), delimiter=',', dtype=float)
+            tree_matrix = np.genfromtxt(
+                os.path.join(path, fn), delimiter=",", dtype=float
+            )
             res = execute_tree(features, tree_matrix)
             res_all.append(res)
     res_mean = np.mean(res_all, axis=0)
@@ -45,9 +48,9 @@ def execute_tree(features, tree_matrix):
         left_child = int(tree_matrix[node_id][3])
         right_child = int(tree_matrix[node_id][4])
 
-        if(feature_id == -1):
+        if feature_id == -1:
             return feature_thres
-        elif (features[feature_id] < feature_thres):
+        elif features[feature_id] < feature_thres:
             return recurse_execute(left_child)
         else:
             return recurse_execute(right_child)
@@ -64,15 +67,20 @@ def scale_moses(sec_mos, num_splits):
 
     for i in range(total_duration):
         if previous_time + 1 >= split_duration:
-            mos = ((previous_time * previous_mos) + (split_duration - previous_time) * sec_mos[i]) / split_duration
+            mos = (
+                (previous_time * previous_mos)
+                + (split_duration - previous_time) * sec_mos[i]
+            ) / split_duration
             mos_samples.append(mos)
             previous_mos = sec_mos[i]
             previous_time = previous_time + 1 - split_duration
         else:
-            previous_mos = ((previous_mos * previous_time) + sec_mos[i] * 1) / (previous_time + 1)
+            previous_mos = ((previous_mos * previous_time) + sec_mos[i] * 1) / (
+                previous_time + 1
+            )
             previous_time += 1
 
-    while(len(mos_samples) < num_splits):
+    while len(mos_samples) < num_splits:
         mos_samples.append(previous_mos)
 
     return mos_samples
@@ -93,7 +101,13 @@ def get_rebuf_stats(l_buff, p_buff, duration):
         num_rebuf_per_length = 1.0 * num_rebuf / duration
         len_rebuf_per_length = 1.0 * len_rebuf / duration
         time_of_last_rebuf = duration - events[-1][0]
-        return [num_rebuf, len_rebuf, num_rebuf_per_length, len_rebuf_per_length, time_of_last_rebuf]
+        return [
+            num_rebuf,
+            len_rebuf,
+            num_rebuf_per_length,
+            len_rebuf_per_length,
+            time_of_last_rebuf,
+        ]
 
 
 def calculate(O21, O22, l_buff, p_buff, duration):
@@ -114,15 +128,18 @@ def calculate(O21, O22, l_buff, p_buff, duration):
     sec_moses_feature_audio = scale_moses(O21_rounded, 2)
     sec_mos_stat = np.percentile(O22_rounded, [1, 5, 10]).tolist()
 
-    tree_path = os.path.abspath(
-                    os.path.join(
-                        os.path.dirname(__file__),
-                        "trees"
-                    )
-                )
+    tree_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "trees"))
 
     rf_score = execute_trees(
-        np.array((rebuf_stats + sec_moses_feature_video + sec_mos_stat + sec_moses_feature_audio + [duration])).astype('float64'),
-        path=tree_path
+        np.array(
+            (
+                rebuf_stats
+                + sec_moses_feature_video
+                + sec_mos_stat
+                + sec_moses_feature_audio
+                + [duration]
+            )
+        ).astype("float64"),
+        path=tree_path,
     )
     return rf_score

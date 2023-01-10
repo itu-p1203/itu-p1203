@@ -23,17 +23,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import json
 import datetime
+import json
+import logging
 
 from . import log
-from .p1203Pa import P1203Pa
-from .p1203Pv import P1203Pv
-from .p1203Pq import P1203Pq
 from .errors import P1203StandaloneError
+from .p1203Pa import P1203Pa
+from .p1203Pq import P1203Pq
+from .p1203Pv import P1203Pv
 
-import logging
-logger = log.setup_custom_logger('itu_p1203')
+logger = log.setup_custom_logger("itu_p1203")
 
 
 class P1203Standalone:
@@ -51,7 +51,7 @@ class P1203Standalone:
         quiet=False,
         amendment_1_audiovisual=False,
         amendment_1_stalling=False,
-        amendment_1_app_2=False
+        amendment_1_app_2=False,
     ):
         """
         Initialize a standalone model run based on JSON input files
@@ -106,12 +106,12 @@ class P1203Standalone:
         logger.debug("Calculating audio scores ...")
 
         # estimate quality from segments
-        if 'I11' in self.input_report.keys():
+        if "I11" in self.input_report.keys():
             segments = []
-            if 'segments' not in self.input_report['I11']:
+            if "segments" not in self.input_report["I11"]:
                 logger.warning("No audio segments specified")
             else:
-                segments = self.input_report['I11']["segments"]
+                segments = self.input_report["I11"]["segments"]
 
             stream_id = None
             try:
@@ -122,13 +122,8 @@ class P1203Standalone:
             self.audio = self.Pa(segments, stream_id).calculate(fast_mode=fast_mode)
 
         # use existing O21 scores
-        elif 'O21' in self.input_report.keys():
-            self.audio = {
-                "audio": {
-                    "streamId": -1,
-                    "O21": self.input_report['O21']
-                }
-            }
+        elif "O21" in self.input_report.keys():
+            self.audio = {"audio": {"streamId": -1, "O21": self.input_report["O21"]}}
 
         else:
             raise P1203StandaloneError("No 'I11' or 'O21' found in input report")
@@ -156,9 +151,11 @@ class P1203Standalone:
         logger.debug("Calculating video scores ...")
 
         # estimate quality from segments
-        if 'I13' in self.input_report.keys():
-            if 'segments' not in self.input_report["I13"]:
-                raise P1203StandaloneError("No video segments defined, check your input format")
+        if "I13" in self.input_report.keys():
+            if "segments" not in self.input_report["I13"]:
+                raise P1203StandaloneError(
+                    "No video segments defined, check your input format"
+                )
 
             segments = self.input_report["I13"]["segments"]
 
@@ -184,17 +181,12 @@ class P1203Standalone:
                 segments=segments,
                 display_res=display_res,
                 device=device,
-                stream_id=stream_id
+                stream_id=stream_id,
             ).calculate(fast_mode=fast_mode)
 
         # use existing O22 scores
-        elif 'O22' in self.input_report.keys():
-            self.video = {
-                "video": {
-                    "streamId": -1,
-                    "O22": self.input_report['O22']
-                }
-            }
+        elif "O22" in self.input_report.keys():
+            self.video = {"video": {"streamId": -1, "O22": self.input_report["O22"]}}
 
         else:
             raise P1203StandaloneError("No 'I13' or 'O22' found in input report")
@@ -220,9 +212,9 @@ class P1203Standalone:
 
         stalling = []
         if (
-            "I23" in self.input_report.keys() and
-            "stalling" in self.input_report["I23"].keys() and
-            self.input_report["I23"]["stalling"] is not None
+            "I23" in self.input_report.keys()
+            and "stalling" in self.input_report["I23"].keys()
+            and self.input_report["I23"]["stalling"] is not None
         ):
             stalling = self.input_report["I23"]["stalling"]
 
@@ -244,9 +236,13 @@ class P1203Standalone:
             p_buff = [x[0] for x in stalling]
 
         if not self.audio:
-            raise P1203StandaloneError("No audio scores found, please run calculate_pa() first")
+            raise P1203StandaloneError(
+                "No audio scores found, please run calculate_pa() first"
+            )
         if not self.video:
-            raise P1203StandaloneError("No video scores found, please run calculate_pv() first")
+            raise P1203StandaloneError(
+                "No video scores found, please run calculate_pv() first"
+            )
 
         self.integration = self.Pq(
             O21=self.audio["audio"]["O21"],
@@ -256,7 +252,7 @@ class P1203Standalone:
             device=device,
             amendment_1_audiovisual=self.amendment_1_audiovisual,
             amendment_1_stalling=self.amendment_1_stalling,
-            amendment_1_app_2=self.amendment_1_app_2
+            amendment_1_app_2=self.amendment_1_app_2,
         ).calculate()
 
         return self.integration
@@ -266,7 +262,7 @@ class P1203Standalone:
         print_intermediate=False,
         calculate_pa_kwargs={},
         calculate_pv_kwargs={},
-        calculate_integration_kwargs={}
+        calculate_integration_kwargs={},
     ):
         """
         Calculates P.1203 scores based on JSON input file
@@ -295,9 +291,13 @@ class P1203Standalone:
         self.calculate_integration(**calculate_integration_kwargs)
 
         if not self.audio:
-            raise P1203StandaloneError("No audio scores found, has calculate_pa() failed?")
+            raise P1203StandaloneError(
+                "No audio scores found, has calculate_pa() failed?"
+            )
         if not self.video:
-            raise P1203StandaloneError("No video scores found, has calculate_pv() failed?")
+            raise P1203StandaloneError(
+                "No video scores found, has calculate_pv() failed?"
+            )
 
         # try setting stream ID from input video
         stream_id = -1
@@ -309,7 +309,9 @@ class P1203Standalone:
             pass
 
         if not self.integration:
-            raise P1203StandaloneError("No integration scores found, has calculate_integration() failed?")
+            raise P1203StandaloneError(
+                "No integration scores found, has calculate_integration() failed?"
+            )
 
         # integration usually consists of O23, O34, O35, O46
         self.overall_result = self.integration

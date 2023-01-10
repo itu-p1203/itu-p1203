@@ -26,20 +26,19 @@ SOFTWARE.
 import math
 from functools import lru_cache
 
-from . import log
-from . import utils
+from . import log, utils
 from .errors import P1203StandaloneError
 from .measurementwindow import MeasurementWindow
 
-logger = log.setup_custom_logger('itu_p1203')
+logger = log.setup_custom_logger("itu_p1203")
 
 
 class P1203Pa(object):
 
     VALID_CODECS = ["mp2", "ac3", "aaclc", "heaac"]
-    COEFFS_A1 = {'mp2': 100.00, 'ac3': 100.00, 'aaclc': 100.00, 'heaac': 100.00}
-    COEFFS_A2 = {'mp2': -0.02, 'ac3': -0.03, 'aaclc': -0.05, 'heaac': -0.11}
-    COEFFS_A3 = {'mp2': 15.48, 'ac3': 15.70, 'aaclc': 14.60, 'heaac': 20.06}
+    COEFFS_A1 = {"mp2": 100.00, "ac3": 100.00, "aaclc": 100.00, "heaac": 100.00}
+    COEFFS_A2 = {"mp2": -0.02, "ac3": -0.03, "aaclc": -0.05, "heaac": -0.11}
+    COEFFS_A3 = {"mp2": 15.48, "ac3": 15.70, "aaclc": 14.60, "heaac": 20.06}
 
     @lru_cache()
     def audio_model_function(self, codec, bitrate):
@@ -50,9 +49,16 @@ class P1203Pa(object):
         - bitrate: used audio bitrate in kBit/s
         """
         if codec not in self.VALID_CODECS:
-            raise P1203StandaloneError("Unsupported audio codec {}, use any of {}".format(codec, self.VALID_CODECS))
+            raise P1203StandaloneError(
+                "Unsupported audio codec {}, use any of {}".format(
+                    codec, self.VALID_CODECS
+                )
+            )
 
-        q_cod_a = self.COEFFS_A1[codec] * math.exp(self.COEFFS_A2[codec] * bitrate) + self.COEFFS_A3[codec]
+        q_cod_a = (
+            self.COEFFS_A1[codec] * math.exp(self.COEFFS_A2[codec] * bitrate)
+            + self.COEFFS_A3[codec]
+        )
         qa = 100 - q_cod_a
         mos_audio = utils.mos_from_r(qa)
         return mos_audio
@@ -66,8 +72,12 @@ class P1203Pa(object):
             output_sample_timestamp {int} -- timestamp of the output sample (1, 2, ...)
             frames {list} -- list of frames from measurement window
         """
-        output_sample_index = [i for i, f in enumerate(frames) if f["dts"] < output_sample_timestamp][-1]
-        chunk = utils.get_chunk(frames, output_sample_index, type="audio", onlyfirst=True)
+        output_sample_index = [
+            i for i, f in enumerate(frames) if f["dts"] < output_sample_timestamp
+        ][-1]
+        chunk = utils.get_chunk(
+            frames, output_sample_index, type="audio", onlyfirst=True
+        )
 
         # since for audio, only codec and bitrate change per chunk, we don't need individual frame stats,
         # we can can just calculate the score for the whole chunk
@@ -93,7 +103,9 @@ class P1203Pa(object):
 
             if segment["codec"] == "aac":
                 if not warning_shown:
-                    logger.warning("Assumed that 'aac' means 'aaclc'; please fix your input file")
+                    logger.warning(
+                        "Assumed that 'aac' means 'aaclc'; please fix your input file"
+                    )
                     warning_shown = True
                 segment["codec"] = "aaclc"
 
@@ -102,7 +114,7 @@ class P1203Pa(object):
                     "duration": frame_duration,
                     "dts": dts,
                     "bitrate": segment["bitrate"],
-                    "codec": segment["codec"]
+                    "codec": segment["codec"],
                 }
                 if "representation" in segment.keys():
                     frame.update({"representation": segment["representation"]})
@@ -117,10 +129,7 @@ class P1203Pa(object):
         This calculates one O21 value per chunk and repeats it for floor(s) where s = segment duration.
         """
         for segment in self.segments:
-            score = self.audio_model_function(
-                    segment["codec"],
-                    segment["bitrate"]
-                )
+            score = self.audio_model_function(segment["codec"], segment["bitrate"])
             self.o21.extend([score] * math.floor(segment["duration"]))
 
     def calculate(self, fast_mode=False):
@@ -141,7 +150,9 @@ class P1203Pa(object):
         utils.check_segment_continuity(self.segments, "audio")
 
         if fast_mode:
-            logger.warning("Using fast mode of the model, results may not be accurate to the second")
+            logger.warning(
+                "Using fast mode of the model, results may not be accurate to the second"
+            )
             self._calculate_fast_mode()
         else:
             self._calculate_with_measurementwindow()
@@ -162,5 +173,5 @@ class P1203Pa(object):
         self.o21 = []
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("this is just a module")

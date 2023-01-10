@@ -38,9 +38,7 @@ def setup_custom_logger(name, debug=False):
         logger = loggers[name]
         return loggers[name]
 
-    formatter = logging.Formatter(
-        fmt='%(levelname)s - %(module)s - %(message)s'
-    )
+    formatter = logging.Formatter(fmt="%(levelname)s - %(module)s - %(message)s")
 
     handler = logging.StreamHandler()
     handler.setFormatter(formatter)
@@ -54,10 +52,18 @@ def setup_custom_logger(name, debug=False):
     # \033[1;36m - cyan
     # \033[1;37m - white
 
-    logging.addLevelName(logging.ERROR,     "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.ERROR))
-    logging.addLevelName(logging.WARNING,   "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING))
-    logging.addLevelName(logging.INFO,      "\033[1;34m%s\033[1;0m" % logging.getLevelName(logging.INFO))
-    logging.addLevelName(logging.DEBUG,     "\033[1;35m%s\033[1;0m" % logging.getLevelName(logging.DEBUG))
+    logging.addLevelName(
+        logging.ERROR, "\033[1;31m%s\033[1;0m" % logging.getLevelName(logging.ERROR)
+    )
+    logging.addLevelName(
+        logging.WARNING, "\033[1;33m%s\033[1;0m" % logging.getLevelName(logging.WARNING)
+    )
+    logging.addLevelName(
+        logging.INFO, "\033[1;34m%s\033[1;0m" % logging.getLevelName(logging.INFO)
+    )
+    logging.addLevelName(
+        logging.DEBUG, "\033[1;35m%s\033[1;0m" % logging.getLevelName(logging.DEBUG)
+    )
 
     logger = logging.getLogger(name)
 

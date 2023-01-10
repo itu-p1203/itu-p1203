@@ -23,16 +23,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import sys
-import os
 import argparse
-import re
+import gzip
 import json
+import os
+import re
+import subprocess
+import sys
+import tempfile
 from collections import OrderedDict
 from fractions import Fraction
-import tempfile
-import gzip
-import subprocess
 
 from . import utils
 
@@ -108,14 +108,21 @@ class Extractor(object):
         current_timestamp = 0
         for segment in self.input_files:
             if not os.path.isfile(segment):
-                print_stderr("Input file " + str(segment) +
-                      " does not exist")
+                print_stderr("Input file " + str(segment) + " does not exist")
                 sys.exit(1)
 
             # extract the lines from this one segment
-            (segment_info_video, segment_info_audio, duration) = \
-                Extractor.get_segment_info_lines(
-                    segment, mode=self.mode, timestamp=current_timestamp, qp_logfile=self.qp_logfile, use_average=self.use_average)
+            (
+                segment_info_video,
+                segment_info_audio,
+                duration,
+            ) = Extractor.get_segment_info_lines(
+                segment,
+                mode=self.mode,
+                timestamp=current_timestamp,
+                qp_logfile=self.qp_logfile,
+                use_average=self.use_average,
+            )
             segment_list_video.append(segment_info_video)
             if segment_info_audio:
                 segment_list_audio.append(segment_info_audio)
@@ -123,20 +130,16 @@ class Extractor(object):
             # increase pointer to start timestamp
             current_timestamp += duration
 
-        report = {"IGen": {"displaySize": "1920x1080",
-                           "device": "pc",
-                           "viewingDistance": "150cm"
-                           },
-                  "I11": {"streamId": 42,
-                          "segments": segment_list_audio
-                          },
-                  "I13": {"streamId": 42,
-                          "segments": segment_list_video
-                          },
-                  "I23": {"streamId": 42,
-                          "stalling": []
-                          }
-                  }
+        report = {
+            "IGen": {
+                "displaySize": "1920x1080",
+                "device": "pc",
+                "viewingDistance": "150cm",
+            },
+            "I11": {"streamId": 42, "segments": segment_list_audio},
+            "I13": {"streamId": 42, "segments": segment_list_video},
+            "I23": {"streamId": 42, "stalling": []},
+        }
         self.report = report
         return report
 
@@ -257,7 +260,7 @@ class Extractor(object):
                 frame_qp_values.extend(line_qp_values)
                 continue
             if "pkt_size" in line:
-                frame_size = int(re.findall(r'\d+', line[line.rfind("pkt_size"):])[0])
+                frame_size = int(re.findall(r"\d+", line[line.rfind("pkt_size") :])[0])
 
         # yield last frame
         if has_current_frame_data:
@@ -278,7 +281,9 @@ class Extractor(object):
         return list(Extractor._parse_qp_data(logfile, use_average))
 
     @staticmethod
-    def get_video_frame_info_ffmpeg_debug_qp(segment, qp_logfile=None, use_average=False):
+    def get_video_frame_info_ffmpeg_debug_qp(
+        segment, qp_logfile=None, use_average=False
+    ):
         """
         Obtain the video frame info using the ffmpeg-debug-qp script.
 
@@ -291,13 +296,16 @@ class Extractor(object):
             if os.path.isfile(qp_logfile):
                 return Extractor.parse_qp_data(qp_logfile, use_average)
             else:
-                print_stderr("Logfile " + str(qp_logfile) + " not found! Falling back to ffmpeg-debug-qp parsing.")
+                print_stderr(
+                    "Logfile "
+                    + str(qp_logfile)
+                    + " not found! Falling back to ffmpeg-debug-qp parsing."
+                )
 
         # try to get from source distribution
         ffmpeg_debug_script = os.path.abspath(
             os.path.join(
-                os.path.dirname(__file__), "..",
-                "ffmpeg-debug-qp", "ffmpeg_debug_qp"
+                os.path.dirname(__file__), "..", "ffmpeg-debug-qp", "ffmpeg_debug_qp"
             )
         )
 
@@ -307,17 +315,16 @@ class Extractor(object):
             ffmpeg_debug_script = utils.which("ffmpeg_debug_qp")
 
             if not ffmpeg_debug_script:
-                print_stderr("Cannot find ffmpeg_debug_qp, neither in the subfolder 'ffmpeg-debug-qp', nor in your $PATH. " +
-                      "Please install from https://github.com/slhck/ffmpeg-debug-qp")
+                print_stderr(
+                    "Cannot find ffmpeg_debug_qp, neither in the subfolder 'ffmpeg-debug-qp', nor in your $PATH. "
+                    + "Please install from https://github.com/slhck/ffmpeg-debug-qp"
+                )
                 sys.exit(1)
 
         tmp_file_debug_output = Extractor.get_tempfilename()
 
         # Extract QP values from ffmpeg
-        extract_cmd = [
-            ffmpeg_debug_script,
-            segment
-        ]
+        extract_cmd = [ffmpeg_debug_script, segment]
         print_stderr("Running command to extract QPs ...")
         print_stderr(extract_cmd)
 
@@ -353,22 +360,30 @@ class Extractor(object):
         if info_type == "packet":
             cmd = [
                 "ffprobe",
-                "-loglevel", "error",
-                "-select_streams", "v",
+                "-loglevel",
+                "error",
+                "-select_streams",
+                "v",
                 "-show_packets",
-                "-show_entries", "packet=pts_time,dts_time,duration_time,size,flags",
-                "-of", "json",
-                segment
+                "-show_entries",
+                "packet=pts_time,dts_time,duration_time,size,flags",
+                "-of",
+                "json",
+                segment,
             ]
         elif info_type == "frame":
             cmd = [
                 "ffprobe",
-                "-loglevel", "error",
-                "-select_streams", "v",
+                "-loglevel",
+                "error",
+                "-select_streams",
+                "v",
                 "-show_frames",
-                "-show_entries", "frame=pkt_pts_time,pkt_dts_time,pkt_duration_time,pkt_size,pict_type",
-                "-of", "json",
-                segment
+                "-show_entries",
+                "frame=pkt_pts_time,pkt_dts_time,pkt_duration_time,pkt_size,pict_type",
+                "-of",
+                "json",
+                segment,
             ]
         else:
             print_stderr("wrong info type, can be 'packet' or 'frame'")
@@ -381,30 +396,38 @@ class Extractor(object):
         if info_type == "packet":
             ret = []
             for packet_info in info:
-                frame_type = "I" if packet_info['flags'] == "K_" else "Non-I"
-                if 'dts_time' in packet_info:
-                    dts = packet_info['dts_time']
+                frame_type = "I" if packet_info["flags"] == "K_" else "Non-I"
+                if "dts_time" in packet_info:
+                    dts = packet_info["dts_time"]
                 else:
                     dts = "NaN"
-                ret.append(OrderedDict([
-                    ('frame_type', frame_type),
-                    ('dts', dts),
-                    ('size', packet_info['size']),
-                    ('duration', packet_info['duration_time'])
-                ]))
+                ret.append(
+                    OrderedDict(
+                        [
+                            ("frame_type", frame_type),
+                            ("dts", dts),
+                            ("size", packet_info["size"]),
+                            ("duration", packet_info["duration_time"]),
+                        ]
+                    )
+                )
         elif info_type == "frame":
             ret = []
             for frame_info in info:
-                if 'pts_time' in frame_info:
-                    pts = frame_info['pts_time']
+                if "pts_time" in frame_info:
+                    pts = frame_info["pts_time"]
                 else:
                     pts = "NaN"
-                ret.append(OrderedDict([
-                    ('frame_type', frame_info['pict_type']),
-                    ('pts', pts),
-                    ('size', frame_info['pkt_size']),
-                    ('duration', frame_info['pkt_duration_time'])
-                ]))
+                ret.append(
+                    OrderedDict(
+                        [
+                            ("frame_type", frame_info["pict_type"]),
+                            ("pts", pts),
+                            ("size", frame_info["pkt_size"]),
+                            ("duration", frame_info["pkt_duration_time"]),
+                        ]
+                    )
+                )
         else:
             # cannot happen
             pass
@@ -436,9 +459,9 @@ class Extractor(object):
         info["duration"] = float(info["duration"])
         info["size"] = int(info["size"])
         try:
-        	info["bit_rate"] = int(info["bit_rate"])
+            info["bit_rate"] = int(info["bit_rate"])
         except KeyError:
-        	info["bit_rate"] = 0
+            info["bit_rate"] = 0
 
         return info
 
@@ -463,7 +486,16 @@ class Extractor(object):
         """
         segment_size = os.path.getsize(segment)
 
-        cmd = ["ffprobe", "-loglevel", "error", "-show_streams", "-show_format", "-of", "json", segment]
+        cmd = [
+            "ffprobe",
+            "-loglevel",
+            "error",
+            "-show_streams",
+            "-show_format",
+            "-of",
+            "json",
+            segment,
+        ]
         stdout, _ = run_command(cmd)
         info = json.loads(stdout)
 
@@ -481,76 +513,91 @@ class Extractor(object):
             print("[warn] No video stream found in segment", file=sys.stderr)
         ret = OrderedDict()
         if has_video:
-            if 'duration' in video_info:
-                video_duration = float(video_info['duration'])
-            elif 'tags' in video_info and 'DURATION' in video_info['tags']:
-                duration_str = video_info['tags']['DURATION']
-                hms, msec = duration_str.split('.')
-                total_dur = sum(int(x) * 60 ** i for i,
-                                x in enumerate(reversed(hms.split(":"))))
+            if "duration" in video_info:
+                video_duration = float(video_info["duration"])
+            elif "tags" in video_info and "DURATION" in video_info["tags"]:
+                duration_str = video_info["tags"]["DURATION"]
+                hms, msec = duration_str.split(".")
+                total_dur = sum(
+                    int(x) * 60**i for i, x in enumerate(reversed(hms.split(":")))
+                )
                 video_duration = total_dur + float("0." + msec)
             elif "duration" in info["format"]:
-                print_stderr("Warning: could not extract video duration from stream info, use format entry " +
-                      str(segment))
+                print_stderr(
+                    "Warning: could not extract video duration from stream info, use format entry "
+                    + str(segment)
+                )
                 video_duration = float(info["format"]["duration"])
             else:
                 video_duration = None
-                print_stderr("Warning: could not extract video duration from " +
-                      str(segment))
+                print_stderr(
+                    "Warning: could not extract video duration from " + str(segment)
+                )
 
-            if 'bit_rate' in video_info:
-                video_bitrate = round(float(video_info['bit_rate']) / 1024.0, 2)
+            if "bit_rate" in video_info:
+                video_bitrate = round(float(video_info["bit_rate"]) / 1024.0, 2)
             else:
                 # fall back to calculating from accumulated frame duration
                 stream_size = Extractor.get_stream_size(segment)
-                video_bitrate = round(
-                    (stream_size * 8 / 1024.0) / video_duration, 2)
+                video_bitrate = round((stream_size * 8 / 1024.0) / video_duration, 2)
 
-            ret.update(OrderedDict([
-                ('segment_filename', segment),
-                ('file_size', segment_size),
-                ('video_duration', video_duration),
-                ('video_frame_rate', float(Fraction(video_info['r_frame_rate']))),
-                ('video_bitrate', video_bitrate),
-                ('video_width', video_info['width']),
-                ('video_height', video_info['height']),
-                ('video_codec', video_info['codec_name'])
-            ]))
+            ret.update(
+                OrderedDict(
+                    [
+                        ("segment_filename", segment),
+                        ("file_size", segment_size),
+                        ("video_duration", video_duration),
+                        (
+                            "video_frame_rate",
+                            float(Fraction(video_info["r_frame_rate"])),
+                        ),
+                        ("video_bitrate", video_bitrate),
+                        ("video_width", video_info["width"]),
+                        ("video_height", video_info["height"]),
+                        ("video_codec", video_info["codec_name"]),
+                    ]
+                )
+            )
 
         if has_audio:
-            if 'duration' in audio_info:
-                audio_duration = audio_info['duration']
-            elif 'tags' in audio_info and 'DURATION' in audio_info['tags']:
-                duration_str = audio_info['tags']['DURATION']
-                hms, msec = duration_str.split('.')
-                total_dur = sum(int(x) * 60 ** i for i,
-                                x in enumerate(reversed(hms.split(":"))))
+            if "duration" in audio_info:
+                audio_duration = audio_info["duration"]
+            elif "tags" in audio_info and "DURATION" in audio_info["tags"]:
+                duration_str = audio_info["tags"]["DURATION"]
+                hms, msec = duration_str.split(".")
+                total_dur = sum(
+                    int(x) * 60**i for i, x in enumerate(reversed(hms.split(":")))
+                )
                 audio_duration = total_dur + float("0." + msec)
             elif "duration" in info["format"]:
-                print_stderr("Warning: could not extract audio duration from stream info, use format entry " +
-                      str(segment))
+                print_stderr(
+                    "Warning: could not extract audio duration from stream info, use format entry "
+                    + str(segment)
+                )
                 audio_duration = float(info["format"]["duration"])
             else:
                 audio_duration = None
-                print_stderr("Warning: could not extract audio duration from " +
-                      str(segment))
+                print_stderr(
+                    "Warning: could not extract audio duration from " + str(segment)
+                )
 
-            if 'bit_rate' in audio_info:
-                audio_bitrate = round(
-                    float(audio_info['bit_rate']) / 1024.0, 2)
+            if "bit_rate" in audio_info:
+                audio_bitrate = round(float(audio_info["bit_rate"]) / 1024.0, 2)
             else:
                 # fall back to calculating from accumulated frame duration
-                stream_size = Extractor.get_stream_size(
-                    segment, stream_type="audio")
-                audio_bitrate = round(
-                    (stream_size * 8 / 1024.0) / audio_duration, 2)
+                stream_size = Extractor.get_stream_size(segment, stream_type="audio")
+                audio_bitrate = round((stream_size * 8 / 1024.0) / audio_duration, 2)
 
-            ret.update(OrderedDict([
-                ('audio_duration', audio_duration),
-                ('audio_sample_rate', audio_info['sample_rate']),
-                ('audio_codec', audio_info['codec_name']),
-                ('audio_bitrate', audio_bitrate)
-            ]))
+            ret.update(
+                OrderedDict(
+                    [
+                        ("audio_duration", audio_duration),
+                        ("audio_sample_rate", audio_info["sample_rate"]),
+                        ("audio_codec", audio_info["codec_name"]),
+                        ("audio_bitrate", audio_bitrate),
+                    ]
+                )
+            )
 
         return ret
 
@@ -565,18 +612,24 @@ class Extractor(object):
         switch = "v" if stream_type == "video" else "a"
         cmd = [
             "ffprobe",
-            "-loglevel", "error",
-            "-select_streams", switch,
-            "-show_entries", "packet=size",
-            "-of", "compact=p=0:nk=1",
-            segment
+            "-loglevel",
+            "error",
+            "-select_streams",
+            switch,
+            "-show_entries",
+            "packet=size",
+            "-of",
+            "compact=p=0:nk=1",
+            segment,
         ]
         stdout, _ = run_command(cmd)
         size = sum([int(l) for l in stdout.split("\n") if l != ""])
         return size
 
     @staticmethod
-    def get_segment_info_lines(segment, mode=0, timestamp=0, qp_logfile=None, use_average=False):
+    def get_segment_info_lines(
+        segment, mode=0, timestamp=0, qp_logfile=None, use_average=False
+    ):
         """
         Return (list, list, duration), where each list contains the info for the
         video or audio part of the passed segment, and the duration of the segment.
@@ -598,9 +651,11 @@ class Extractor(object):
                 "start": timestamp,
                 # use format duration to align both video and audio
                 "duration": format_info["duration"],
-                "resolution": str(segment_info["video_width"]) + "x" + str(segment_info["video_height"]),
+                "resolution": str(segment_info["video_width"])
+                + "x"
+                + str(segment_info["video_height"]),
                 "bitrate": segment_info["video_bitrate"],
-                "fps": segment_info["video_frame_rate"]
+                "fps": segment_info["video_frame_rate"],
             }
 
         if "audio_bitrate" in segment_info:
@@ -616,17 +671,25 @@ class Extractor(object):
             frame_info = Extractor.get_video_frame_info_ffprobe(segment)
             frame_stats_json = []
             for frame in frame_info:
-                frame_stats_json.append({
-                    "frameType": frame['frame_type'],
-                    "frameSize": frame['size'],
-                })
+                frame_stats_json.append(
+                    {
+                        "frameType": frame["frame_type"],
+                        "frameSize": frame["size"],
+                    }
+                )
             video_segment_info_json["frames"] = frame_stats_json
 
         if mode in [2, 3]:
-            frame_stats = Extractor.get_video_frame_info_ffmpeg_debug_qp(segment, qp_logfile, use_average)
+            frame_stats = Extractor.get_video_frame_info_ffmpeg_debug_qp(
+                segment, qp_logfile, use_average
+            )
             video_segment_info_json["frames"] = frame_stats
 
-        return (video_segment_info_json, audio_segment_info_json, format_info["duration"])
+        return (
+            video_segment_info_json,
+            audio_segment_info_json,
+            format_info["duration"],
+        )
 
 
 def main(_):
@@ -637,26 +700,32 @@ def main(_):
 
     # argument parsing
     parser = argparse.ArgumentParser(
-        description='Extract values of a video for building the JSON report file for P.1203 standalone',
+        description="Extract values of a video for building the JSON report file for P.1203 standalone",
         epilog="2018",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     parser.add_argument(
-        '-m', '--mode', default=0, type=int,
+        "-m",
+        "--mode",
+        default=0,
+        type=int,
         choices=[0, 1, 2, 3],
-        help="build report for this specified mode"
+        help="build report for this specified mode",
     )
     parser.add_argument(
-        '-q', '--qp-logfile', type=str,
-        help="existing logfile generated by ffmpeg_debug_qp"
+        "-q",
+        "--qp-logfile",
+        type=str,
+        help="existing logfile generated by ffmpeg_debug_qp",
     )
     parser.add_argument(
-        '-a', '--use-average', action="store_true",
-        help="use average QP (saving memory/space)"
+        "-a",
+        "--use-average",
+        action="store_true",
+        help="use average QP (saving memory/space)",
     )
-    parser.add_argument('input', type=str,
-                        help="Input video file(s)", nargs='*')
+    parser.add_argument("input", type=str, help="Input video file(s)", nargs="*")
 
     argsdict = vars(parser.parse_args())
 
@@ -666,7 +735,9 @@ def main(_):
         print_stderr("Need at least one input file")
         sys.exit(1)
 
-    report = Extractor(segment_files, argsdict["mode"], argsdict["qp_logfile"], argsdict["use_average"]).extract()
+    report = Extractor(
+        segment_files, argsdict["mode"], argsdict["qp_logfile"], argsdict["use_average"]
+    ).extract()
 
     print(json.dumps(report, sort_keys=True, indent=4))
 

@@ -23,17 +23,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import math
-import numpy as np
-from functools import lru_cache
 import json
+import math
+from functools import lru_cache
 
-from . import log
-from . import utils
+import numpy as np
+
+from . import log, utils
 from .errors import P1203StandaloneError
 from .measurementwindow import MeasurementWindow
 
-logger = log.setup_custom_logger('itu_p1203')
+logger = log.setup_custom_logger("itu_p1203")
 
 
 class P1203Pv(object):
@@ -89,11 +89,17 @@ class P1203Pv(object):
         t3 = self.coeffs["t3"]
         deg_frame_rate_v = 0
         if framerate < 24:
-            deg_frame_rate_v = (100 - deg_cod_v - deg_scal_v) * (t1 - t2 * framerate) / (t3 + framerate)
+            deg_frame_rate_v = (
+                (100 - deg_cod_v - deg_scal_v)
+                * (t1 - t2 * framerate)
+                / (t3 + framerate)
+            )
         deg_frame_rate_v = utils.constrain(deg_frame_rate_v, 0.0, 100.0)
         return deg_frame_rate_v
 
-    def degradation_integration(self, mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v):
+    def degradation_integration(
+        self, mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v
+    ):
         """
         Integrate the three degradations
         """
@@ -102,7 +108,9 @@ class P1203Pv(object):
         return utils.mos_from_r(qv)
 
     @lru_cache()
-    def video_model_function_mode0(self, coding_res, display_res, bitrate_kbps_segment_size, framerate):
+    def video_model_function_mode0(
+        self, coding_res, display_res, bitrate_kbps_segment_size, framerate
+    ):
         """
         Mode 0 model
 
@@ -124,7 +132,16 @@ class P1203Pv(object):
         q1 = self.coeffs["q1"]
         q2 = self.coeffs["q2"]
         q3 = self.coeffs["q3"]
-        quant = a1 + a2 * np.log(a3 + np.log(bitrate_kbps_segment_size) + np.log(bitrate_kbps_segment_size * bitrate_kbps_segment_size / (coding_res * framerate) + a4))
+        quant = a1 + a2 * np.log(
+            a3
+            + np.log(bitrate_kbps_segment_size)
+            + np.log(
+                bitrate_kbps_segment_size
+                * bitrate_kbps_segment_size
+                / (coding_res * framerate)
+                + a4
+            )
+        )
         mos_cod_v = q1 + q2 * np.exp(q3 * quant)
         mos_cod_v = utils.constrain(mos_cod_v, 1.0, 5.0)
         deg_cod_v = 100.0 - utils.r_from_mos(mos_cod_v)
@@ -132,26 +149,43 @@ class P1203Pv(object):
 
         # scaling, framerate degradation
         deg_scal_v = self.degradation_due_to_upscaling(coding_res, display_res)
-        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
+        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(
+            deg_cod_v, deg_scal_v, framerate
+        )
 
         # degradation integration
-        score = self.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
+        score = self.degradation_integration(
+            mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v
+        )
 
-        logger.debug(json.dumps({
-            'coding_res': round(coding_res, 2),
-            'display_res': round(display_res, 2),
-            'bitrate_kbps_segment_size': round(bitrate_kbps_segment_size, 2),
-            'framerate': round(framerate, 2),
-            'mos_cod_v': round(mos_cod_v, 2),
-            'deg_cod_v': round(deg_cod_v, 2),
-            'deg_scal_v': round(deg_scal_v, 2),
-            'deg_frame_rate_v': round(deg_frame_rate_v, 2),
-            'score': round(score, 2)
-        }, indent=True))
+        logger.debug(
+            json.dumps(
+                {
+                    "coding_res": round(coding_res, 2),
+                    "display_res": round(display_res, 2),
+                    "bitrate_kbps_segment_size": round(bitrate_kbps_segment_size, 2),
+                    "framerate": round(framerate, 2),
+                    "mos_cod_v": round(mos_cod_v, 2),
+                    "deg_cod_v": round(deg_cod_v, 2),
+                    "deg_scal_v": round(deg_scal_v, 2),
+                    "deg_frame_rate_v": round(deg_frame_rate_v, 2),
+                    "score": round(score, 2),
+                },
+                indent=True,
+            )
+        )
 
         return score
 
-    def video_model_function_mode1(self, coding_res, display_res, bitrate_kbps_segment_size, framerate, frames, iframe_ratio=None):
+    def video_model_function_mode1(
+        self,
+        coding_res,
+        display_res,
+        bitrate_kbps_segment_size,
+        framerate,
+        frames,
+        iframe_ratio=None,
+    ):
         """
         Mode 1 model
 
@@ -174,7 +208,16 @@ class P1203Pv(object):
         q1 = self.coeffs["q1"]
         q2 = self.coeffs["q2"]
         q3 = self.coeffs["q3"]
-        quant = a1 + a2 * np.log(a3 + np.log(bitrate_kbps_segment_size) + np.log(bitrate_kbps_segment_size * bitrate_kbps_segment_size / (coding_res * framerate) + a4))
+        quant = a1 + a2 * np.log(
+            a3
+            + np.log(bitrate_kbps_segment_size)
+            + np.log(
+                bitrate_kbps_segment_size
+                * bitrate_kbps_segment_size
+                / (coding_res * framerate)
+                + a4
+            )
+        )
         mos_cod_v = q1 + q2 * np.exp(q3 * quant)
         mos_cod_v = utils.constrain(mos_cod_v, 1.0, 5.0)
 
@@ -189,7 +232,9 @@ class P1203Pv(object):
             i_sizes = []
             noni_sizes = []
             for frame in frames:
-                frame_size = utils.calculate_compensated_size(frame["type"], frame["size"], frame["dts"])
+                frame_size = utils.calculate_compensated_size(
+                    frame["type"], frame["size"], frame["dts"]
+                )
                 if frame["type"] == "I":
                     i_sizes.append(int(frame_size))
                 else:
@@ -208,28 +253,45 @@ class P1203Pv(object):
 
         # scaling, framerate degradation
         deg_scal_v = self.degradation_due_to_upscaling(coding_res, display_res)
-        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
+        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(
+            deg_cod_v, deg_scal_v, framerate
+        )
 
         # degradation integration
-        score = self.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
+        score = self.degradation_integration(
+            mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v
+        )
 
-        logger.debug(json.dumps({
-            'coding_res': round(coding_res, 2),
-            'display_res': round(display_res, 2),
-            'bitrate_kbps_segment_size': round(bitrate_kbps_segment_size, 2),
-            'framerate': round(framerate, 2),
-            'mos_cod_v': round(mos_cod_v, 2),
-            'deg_cod_v': round(deg_cod_v, 2),
-            'iframe_ratio': round(iframe_ratio, 2),
-            'complexity': round(complexity, 2),
-            'deg_scal_v': round(deg_scal_v, 2),
-            'deg_frame_rate_v': round(deg_frame_rate_v, 2),
-            'score': round(score, 2)
-        }, indent=True))
+        logger.debug(
+            json.dumps(
+                {
+                    "coding_res": round(coding_res, 2),
+                    "display_res": round(display_res, 2),
+                    "bitrate_kbps_segment_size": round(bitrate_kbps_segment_size, 2),
+                    "framerate": round(framerate, 2),
+                    "mos_cod_v": round(mos_cod_v, 2),
+                    "deg_cod_v": round(deg_cod_v, 2),
+                    "iframe_ratio": round(iframe_ratio, 2),
+                    "complexity": round(complexity, 2),
+                    "deg_scal_v": round(deg_scal_v, 2),
+                    "deg_frame_rate_v": round(deg_frame_rate_v, 2),
+                    "score": round(score, 2),
+                },
+                indent=True,
+            )
+        )
 
         return score
 
-    def video_model_function_mode2(self, coding_res, display_res, framerate, frames, quant=None, avg_qp_per_noni_frame=[]):
+    def video_model_function_mode2(
+        self,
+        coding_res,
+        display_res,
+        framerate,
+        frames,
+        quant=None,
+        avg_qp_per_noni_frame=[],
+    ):
         """
         Mode 2 model
 
@@ -252,7 +314,11 @@ class P1203Pv(object):
                     qp_values.append(frame["qpValues"])
                     frame_type = frame["type"]
                     if frame_type not in ["I", "P", "B", "Non-I"]:
-                        raise P1203StandaloneError("frame type " + str(frame_type) + " not valid; must be I/P/B or I/Non-I")
+                        raise P1203StandaloneError(
+                            "frame type "
+                            + str(frame_type)
+                            + " not valid; must be I/P/B or I/Non-I"
+                        )
                     types.append(frame_type)
 
                 qppb = []
@@ -275,26 +341,43 @@ class P1203Pv(object):
 
         # scaling, framerate degradation
         deg_scal_v = self.degradation_due_to_upscaling(coding_res, display_res)
-        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
+        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(
+            deg_cod_v, deg_scal_v, framerate
+        )
 
         # degradation integration
-        score = self.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
+        score = self.degradation_integration(
+            mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v
+        )
 
-        logger.debug(json.dumps({
-            'coding_res': round(coding_res, 2),
-            'display_res': round(display_res, 2),
-            'framerate': round(framerate, 2),
-            'quant': round(quant, 2),
-            'mos_cod_v': round(mos_cod_v, 2),
-            'deg_cod_v': round(deg_cod_v, 2),
-            'deg_scal_v': round(deg_scal_v, 2),
-            'deg_frame_rate_v': round(deg_frame_rate_v, 2),
-            'score': round(score, 2)
-        }, indent=True))
+        logger.debug(
+            json.dumps(
+                {
+                    "coding_res": round(coding_res, 2),
+                    "display_res": round(display_res, 2),
+                    "framerate": round(framerate, 2),
+                    "quant": round(quant, 2),
+                    "mos_cod_v": round(mos_cod_v, 2),
+                    "deg_cod_v": round(deg_cod_v, 2),
+                    "deg_scal_v": round(deg_scal_v, 2),
+                    "deg_frame_rate_v": round(deg_frame_rate_v, 2),
+                    "score": round(score, 2),
+                },
+                indent=True,
+            )
+        )
 
         return score
 
-    def video_model_function_mode3(self, coding_res, display_res, framerate, frames, quant=None, avg_qp_per_noni_frame=[]):
+    def video_model_function_mode3(
+        self,
+        coding_res,
+        display_res,
+        framerate,
+        frames,
+        quant=None,
+        avg_qp_per_noni_frame=[],
+    ):
         """
         Mode 3 model
 
@@ -318,7 +401,11 @@ class P1203Pv(object):
                     qp_values.append(frame["qpValues"])
                     frame_type = frame["type"]
                     if frame_type not in ["I", "P", "B", "Non-I"]:
-                        raise P1203StandaloneError("frame type " + str(frame_type) + " not valid; must be I/P/B or I/Non-I")
+                        raise P1203StandaloneError(
+                            "frame type "
+                            + str(frame_type)
+                            + " not valid; must be I/P/B or I/Non-I"
+                        )
                     types.append(frame_type)
 
                 qppb = []
@@ -349,22 +436,31 @@ class P1203Pv(object):
 
         # scaling, framerate degradation
         deg_scal_v = self.degradation_due_to_upscaling(coding_res, display_res)
-        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(deg_cod_v, deg_scal_v, framerate)
+        deg_frame_rate_v = self.degradation_due_to_frame_rate_reduction(
+            deg_cod_v, deg_scal_v, framerate
+        )
 
         # degradation integration
-        score = self.degradation_integration(mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v)
+        score = self.degradation_integration(
+            mos_cod_v, deg_cod_v, deg_scal_v, deg_frame_rate_v
+        )
 
-        logger.debug(json.dumps({
-            'coding_res': round(coding_res, 2),
-            'display_res': round(display_res, 2),
-            'framerate': round(framerate, 2),
-            'quant': round(quant, 2),
-            'mos_cod_v': round(mos_cod_v, 2),
-            'deg_cod_v': round(deg_cod_v, 2),
-            'deg_scal_v': round(deg_scal_v, 2),
-            'deg_frame_rate_v': round(deg_frame_rate_v, 2),
-            'score': round(score, 2)
-        }, indent=True))
+        logger.debug(
+            json.dumps(
+                {
+                    "coding_res": round(coding_res, 2),
+                    "display_res": round(display_res, 2),
+                    "framerate": round(framerate, 2),
+                    "quant": round(quant, 2),
+                    "mos_cod_v": round(mos_cod_v, 2),
+                    "deg_cod_v": round(deg_cod_v, 2),
+                    "deg_scal_v": round(deg_scal_v, 2),
+                    "deg_frame_rate_v": round(deg_frame_rate_v, 2),
+                    "score": round(score, 2),
+                },
+                indent=True,
+            )
+        )
 
         return score
 
@@ -377,7 +473,9 @@ class P1203Pv(object):
         htv_2 = self.coeffs["htv_2"]
         htv_3 = self.coeffs["htv_3"]
         htv_4 = self.coeffs["htv_4"]
-        return max(min(htv_1 + htv_2 * score + htv_3 * score**2 + htv_4 * score**3, 5), 1)
+        return max(
+            min(htv_1 + htv_2 * score + htv_3 * score**2 + htv_4 * score**3, 5), 1
+        )
 
     def model_callback(self, output_sample_timestamp, frames):
         """
@@ -389,7 +487,9 @@ class P1203Pv(object):
             frames {list} -- list of all frames from measurement window
         """
         logger.debug("Output score at timestamp " + str(output_sample_timestamp))
-        output_sample_index = [i for i, f in enumerate(frames) if f["dts"] < output_sample_timestamp][-1]
+        output_sample_index = [
+            i for i, f in enumerate(frames) if f["dts"] < output_sample_timestamp
+        ][-1]
 
         if self.mode == 0:
             if any("representation" in f for f in frames):
@@ -401,14 +501,19 @@ class P1203Pv(object):
                     utils.resolution_to_number(first_frame["resolution"]),
                     utils.resolution_to_number(display_res),
                     bitrate,
-                    first_frame["fps"]
+                    first_frame["fps"],
                 )
             else:
                 score = self.video_model_function_mode0(
-                    utils.resolution_to_number(frames[output_sample_index]["resolution"]),
-                    utils.resolution_to_number(frames[output_sample_index].get("displaySize") or self.display_res),
+                    utils.resolution_to_number(
+                        frames[output_sample_index]["resolution"]
+                    ),
+                    utils.resolution_to_number(
+                        frames[output_sample_index].get("displaySize")
+                        or self.display_res
+                    ),
                     frames[output_sample_index]["bitrate"],
-                    frames[output_sample_index]["fps"]
+                    frames[output_sample_index]["fps"],
                 )
         else:
             # only get the relevant frames from the chunk
@@ -419,7 +524,8 @@ class P1203Pv(object):
                 # average the bitrate based on the frame sizes, as implemented
                 # in submitted model code
                 compensated_sizes = [
-                    utils.calculate_compensated_size(f["type"], f["size"], f["dts"]) for f in frames
+                    utils.calculate_compensated_size(f["type"], f["size"], f["dts"])
+                    for f in frames
                 ]
                 duration = np.sum([f["duration"] for f in frames])
                 bitrate = np.sum(compensated_sizes) * 8 / duration / 1000
@@ -428,21 +534,21 @@ class P1203Pv(object):
                     utils.resolution_to_number(display_res),
                     bitrate,
                     first_frame["fps"],
-                    frames
+                    frames,
                 )
             elif self.mode == 2:
                 score = self.video_model_function_mode2(
                     utils.resolution_to_number(first_frame["resolution"]),
                     utils.resolution_to_number(display_res),
                     first_frame["fps"],
-                    frames
+                    frames,
                 )
             elif self.mode == 3:
                 score = self.video_model_function_mode3(
                     utils.resolution_to_number(first_frame["resolution"]),
                     utils.resolution_to_number(display_res),
                     first_frame["fps"],
-                    frames
+                    frames,
                 )
             else:
                 raise P1203StandaloneError("Unsupported mode: {}".format(self.mode))
@@ -454,8 +560,8 @@ class P1203Pv(object):
         self.o22.append(score)
 
     def check_codec(self):
-        """ check if the segments are using valid codecs,
-            in P1203 only h264 is allowed
+        """check if the segments are using valid codecs,
+        in P1203 only h264 is allowed
         """
         codecs = list(set([s["codec"] for s in self.segments]))
         for c in codecs:
@@ -479,8 +585,13 @@ class P1203Pv(object):
                 break
             if "frames" in segment:
                 for frame in segment["frames"]:
-                    if "frameType" not in frame.keys() or "frameSize" not in frame.keys():
-                        raise P1203StandaloneError("Frame definition must have at least 'frameType' and 'frameSize'")
+                    if (
+                        "frameType" not in frame.keys()
+                        or "frameSize" not in frame.keys()
+                    ):
+                        raise P1203StandaloneError(
+                            "Frame definition must have at least 'frameType' and 'frameSize'"
+                        )
                     if "qpValues" in frame.keys():
                         self.mode = 3
                     else:
@@ -523,7 +634,12 @@ class P1203Pv(object):
                 num_frames_assumed = int(segment["duration"] * segment["fps"])
                 num_frames = len(segment["frames"])
                 if num_frames != num_frames_assumed:
-                    logger.warning("Segment specifies " + str(num_frames) + " frames but based on calculations, there should be " + str(num_frames_assumed))
+                    logger.warning(
+                        "Segment specifies "
+                        + str(num_frames)
+                        + " frames but based on calculations, there should be "
+                        + str(num_frames_assumed)
+                    )
                 frame_duration = 1.0 / segment["fps"]
                 for i in range(int(num_frames)):
                     frame = {
@@ -543,7 +659,11 @@ class P1203Pv(object):
                     if self.mode == 3:
                         qp_values = segment["frames"][i]["qpValues"]
                         if not qp_values:
-                            raise P1203StandaloneError("No QP values for frame {i} of segment {segment_index}".format(**locals()))
+                            raise P1203StandaloneError(
+                                "No QP values for frame {i} of segment {segment_index}".format(
+                                    **locals()
+                                )
+                            )
                         frame["qpValues"] = qp_values
                     # feed frame to MeasurementWindow
                     measurementwindow.add_frame(frame)
@@ -557,17 +677,19 @@ class P1203Pv(object):
         """
         # check which mode can be run
         if self.mode is not None and self.mode != 0:
-            raise P1203StandaloneError(f"Fast mode only works with mode 0, but it is set to {self.mode}")
+            raise P1203StandaloneError(
+                f"Fast mode only works with mode 0, but it is set to {self.mode}"
+            )
 
         self.mode = 0
 
         for segment in self.segments:
             score = self.video_model_function_mode0(
-                    utils.resolution_to_number(segment["resolution"]),
-                    utils.resolution_to_number(self.display_res),
-                    segment["bitrate"],
-                    segment["fps"]
-                )
+                utils.resolution_to_number(segment["resolution"]),
+                utils.resolution_to_number(self.display_res),
+                segment["bitrate"],
+                segment["fps"],
+            )
             self.o22.extend([score] * math.floor(segment["duration"]))
 
     def calculate(self, fast_mode=False):
@@ -590,7 +712,9 @@ class P1203Pv(object):
         utils.check_segment_continuity(self.segments, "video")
 
         if fast_mode:
-            logger.warning("Using fast mode of the model, results may not be accurate to the second")
+            logger.warning(
+                "Using fast mode of the model, results may not be accurate to the second"
+            )
             self._calculate_fast_mode()
         else:
             self._calculate_with_measurementwindow()
@@ -603,7 +727,9 @@ class P1203Pv(object):
             }
         }
 
-    def __init__(self, segments, display_res="1920x1080", device="pc", stream_id=None, coeffs={}):
+    def __init__(
+        self, segments, display_res="1920x1080", device="pc", stream_id=None, coeffs={}
+    ):
         """
         Initialize Pv model with input JSON data
 
@@ -624,5 +750,5 @@ class P1203Pv(object):
         self.coeffs = {**self._COEFFS, **coeffs}
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("this is just a module")

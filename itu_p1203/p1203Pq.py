@@ -26,13 +26,10 @@ from itertools import groupby
 
 import numpy as np
 
-from . import log
+from . import log, rfmodel, utils
 from .errors import P1203StandaloneError
-from . import rfmodel
-from . import utils
 
-
-logger = log.setup_custom_logger('itu_p1203')
+logger = log.setup_custom_logger("itu_p1203")
 
 
 class P1203Pq(object):
@@ -63,7 +60,7 @@ class P1203Pq(object):
         "comp3": 0.17332553,
         "comp4": -0.01035647,
         "f1": 0.02833052,
-        "f2": 0.98117059
+        "f2": 0.98117059,
     }
 
     def __init__(
@@ -76,7 +73,7 @@ class P1203Pq(object):
         coeffs={},
         amendment_1_audiovisual=False,
         amendment_1_stalling=False,
-        amendment_1_app_2=False
+        amendment_1_app_2=False,
     ):
         """Initialize P.1203 model
 
@@ -116,35 +113,60 @@ class P1203Pq(object):
 
         for l, p in zip(l_buff, p_buff):
             if p > max_dur:
-                logger.warning("Excluding stalling event at position " + str(p) + ", since it is outside of media range (0, " + str(max_dur) + ")")
+                logger.warning(
+                    "Excluding stalling event at position "
+                    + str(p)
+                    + ", since it is outside of media range (0, "
+                    + str(max_dur)
+                    + ")"
+                )
                 continue
             if l == 0:
-                logger.warning("Excluding stalling event at position " + str(p) + ", since it has zero duration")
+                logger.warning(
+                    "Excluding stalling event at position "
+                    + str(p)
+                    + ", since it has zero duration"
+                )
                 continue
             self.l_buff.append(l)
             self.p_buff.append(p)
 
         self.coeffs = {**self.COEFFS, **coeffs}
 
-    def _calc_stalling_impact(self, num_stalls, total_stall_len, duration, avg_stall_interval):
+    def _calc_stalling_impact(
+        self, num_stalls, total_stall_len, duration, avg_stall_interval
+    ):
         # Eq. 29
-        stalling_impact = np.exp(-num_stalls / self.coeffs["s1"]) * \
-            np.exp(-total_stall_len / duration / self.coeffs["s2"]) * \
-            np.exp(-avg_stall_interval / duration / self.coeffs["s3"])
+        stalling_impact = (
+            np.exp(-num_stalls / self.coeffs["s1"])
+            * np.exp(-total_stall_len / duration / self.coeffs["s2"])
+            * np.exp(-avg_stall_interval / duration / self.coeffs["s3"])
+        )
         return stalling_impact
 
     def _calc_stalling_features(self, duration):
         # Clause 8.1.1.1
         # calculate weighted total stalling length
         total_stall_len = sum(
-            [l_buff * utils.exponential(1, self.coeffs["c_ref7"], 0, self.coeffs["c_ref8"], duration - p_buff)
-             for p_buff, l_buff in zip(self.p_buff, self.l_buff)]
+            [
+                l_buff
+                * utils.exponential(
+                    1,
+                    self.coeffs["c_ref7"],
+                    0,
+                    self.coeffs["c_ref8"],
+                    duration - p_buff,
+                )
+                for p_buff, l_buff in zip(self.p_buff, self.l_buff)
+            ]
         )
         # calculate average stalling interval
         avg_stall_interval = 0
         num_stalls = len(self.l_buff)
         if num_stalls > 1:
-            avg_stall_interval = sum([b - a for a, b in zip(self.p_buff, self.p_buff[1:])]) / (len(self.l_buff) - 1)
+            avg_stall_interval = sum(
+                [b - a for a, b in zip(self.p_buff, self.p_buff[1:])]
+            ) / (len(self.l_buff) - 1)
 
         return total_stall_len, num_stalls, avg_stall_interval
 
@@ -152,7 +174,7 @@ class P1203Pq(object):
         # Clause 8.1.2.3
         vid_qual_change_rate = float(0)
         for i in range(1, duration):
-            diff = self.O22[i] - self.O22[i-1]
+            diff = self.O22[i] - self.O22[i - 1]
             if diff > 0.2 or diff < -0.2:
                 vid_qual_change_rate += 1
         vid_qual_change_rate = vid_qual_change_rate / duration
@@ -176,11 +198,15 @@ class P1203Pq(object):
         O22_len = len(self.O22)
 
         if not self.has_video:
-            raise P1203StandaloneError("O22 has no scores; Pq model is not valid without video.")
+            raise P1203StandaloneError(
+                "O22 has no scores; Pq model is not valid without video."
+            )
 
         if not self.has_audio:
             duration = O22_len
-            logger.warning("O21 has no scores, will assume constant high quality audio.")
+            logger.warning(
+                "O21 has no scores, will assume constant high quality audio."
+            )
             self.O21 = np.full(duration, 5.0)
         else:
             # else truncate the duration to the shorter of both streams
@@ -189,7 +215,9 @@ class P1203Pq(object):
             else:
                 duration = O21_len
 
-        total_stall_len, num_stalls, avg_stall_interval = self._calc_stalling_features(duration)
+        total_stall_len, num_stalls, avg_stall_interval = self._calc_stalling_features(
+            duration
+        )
 
         # ---------------------------------------------------------------------
         # Clause 8.1.2.2
@@ -212,27 +240,40 @@ class P1203Pq(object):
             O34_diff = list(O34)
             for i in range(duration):
                 # Eq. 5
-                w_diff = utils.exponential(1, self.coeffs["c1"], 0, self.coeffs["c2"], duration-i-1)
+                w_diff = utils.exponential(
+                    1, self.coeffs["c1"], 0, self.coeffs["c2"], duration - i - 1
+                )
                 O34_diff[i] = (O34[i] - O35_baseline) * w_diff
 
             # Eq. 6
-            neg_perc = np.percentile(O34_diff, 10, method='linear')
+            neg_perc = np.percentile(O34_diff, 10, method="linear")
             # Eq. 7
             negative_bias = np.maximum(0, -neg_perc) * self.coeffs["c23"]
 
-            osc_comp = self._calc_and_test_osc(duration, q_dir_changes_longest, q_dir_changes_tot, vid_qual_spread)
+            osc_comp = self._calc_and_test_osc(
+                duration, q_dir_changes_longest, q_dir_changes_tot, vid_qual_spread
+            )
 
             # Eq. 26
             adapt_comp = 0
             adapt_test = (q_dir_changes_longest / duration) < 0.25
             if adapt_test:
-                adapt_comp = np.maximum(0.0, np.minimum(self.coeffs["comp3"] * vid_qual_spread * vid_qual_change_rate + self.coeffs["comp4"], 0.5))
+                adapt_comp = np.maximum(
+                    0.0,
+                    np.minimum(
+                        self.coeffs["comp3"] * vid_qual_spread * vid_qual_change_rate
+                        + self.coeffs["comp4"],
+                        0.5,
+                    ),
+                )
 
             # Eq. 18
             O35 = O35_baseline - negative_bias - osc_comp - adapt_comp
 
         # ---------------------------------------------------------------------
-        stalling_impact = self._calc_stalling_impact(num_stalls, total_stall_len, duration, avg_stall_interval)
+        stalling_impact = self._calc_stalling_impact(
+            num_stalls, total_stall_len, duration, avg_stall_interval
+        )
         # Eq. 31
         O23 = 1 + 4 * stalling_impact
 
@@ -242,39 +283,52 @@ class P1203Pq(object):
 
         # ---------------------------------------------------------------------
         # Eq. 28
-        rf_score = rfmodel.calculate(self.O21, self.O22, self.l_buff, self.p_buff, duration)
+        rf_score = rfmodel.calculate(
+            self.O21, self.O22, self.l_buff, self.p_buff, duration
+        )
         O46 = 0.75 * np.maximum(np.minimum(mos, 5), 1) + 0.25 * rf_score
 
         if self.amendment_1_stalling:
-            q_fac = min(max(self.coeffs["amd_1_a1"] * total_stall_len + self.coeffs["amd_1_a2"], 0), 1)
+            q_fac = min(
+                max(
+                    self.coeffs["amd_1_a1"] * total_stall_len + self.coeffs["amd_1_a2"],
+                    0,
+                ),
+                1,
+            )
             O46 = 1 + (O46 - 1) * q_fac
 
         # Eq. 30
         O46 = self.coeffs["f1"] + self.coeffs["f2"] * O46
 
-        return {
-            "O23": O23,
-            "O34": O34.tolist(),
-            "O35": float(O35),
-            "O46": float(O46)
-        }
+        return {"O23": O23, "O34": O34.tolist(), "O35": float(O35), "O46": float(O46)}
 
     def _calc_034_035_baseline(self, duration):
         # Eq. 19-21
         O35_denominator = O35_numerator = 0
         O34 = np.zeros(duration)
         for t in range(duration):
-            O34[t] = np.maximum(np.minimum(
-                self.coeffs["av1"] + self.coeffs["av2"] * self.O21[t] + self.coeffs["av3"] * self.O22[t] + self.coeffs[
-                    "av4"] * self.O21[t] * self.O22[t],
-                5), 1)
+            O34[t] = np.maximum(
+                np.minimum(
+                    self.coeffs["av1"]
+                    + self.coeffs["av2"] * self.O21[t]
+                    + self.coeffs["av3"] * self.O22[t]
+                    + self.coeffs["av4"] * self.O21[t] * self.O22[t],
+                    5,
+                ),
+                1,
+            )
 
             if self.amendment_1_audiovisual:
                 # Eq. 17a
-                O34[t] = (1 - max(0, self.coeffs["amd_1_a_threshold"] - self.O21[t])) * (O34[t] - 1) + 1
+                O34[t] = (
+                    1 - max(0, self.coeffs["amd_1_a_threshold"] - self.O21[t])
+                ) * (O34[t] - 1) + 1
 
             temp = O34[t]
-            w1 = self.coeffs["t1"] + self.coeffs["t2"] * np.exp((t / float(duration)) / self.coeffs["t3"])
+            w1 = self.coeffs["t1"] + self.coeffs["t2"] * np.exp(
+                (t / float(duration)) / self.coeffs["t3"]
+            )
             w2 = self.coeffs["t4"] - self.coeffs["t5"] * temp
 
             O35_numerator += w1 * w2 * temp
@@ -282,18 +336,30 @@ class P1203Pq(object):
         O35_baseline = O35_numerator / O35_denominator
         return O34, O35_baseline
 
-    def _calc_and_test_osc(self, duration, q_dir_changes_longest, q_dir_changes_tot, vid_qual_spread):
+    def _calc_and_test_osc(
+        self, duration, q_dir_changes_longest, q_dir_changes_tot, vid_qual_spread
+    ):
         # ---------------------------------------------------------------------
         # Clause 8.3
         # Eq. 24
         osc_comp = 0
-        osc_test = ((q_dir_changes_longest / duration) < 0.25) and (q_dir_changes_longest < 30)
+        osc_test = ((q_dir_changes_longest / duration) < 0.25) and (
+            q_dir_changes_longest < 30
+        )
         if osc_test:
             # Eq. 27
             q_diff = np.maximum(0.0, 1 + np.log10(vid_qual_spread + 0.001))
             # Eq. 23
-            osc_comp = np.maximum(0.0, np.minimum(
-                q_diff * np.exp(self.coeffs["comp1"] * q_dir_changes_tot + self.coeffs["comp2"]), 1.5))
+            osc_comp = np.maximum(
+                0.0,
+                np.minimum(
+                    q_diff
+                    * np.exp(
+                        self.coeffs["comp1"] * q_dir_changes_tot + self.coeffs["comp2"]
+                    ),
+                    1.5,
+                ),
+            )
         return osc_comp
 
     def _calc_qdir(self):
@@ -304,9 +370,11 @@ class P1203Pq(object):
         padding_beg = np.asarray([self.O22[0]] * (ma_order - 1))
         padding_end = np.asarray([self.O22[-1]] * (ma_order - 1))
         padded_O22 = np.append(np.append(padding_beg, self.O22), padding_end)
-        ma_filtered = np.convolve(padded_O22, ma_kernel, mode='valid').tolist()
+        ma_filtered = np.convolve(padded_O22, ma_kernel, mode="valid").tolist()
         step = 3
-        for current_score, next_score in zip(ma_filtered[0::step], ma_filtered[step::step]):
+        for current_score, next_score in zip(
+            ma_filtered[0::step], ma_filtered[step::step]
+        ):
             thresh = 0.2
             if (next_score - current_score) > thresh:
                 QC.append(1)

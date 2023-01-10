@@ -24,10 +24,11 @@ SOFTWARE.
 """
 
 import math
+
 from . import log
 from .utils import get_chunk_hash
 
-logger = log.setup_custom_logger('itu_p1203')
+logger = log.setup_custom_logger("itu_p1203")
 
 
 class MeasurementWindow:
@@ -41,7 +42,9 @@ class MeasurementWindow:
         self._frames = []  # actual measurement window
         self._removed_frames = []  # removed old frames
         self._last_score_output_at = 0
-        self._acc_frame_dur = 0  # accumulated frame duration inside the measurement window
+        self._acc_frame_dur = (
+            0  # accumulated frame duration inside the measurement window
+        )
         self._acc_pvs_dur = 0  # current accumulated time at end of measurement window, for the entire PVS
         self._frames_added_cnt = 0
         self._half_window_size = int(self.max_size / 2)  # half of the window
@@ -57,7 +60,8 @@ class MeasurementWindow:
         """
         if not callable(callback):
             raise SystemExit(
-                "Callback passed to set_score_callback is not a callable function")
+                "Callback passed to set_score_callback is not a callable function"
+            )
         self._score_callback = callback
 
     def _should_calculate_score(self):
@@ -66,7 +70,10 @@ class MeasurementWindow:
         added to the measurement window.
         """
         # Beginning of filling the measurement window: When we reach 11 seconds, we can output the score for t=1
-        if self._last_score_output_at == 0 and round(self._acc_pvs_dur, 5) < self._half_window_size + 1:
+        if (
+            self._last_score_output_at == 0
+            and round(self._acc_pvs_dur, 5) < self._half_window_size + 1
+        ):
             return False
 
         # Otherwise, we can start outputting scores, starting with t=1 using the window [0, 11]
@@ -88,8 +95,7 @@ class MeasurementWindow:
         frame: dict with keys "duration" and "dts"
         """
         if not frame["duration"]:
-            raise SystemExit(
-                "Frame added to measurement window had no duration")
+            raise SystemExit("Frame added to measurement window had no duration")
 
         if self._acc_frame_dur + frame["duration"] > self.max_size:
             removed_frame = self._frames.pop(0)
@@ -97,7 +103,11 @@ class MeasurementWindow:
             self._acc_frame_dur -= removed_frame["duration"]
 
         # pre-calculate chunk hashes
-        frame["representation"] = get_chunk_hash(frame, "audio") if "fps" not in frame else get_chunk_hash(frame, "video")
+        frame["representation"] = (
+            get_chunk_hash(frame, "audio")
+            if "fps" not in frame
+            else get_chunk_hash(frame, "video")
+        )
 
         self._frames.append(frame)
         self._acc_frame_dur += frame["duration"]
@@ -129,7 +139,10 @@ class MeasurementWindow:
             # Remove frames from the beginning of the window [160.23, 180.23]
             # until it fulfills condition [t-10, 180.23], i.e. [161, 180.23]
             removed_duration = 0
-            while round(self._frames[0]["dts"], 5) < output_sample_timestamp - self._half_window_size:
+            while (
+                round(self._frames[0]["dts"], 5)
+                < output_sample_timestamp - self._half_window_size
+            ):
                 # print round(self._frames[0]["dts"], 5), output_sample_timestamp - self._half_window_size
                 removed_frame = self._frames.pop(0)
                 removed_duration += removed_frame["duration"]
@@ -165,15 +178,7 @@ class MeasurementWindow:
         """
         Pretty-print the content of the measurement window for debugging
         """
-        print("\t".join([
-            "IDX",
-            "TYPE",
-            "SIZE",
-            "PTS",
-            "DTS",
-            "DUR",
-            "ACC"
-        ]))
+        print("\t".join(["IDX", "TYPE", "SIZE", "PTS", "DTS", "DUR", "ACC"]))
         acc = 0
 
         for index, frame in enumerate(self._frames, start=1):
@@ -188,24 +193,28 @@ class MeasurementWindow:
                 size = "None"
 
             if "pts" in frame.keys() and frame["pts"] != None:
-                pts = str(format(round(frame["pts"], 4), '.4f'))
+                pts = str(format(round(frame["pts"], 4), ".4f"))
             else:
                 pts = "None"
 
             if frame["dts"] != None:
-                dts = str(format(round(frame["dts"], 4), '.4f'))
+                dts = str(format(round(frame["dts"], 4), ".4f"))
             else:
                 dts = "None"
 
-            duration = str(format(round(frame["duration"], 4), '.4f'))
+            duration = str(format(round(frame["duration"], 4), ".4f"))
             acc += frame["duration"]
 
-            print("\t".join([
-                str(index),
-                str(f_type),
-                str(size),
-                str(pts),
-                str(dts),
-                str(duration),
-                str(format(round(acc, 4), '.4f'))
-            ]))
+            print(
+                "\t".join(
+                    [
+                        str(index),
+                        str(f_type),
+                        str(size),
+                        str(pts),
+                        str(dts),
+                        str(duration),
+                        str(format(round(acc, 4), ".4f")),
+                    ]
+                )
+            )

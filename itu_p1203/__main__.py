@@ -22,37 +22,38 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import os
 import argparse
-import logging
-import sys
-import multiprocessing
 import json
+import logging
+import multiprocessing
+import os
+import sys
+import textwrap
 from multiprocessing import Pool
 from os.path import expanduser
-import textwrap
 
-from . import log
-from . import utils
-from .p1203_standalone import P1203Standalone
-from .extractor import Extractor
+from . import log, utils
 from .errors import P1203StandaloneError
+from .extractor import Extractor
+from .p1203_standalone import P1203Standalone
 
-logger = log.setup_custom_logger('itu_p1203')
+logger = log.setup_custom_logger("itu_p1203")
 
 
 def has_user_signed_acknowledgment():
     home = expanduser("~")
-    return os.path.isfile(os.path.join(home, '.itu_p1203'))
+    return os.path.isfile(os.path.join(home, ".itu_p1203"))
 
 
 def sign_acknowledgement():
     home = expanduser("~")
     try:
-        with open(os.path.join(home, '.itu_p1203'), 'w') as file_name:
-            file_name.write('\n')
+        with open(os.path.join(home, ".itu_p1203"), "w") as file_name:
+            file_name.write("\n")
     except Exception as e:
-        logger.error("Coult not create file in home directory. Please use --accept-notice to silence the message.")
+        logger.error(
+            "Coult not create file in home directory. Please use --accept-notice to silence the message."
+        )
 
 
 def extract_from_single_file(
@@ -66,7 +67,7 @@ def extract_from_single_file(
     quiet=False,
     amendment_1_audiovisual=False,
     amendment_1_stalling=False,
-    amendment_1_app_2=False
+    amendment_1_app_2=False,
 ):
     """
     Extract the report based on a single input file (JSON or video)
@@ -87,7 +88,9 @@ def extract_from_single_file(
                                     ensuring compatibility with P.1204.3
     """
     if input_file != "-" and not os.path.isfile(input_file):
-        raise P1203StandaloneError("No such file: {input_file}".format(input_file=input_file))
+        raise P1203StandaloneError(
+            "No such file: {input_file}".format(input_file=input_file)
+        )
 
     if input_file == "-":
         stdin = sys.stdin.read()
@@ -101,13 +104,25 @@ def extract_from_single_file(
             input_report = utils.read_json_without_comments(input_file)
         # convert input video to required format
         elif file_ext in valid_video_exts:
-            logger.debug("Running extract_from_segment_files to get input report: {} mode {}".format(input_file, mode))
+            logger.debug(
+                "Running extract_from_segment_files to get input report: {} mode {}".format(
+                    input_file, mode
+                )
+            )
             try:
                 input_report = Extractor([input_file], mode).extract()
             except Exception as e:
-                raise P1203StandaloneError("Could not auto-generate input report, error: {e.output}".format(e=e))
+                raise P1203StandaloneError(
+                    "Could not auto-generate input report, error: {e.output}".format(
+                        e=e
+                    )
+                )
         else:
-            raise P1203StandaloneError("Could not guess what kind of input file this is: {input_file}".format(input_file=input_file))
+            raise P1203StandaloneError(
+                "Could not guess what kind of input file this is: {input_file}".format(
+                    input_file=input_file
+                )
+            )
 
     # create model ...
     itu_p1203 = P1203Standalone(
@@ -119,7 +134,7 @@ def extract_from_single_file(
         quiet=quiet,
         amendment_1_audiovisual=amendment_1_audiovisual,
         amendment_1_stalling=amendment_1_stalling,
-        amendment_1_app_2=amendment_1_app_2
+        amendment_1_app_2=amendment_1_app_2,
     )
 
     # ... and run it
@@ -146,73 +161,62 @@ def main(modules={}, quiet=False):
 
     # argument parsing
     parser = argparse.ArgumentParser(
-        description='P.1203 standalone implementation, version ' + str(__version__),
+        description="P.1203 standalone implementation, version " + str(__version__),
         epilog="2017",
-        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
     parser.add_argument(
-        'input',
+        "input",
         type=str,
         nargs="+",
-        help="input report JSON file(s) or video file(s), or STDIN if '-', format see README"
+        help="input report JSON file(s) or video file(s), or STDIN if '-', format see README",
     )
     parser.add_argument(
-        '-m', '--mode',
+        "-m",
+        "--mode",
         type=int,
         choices=[0, 1, 2, 3],
         default=1,
-        help="mode to run for extraction in case video files are loaded"
+        help="mode to run for extraction in case video files are loaded",
+    )
+    parser.add_argument("--debug", action="store_true", help="some debug output")
+    parser.add_argument(
+        "--only-pa", action="store_true", help="just print Pa O.21 values"
     )
     parser.add_argument(
-        '--debug',
-        action='store_true',
-        help="some debug output"
+        "--only-pv", action="store_true", help="just print Pv O.22 values"
     )
     parser.add_argument(
-        '--only-pa',
-        action='store_true',
-        help="just print Pa O.21 values"
+        "--print-intermediate",
+        action="store_true",
+        help="print intermediate O.21/O.22 values",
     )
     parser.add_argument(
-        '--only-pv',
-        action='store_true',
-        help="just print Pv O.22 values"
-    )
-    parser.add_argument(
-        '--print-intermediate',
-        action='store_true',
-        help="print intermediate O.21/O.22 values"
-    )
-    parser.add_argument(
-        '--cpu-count',
+        "--cpu-count",
         type=int,
         default=multiprocessing.cpu_count(),
-        help='thread/CPU count'
+        help="thread/CPU count",
+    )
+    parser.add_argument("--version", action="version", version=str(__version__))
+    parser.add_argument(
+        "--accept-notice",
+        action="store_true",
+        help="accept license and acknowledgement terms",
     )
     parser.add_argument(
-        '--version',
-        action='version',
-        version=str(__version__)
+        "--amendment-1-audiovisual",
+        action="store_true",
+        help="enable audiovisual compensation from P.1203.3 Amendment 1",
     )
     parser.add_argument(
-        '--accept-notice',
-        action='store_true',
-        help="accept license and acknowledgement terms"
+        "--amendment-1-stalling",
+        action="store_true",
+        help="enable stalling compensation from P.1203.3 Amendment 1",
     )
     parser.add_argument(
-        '--amendment-1-audiovisual',
-        action='store_true',
-        help="enable audiovisual compensation from P.1203.3 Amendment 1"
-    )
-    parser.add_argument(
-        '--amendment-1-stalling',
-        action='store_true',
-        help="enable stalling compensation from P.1203.3 Amendment 1"
-    )
-    parser.add_argument(
-        '--amendment-1-app-2',
-        action='store_true',
-        help="enable simplified model from P.1204.3 Amendment 1 Appendix 2"
+        "--amendment-1-app-2",
+        action="store_true",
+        help="enable simplified model from P.1204.3 Amendment 1 Appendix 2",
     )
 
     argsdict = vars(parser.parse_args())
@@ -220,7 +224,8 @@ def main(modules={}, quiet=False):
     # check if user signed acknowledgement
     if not argsdict["accept_notice"] and not has_user_signed_acknowledgment():
         print(
-            textwrap.dedent("""
+            textwrap.dedent(
+                """
             This software is subject to a license.
             Academic tradition also requires you to cite works you base your
             own work on. Please carefully read the license terms and the
@@ -272,9 +277,11 @@ def main(modules={}, quiet=False):
             By typing "accept", you will accept these license and acknowledgement terms.
 
             You can also squelch this notice by passing the --accept-notice option.
-            """))
+            """
+            )
+        )
         user_input = input("Enter 'accept' to accept: ")
-        if user_input.replace("'", '').strip().lower() == 'accept':
+        if user_input.replace("'", "").strip().lower() == "accept":
             sign_acknowledgement()
         else:
             logger.error("User did not accept license and acknowledgement terms.")
@@ -293,23 +300,56 @@ def main(modules={}, quiet=False):
     if use_multiprocessing:
         multiprocessing.set_start_method("fork")
         if any(input_file == "-" for input_file in argsdict["input"]):
-            logger.error("You can only use STDIN with single-threaded processing. Use --cpu-count 1.")
+            logger.error(
+                "You can only use STDIN with single-threaded processing. Use --cpu-count 1."
+            )
             sys.exit(1)
 
         pool = Pool(processes=argsdict["cpu_count"])
-        params = [(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules, quiet, argsdict["amendment_1_audiovisual"], argsdict["amendment_1_stalling"], argsdict["amendment_1_app_2"]) for input_file in argsdict["input"]]
+        params = [
+            (
+                input_file,
+                argsdict["mode"],
+                argsdict["debug"],
+                argsdict["only_pa"],
+                argsdict["only_pv"],
+                argsdict["print_intermediate"],
+                modules,
+                quiet,
+                argsdict["amendment_1_audiovisual"],
+                argsdict["amendment_1_stalling"],
+                argsdict["amendment_1_app_2"],
+            )
+            for input_file in argsdict["input"]
+        ]
         try:
             output_results = pool.starmap(extract_from_single_file, params)
         except Exception as e:
-            logger.error("Error during processing, exiting: {}".format(e), exc_info=True)
+            logger.error(
+                "Error during processing, exiting: {}".format(e), exc_info=True
+            )
             sys.exit(1)
     else:
         # iterate over input files
         for input_file in argsdict["input"]:
             try:
-                result = extract_from_single_file(input_file, argsdict["mode"], argsdict["debug"], argsdict["only_pa"], argsdict["only_pv"], argsdict["print_intermediate"], modules, quiet, argsdict["amendment_1_audiovisual"], argsdict["amendment_1_stalling"], argsdict["amendment_1_app_2"])
+                result = extract_from_single_file(
+                    input_file,
+                    argsdict["mode"],
+                    argsdict["debug"],
+                    argsdict["only_pa"],
+                    argsdict["only_pv"],
+                    argsdict["print_intermediate"],
+                    modules,
+                    quiet,
+                    argsdict["amendment_1_audiovisual"],
+                    argsdict["amendment_1_stalling"],
+                    argsdict["amendment_1_app_2"],
+                )
             except Exception as e:
-                logger.error("Error during processing, exiting: {}".format(e), exc_info=True)
+                logger.error(
+                    "Error during processing, exiting: {}".format(e), exc_info=True
+                )
                 sys.exit(1)
             # append to output
             output_results.append(result)
