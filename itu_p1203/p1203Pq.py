@@ -216,7 +216,7 @@ class P1203Pq(object):
                 O34_diff[i] = (O34[i] - O35_baseline) * w_diff
 
             # Eq. 6
-            neg_perc = np.percentile(O34_diff, 10, interpolation='linear')
+            neg_perc = np.percentile(O34_diff, 10, method='linear')
             # Eq. 7
             negative_bias = np.maximum(0, -neg_perc) * self.coeffs["c23"]
 
