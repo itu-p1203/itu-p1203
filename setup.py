@@ -33,7 +33,7 @@ setup(
     packages=["itu_p1203"],
     include_package_data=True,
     install_requires=["numpy"],
-    package_data={"": ["itu_p1203/trees/*"]},
+    package_data={"itu_p1203": ["trees/*"]},
     # license="Custom",
     zip_safe=False,
     keywords="video, p1203",
