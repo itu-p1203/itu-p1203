@@ -26,11 +26,11 @@ SOFTWARE.
 import json
 import datetime
 
-from itu_p1203 import log
-from itu_p1203.p1203Pa import P1203Pa
-from itu_p1203.p1203Pv import P1203Pv
-from itu_p1203.p1203Pq import P1203Pq
-from itu_p1203.errors import P1203StandaloneError
+from . import log
+from .p1203Pa import P1203Pa
+from .p1203Pv import P1203Pv
+from .p1203Pq import P1203Pq
+from .errors import P1203StandaloneError
 
 import logging
 logger = log.setup_custom_logger('itu_p1203')

@@ -24,8 +24,8 @@ SOFTWARE.
 """
 
 import math
-from itu_p1203 import log
-from itu_p1203.utils import get_chunk_hash
+from . import log
+from .utils import get_chunk_hash
 
 logger = log.setup_custom_logger('itu_p1203')
 

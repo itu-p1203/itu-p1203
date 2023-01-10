@@ -28,10 +28,10 @@ import numpy as np
 from functools import lru_cache
 import json
 
-from itu_p1203 import log
-from itu_p1203 import utils
-from itu_p1203.errors import P1203StandaloneError
-from itu_p1203.measurementwindow import MeasurementWindow
+from . import log
+from . import utils
+from .errors import P1203StandaloneError
+from .measurementwindow import MeasurementWindow
 
 logger = log.setup_custom_logger('itu_p1203')
 

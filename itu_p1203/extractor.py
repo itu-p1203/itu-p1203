@@ -34,7 +34,7 @@ import tempfile
 import gzip
 import subprocess
 
-from itu_p1203 import utils
+from . import utils
 
 
 def average(x):

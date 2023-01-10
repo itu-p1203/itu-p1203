@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from itu_p1203 import log
+from . import log
 
 logger = log.setup_custom_logger('itu_p1203')
 

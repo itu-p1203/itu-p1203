@@ -32,11 +32,11 @@ from multiprocessing import Pool
 from os.path import expanduser
 import textwrap
 
-from itu_p1203 import log
-from itu_p1203 import utils
-from itu_p1203.p1203_standalone import P1203Standalone
-from itu_p1203.extractor import Extractor
-from itu_p1203.errors import P1203StandaloneError
+from . import log
+from . import utils
+from .p1203_standalone import P1203Standalone
+from .extractor import Extractor
+from .errors import P1203StandaloneError
 
 logger = log.setup_custom_logger('itu_p1203')
 
