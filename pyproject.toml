@@ -2,7 +2,7 @@
 name = "itu-p1203"
 version = "1.8.3"
 description = "ITU-T P.1203 Standalone Model"
-authors = ["Your Name <you@example.com>"]
+authors = ["Werner Robitza <werner.robitza@gmail.com"]
 
 [tool.poetry.dependencies]
 python = "^3.8,<4.0"
