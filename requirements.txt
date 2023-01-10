@@ -1,1 +1,1 @@
-numpy>=1.24.0
+numpy==1.24.1 ; python_version >= "3.8" and python_version < "4.0"

@@ -46,8 +46,13 @@ git tag -a -m "Tag version ${INPUT_STRING}." "v$INPUT_STRING"
 # generate the changelog
 poetry run gitchangelog > CHANGELOG.md
 
+# export the requirements
+poetry export --without-hashes -f requirements.txt > requirements.txt
+poetry export --with dev -f requirements.txt --output requirements.dev.txt --without-hashes
+
 # add the changelog and amend it to the previous commit and tag
 git add CHANGELOG.md
+git add requirements.txt requirements.dev.txt
 git commit --amend --no-edit
 git tag -a -f -m "Tag version ${INPUT_STRING}." "v$INPUT_STRING"
 
