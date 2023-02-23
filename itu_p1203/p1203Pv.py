@@ -686,7 +686,9 @@ class P1203Pv(object):
         for segment in self.segments:
             score = self.video_model_function_mode0(
                 utils.resolution_to_number(segment["resolution"]),
-                utils.resolution_to_number(self.display_res),
+                utils.resolution_to_number(
+                    segment.get("displaySize", self.display_res)
+                ),
                 segment["bitrate"],
                 segment["fps"],
             )
