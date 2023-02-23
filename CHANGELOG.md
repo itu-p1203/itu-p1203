@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.9.2 (2023-02-23)
+
+* Allow overriding displaySize per segment for fast mode.
+
+
 ## v1.9.1 (2023-01-10)
 
 * Fix author string.
