@@ -68,6 +68,7 @@ def extract_from_single_file(
     amendment_1_audiovisual=False,
     amendment_1_stalling=False,
     amendment_1_app_2=False,
+    fast_mode=False,
 ):
     """
     Extract the report based on a single input file (JSON or video)
@@ -86,6 +87,7 @@ def extract_from_single_file(
         amendment_1_stalling {bool} -- enable the fix from Amendment 1, Clause 8.4 (default: False)
         amendment_1_app_2 {bool} -- enable the simplified model from Amendment 1, Appendix 2 (default: False),
                                     ensuring compatibility with P.1204.3
+        fast_mode {bool} -- enable fast mode (default: False)
     """
     if input_file != "-" and not os.path.isfile(input_file):
         raise P1203StandaloneError(
@@ -135,6 +137,7 @@ def extract_from_single_file(
         amendment_1_audiovisual=amendment_1_audiovisual,
         amendment_1_stalling=amendment_1_stalling,
         amendment_1_app_2=amendment_1_app_2,
+        fast_mode=fast_mode,
     )
 
     # ... and run it
@@ -217,6 +220,11 @@ def main(modules={}, quiet=False):
         "--amendment-1-app-2",
         action="store_true",
         help="enable simplified model from P.1204.3 Amendment 1 Appendix 2",
+    )
+    parser.add_argument(
+        "--fast-mode",
+        action="store_true",
+        help="enable fast mode (one O.21/O.22 score per segment), not standards-conformant",
     )
 
     argsdict = vars(parser.parse_args())
@@ -319,6 +327,7 @@ def main(modules={}, quiet=False):
                 argsdict["amendment_1_audiovisual"],
                 argsdict["amendment_1_stalling"],
                 argsdict["amendment_1_app_2"],
+                argsdict["fast_mode"],
             )
             for input_file in argsdict["input"]
         ]
@@ -345,6 +354,7 @@ def main(modules={}, quiet=False):
                     argsdict["amendment_1_audiovisual"],
                     argsdict["amendment_1_stalling"],
                     argsdict["amendment_1_app_2"],
+                    argsdict["fast_mode"],
                 )
             except Exception as e:
                 logger.error(

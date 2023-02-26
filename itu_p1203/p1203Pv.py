@@ -710,7 +710,6 @@ class P1203Pv(object):
         Parameters:
             fast_mode {bool} -- if True, use the fast mode of the model (less precise)
         """
-
         utils.check_segment_continuity(self.segments, "video")
 
         if fast_mode:

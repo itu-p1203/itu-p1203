@@ -52,6 +52,7 @@ class P1203Standalone:
         amendment_1_audiovisual=False,
         amendment_1_stalling=False,
         amendment_1_app_2=False,
+        fast_mode=False,
     ):
         """
         Initialize a standalone model run based on JSON input files
@@ -69,6 +70,7 @@ class P1203Standalone:
             amendment_1_stalling {bool} -- enable the fix from Amendment 1, Clause 8.4 (default: False)
             amendment_1_app_2 {bool} -- enable the simplified model from Amendment 1, Appendix 2 (default: False),
                                         ensuring compatibility with P.1204.3
+            fast_mode {bool} -- enable fast mode (default: False)
         """
         self.input_report = input_report
         self.debug = debug
@@ -84,6 +86,8 @@ class P1203Standalone:
         self.amendment_1_audiovisual = amendment_1_audiovisual
         self.amendment_1_stalling = amendment_1_stalling
         self.amendment_1_app_2 = amendment_1_app_2
+
+        self.fast_mode = fast_mode
 
         if quiet:
             logger.setLevel(logging.CRITICAL)
@@ -119,7 +123,9 @@ class P1203Standalone:
             except Exception:
                 logger.warning("No stream ID specified")
 
-            self.audio = self.Pa(segments, stream_id).calculate(fast_mode=fast_mode)
+            self.audio = self.Pa(segments, stream_id).calculate(
+                fast_mode=self.fast_mode or fast_mode
+            )
 
         # use existing O21 scores
         elif "O21" in self.input_report.keys():
@@ -182,7 +188,7 @@ class P1203Standalone:
                 display_res=display_res,
                 device=device,
                 stream_id=stream_id,
-            ).calculate(fast_mode=fast_mode)
+            ).calculate(fast_mode=self.fast_mode or fast_mode)
 
         # use existing O22 scores
         elif "O22" in self.input_report.keys():
