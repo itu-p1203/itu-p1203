@@ -623,7 +623,14 @@ class Extractor(object):
             segment,
         ]
         stdout, _ = run_command(cmd)
-        size = sum([int(l) for l in stdout.split("\n") if l != ""])
+        size = 0
+        for l in stdout.split("\n"):
+            if l == "":
+                continue
+            if "|" in l:
+                size += int(l.split("|")[0])
+            else:
+                size += int(l)
         return size
 
     @staticmethod

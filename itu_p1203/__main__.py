@@ -99,7 +99,7 @@ def extract_from_single_file(
         input_report = json.loads(stdin)
     else:
         file_ext = os.path.splitext(input_file)[1].lower()[1:]
-        valid_video_exts = ["avi", "mp4", "mkv", "nut", "mpeg", "mpg"]
+        valid_video_exts = ["avi", "mp4", "mkv", "nut", "mpeg", "mpg", "ts"]
 
         # normal case, handle JSON files
         if file_ext == "json":
