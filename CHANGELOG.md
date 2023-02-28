@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v1.9.3 (2023-02-28)
+
+* Support .ts files, fixes #33.
+
+* Add test fixture.
+
+* Add fast-mode parameter.
+
+
 ## v1.9.2 (2023-02-23)
 
 * Allow overriding displaySize per segment for fast mode.
