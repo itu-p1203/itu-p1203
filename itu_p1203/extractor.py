@@ -561,7 +561,7 @@ class Extractor(object):
 
         if has_audio:
             if "duration" in audio_info:
-                audio_duration = audio_info["duration"]
+                audio_duration = float(audio_info["duration"])
             elif "tags" in audio_info and "DURATION" in audio_info["tags"]:
                 duration_str = audio_info["tags"]["DURATION"]
                 hms, msec = duration_str.split(".")
