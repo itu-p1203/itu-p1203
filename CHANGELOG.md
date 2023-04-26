@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.9.4 (2023-04-26)
+
+* Update extractor.py.
+
+
 ## v1.9.3 (2023-02-28)
 
 * Support .ts files, fixes #33.

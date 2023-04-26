@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "itu-p1203"
-version = "1.9.3"
+version = "1.9.4"
 description = "ITU-T P.1203 Standalone Model"
 authors = ["Werner Robitza <werner.robitza@gmail.com>"]
 
