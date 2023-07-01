@@ -607,15 +607,22 @@ class P1203Pv(object):
         if self.mode == 0:
             dts = 0
             for segment in self.segments:
-                num_frames = int(segment["duration"] * segment["fps"])
-                frame_duration = 1.0 / segment["fps"]
+                segment_fps = min(
+                    segment["fps"], 120
+                )  # cap the FPS at 120 to prevent erroneous results
+                if segment_fps != segment["fps"]:
+                    logger.warning(
+                        "FPS of segment is higher than 120, capping to prevent incorrect results"
+                    )
+                num_frames = int(segment["duration"] * segment_fps)
+                frame_duration = 1.0 / segment_fps
                 for i in range(int(num_frames)):
                     frame = {
                         "duration": frame_duration,
                         "dts": dts,
                         "bitrate": segment["bitrate"],
                         "codec": segment["codec"],
-                        "fps": segment["fps"],
+                        "fps": segment_fps,
                         "resolution": segment["resolution"],
                     }
                     if "displaySize" in segment.keys():
