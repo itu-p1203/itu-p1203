@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.9.5 (2023-07-01)
+
+* Add fix for incorrect FPS values increasing computation time.
+
+
 ## v1.9.4 (2023-04-26)
 
 * Update extractor.py.
