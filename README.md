@@ -58,7 +58,11 @@ Different Amendments of the official P.1203 recommendation can be enabled; pleas
 
 ## Installation via `pip3`
 
-From this directory, run:
+Directly via Git:
+
+    pip3 install git+https://github.com/itu-p1203/itu-p1203
+
+Or, from this directory, run:
 
     pip3 install .
 
