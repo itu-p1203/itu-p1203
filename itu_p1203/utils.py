@@ -883,12 +883,16 @@ def calculate_compensated_size(frame_type, size, dts=None):
 
 
 def mos_from_r(Q):
+    if Q <= 0:
+        return MOS_MIN
+    if Q >= 100:
+        return MOS_MAX
     MOS = (
         MOS_MIN
         + float(MOS_MAX - MOS_MIN) * float(Q) / 100.0
         + float(Q) * float(Q - 60.0) * float(100.0 - Q) * 0.000007
     )
-    return min(MOS_MAX, max(MOS, MOS_MIN))
+    return MOS
 
 
 def r_from_mos(MOS):
