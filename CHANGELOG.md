@@ -1,6 +1,15 @@
 # Changelog
 
 
+## v1.9.6 (2023-10-31)
+
+* Fix mos_from_r function.
+
+  This better handles values exceeding the allowable input range [0, 100]
+
+* Explain direct installation.
+
+
 ## v1.9.5 (2023-07-01)
 
 * Add fix for incorrect FPS values increasing computation time.
