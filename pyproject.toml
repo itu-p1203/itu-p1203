@@ -5,13 +5,13 @@ description = "ITU-T P.1203 Standalone Model"
 authors = ["Werner Robitza <werner.robitza@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8,<4.0"
-numpy = "^1.24.0"
+python = ">=3.9,<4.0"
+numpy = ">=2.0.0,<3.0.0"
 
 [tool.poetry.dev-dependencies]
 gitchangelog = "^3.0.4"
-pystache = "^0.6.0"
-pytest = "^6.2.3"
+pystache = "^0.6.5"
+pytest = "^6.2.5"
 
 [tool.poetry.scripts]
 p1203-standalone = 'itu_p1203.__main__:main'

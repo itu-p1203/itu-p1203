@@ -43,7 +43,7 @@ Different Amendments of the official P.1203 recommendation can be enabled; pleas
 
 ## Requirements
 
-* Python 3.8 or higher and `pip3`
+* Python 3.9 or higher and `pip3`
   * Modern Linux distributions should come with Python 3. If not, [pyenv](https://github.com/pyenv/pyenv) is recommended to get a user-level Python 3 installation.
   * Under macOS, use [Homebrew](https://brew.sh/) and `brew install python` and read the printed messages.
   * For installation under Windows, please install Python from the official website
