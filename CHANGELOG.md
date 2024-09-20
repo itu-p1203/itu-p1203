@@ -1,6 +1,11 @@
 # Changelog
 
 
+## v1.10.0 (2024-09-20)
+
+* Update dependencies and python requirements.
+
+
 ## v1.9.6 (2023-10-31)
 
 * Fix mos_from_r function.
