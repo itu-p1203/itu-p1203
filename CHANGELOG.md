@@ -1,446 +1,404 @@
-# Changelog
+## [1.10.0] - 2024-09-20
 
+### ⚙️ Other
 
-## v1.10.0 (2024-09-20)
+- Update dependencies and python requirements
+- Bump version to 1.10.0.
+## [1.9.6] - 2023-10-31
 
-* Update dependencies and python requirements.
+### 🐛 Bug Fixes
 
+- Fix mos_from_r function
 
-## v1.9.6 (2023-10-31)
+This better handles values exceeding the allowable input range [0, 100]
 
-* Fix mos_from_r function.
+### ⚙️ Other
 
-  This better handles values exceeding the allowable input range [0, 100]
+- Explain direct installation
+- Bump version to 1.9.6.
+## [1.9.5] - 2023-07-01
 
-* Explain direct installation.
+### ⚙️ Other
 
+- Add fix for incorrect FPS values increasing computation time
+- Bump version to 1.9.5.
+## [1.9.4] - 2023-04-26
 
-## v1.9.5 (2023-07-01)
+### ⚙️ Other
 
-* Add fix for incorrect FPS values increasing computation time.
+- Update extractor.py
+- Bump version to 1.9.4.
+## [1.9.3] - 2023-02-28
 
+### ⚙️ Other
 
-## v1.9.4 (2023-04-26)
+- Add fast-mode parameter
+- Add test fixture
+- Support .ts files, fixes #33
+- Bump version to 1.9.3.
+## [1.9.2] - 2023-02-23
 
-* Update extractor.py.
+### ⚙️ Other
 
+- Allow overriding displaySize per segment for fast mode
+- Bump version to 1.9.2.
+## [1.9.1] - 2023-01-10
 
-## v1.9.3 (2023-02-28)
+### 🐛 Bug Fixes
 
-* Support .ts files, fixes #33.
+- Fix author string
 
-* Add test fixture.
+### ⚙️ Other
 
-* Add fast-mode parameter.
+- Bump version to 1.9.1.
+## [1.9.0] - 2023-01-10
 
+### 🐛 Bug Fixes
 
-## v1.9.2 (2023-02-23)
+- Fix imports
+- Fix includes and remove manifest.in
 
-* Allow overriding displaySize per segment for fast mode.
+### ⚙️ Other
 
+- Improve docstrings
+- Change .warn to .warning (deprecated)
+- Fixed small typo in README.md
+- Update __main__.py
+- Bump requirement to python 3.8
+- Add setup.cfg
+- Export requirements on release
+- Remove executable flag on some files
+- Format with black and isort
+- Add blame ignore file
+- Add minor type annotation
+- Update packages
+- Bump version to 1.9.0.
+## [1.8.3] - 2022-06-24
 
-## v1.9.1 (2023-01-10)
+### ⚙️ Other
 
-* Fix author string.
+- Add mode to specify displaySize per segment
+- Bump version to 1.8.3.
+## [1.8.2] - 2022-06-24
 
+### ⚙️ Other
 
-## v1.9.0 (2023-01-10)
+- Rename logger
+- Implement an internal fast mode for per-segment computation
+- Bump version to 1.8.2.
+## [1.8.1] - 2022-02-28
 
-* Update packages.
+### ⚙️ Other
 
-* Add minor type annotation.
+- Update Python dependency versions
+- Bump version to 1.8.1.
+## [1.8.0] - 2021-07-26
 
-* Add blame ignore file.
+### ⚙️ Other
 
-* Format with black and isort.
+- Add example for running extractor for mode 3
+- Improve extractor function
 
-* Remove executable flag on some files.
+uses code from parse_qp_output.py in ffmpeg-debug-qp to improve resilience
+- Implement P.1203.3 Amendment 1 Appendix 2
+- Update readme
+- Bump version to 1.8.0.
+## [1.7.2] - 2021-05-04
 
-* Fix includes and remove manifest.in.
+### ⚙️ Other
 
-* Export requirements on release.
+- Speed improvements
 
-* Add setup.cfg.
+dont know why but under linux it just works with a separate command for the plot
 
-* Fix imports.
+speedup changes, precache representation names, and further use only first frame in a measurement window for calculation of audio scores
 
-* Bump requirement to python 3.8.
+some speedup in the chunk part
 
-* Update __main__.py.
+update unittests
 
-* Fixed small typo in README.md.
+minor cleanup
+- Further speedup for chunk_hash
+- Remove unneded dependencies
+- Cleanup profile graph
+- Add further profiling for long sequences
+- Bump version to 1.7.2.
+## [1.7.1] - 2021-04-30
 
-* Change .warn to .warning (deprecated)
+### 🐛 Bug Fixes
 
-* Improve docstrings.
+- Fix usage of lru_cache() method
+- Fix profiling script
 
+### ⚙️ Other
 
-## v1.8.3 (2022-06-24)
+- Enable auto-push on release
+- Remove old changes file
+- Add console script to pyproject.toml
+- Error handling improvements
+- Solved issue #26
+- Simplify release script
+- Update packages
+- Update python requirement
+- Bump version to 1.7.1.
+## [1.7.0] - 2020-09-22
 
-* Add mode to specify displaySize per segment.
+### ⚙️ Other
 
+- Remove static functions and access to static constants
+- Add extraction of all parameters
+- Add poetry env
+- Freeze numpy/scipy/pandas versions
+- Update release script
+- Bump version to 1.7.0.
+## [1.6.2] - 2020-04-27
 
-## v1.8.2 (2022-06-24)
+### 🐛 Bug Fixes
 
-* Implement an internal fast mode for per-segment computation.
+- Fix python multiprocessing under macOS, fixes #16
 
-* Rename logger.
+### ⚙️ Other
 
+- Add a test for Pq model part
+- Extract methods in pq part, thus such methods can be overloaded later
+- Version bump to 1.6.2
+## [1.6.1] - 2020-04-24
 
-## v1.8.1 (2022-02-28)
+### ⚙️ Other
 
-* Update Python dependency versions.
+- Add amendment 1 for p.1203.3
+- Version bump to 1.6.1
+## [1.6.0] - 2020-04-24
 
+### ⚙️ Other
 
-## v1.8.0 (2021-07-26)
+- Add vscode to gitignore
+- Add linearization from Eq. 30 of P.1203.3
+- Version bump to 1.6.0
+## [1.5.2] - 2020-04-10
 
-* Update readme.
+### 🐛 Bug Fixes
 
-* Implement P.1203.3 Amendment 1 Appendix 2.
+- Fix unit test precision
 
-* Improve extractor function.
+### ⚙️ Other
 
-  uses code from parse_qp_output.py in ffmpeg-debug-qp to improve resilience
+- Version bump to 1.5.2
+## [1.5.1] - 2020-04-10
 
-* Add example for running extractor for mode 3.
+### ⚙️ Other
 
+- Add fuzzy test comparator
+- Allow overriding Pq coefficients from class constructor
+- Version bump to 1.5.1
+## [1.5.0] - 2020-03-16
 
-## v1.7.2 (2021-05-04)
+### ⚙️ Other
 
-* Add further profiling for long sequences.
+- Python 3.7 and 3.8
+- Add missing handheld/mobile conversion
+- Remove python 3.8 compatibility, see #16
+- Version bump to 1.5.0
+## [1.4.1] - 2020-01-27
 
-* Cleanup profile graph.
+### ⚙️ Other
 
-* Remove unneded dependencies.
+- Do not prune stalling events if there is no audio
+- Version bump to 1.4.1
+## [1.4.0] - 2019-11-28
 
-* Further speedup for chunk_hash.
+### 🐛 Bug Fixes
 
-* Speed improvements.
+- Fix codec name in examples, add new one-line example
+- Fix package imports, avoid relative imports
 
-  dont know why but under linux it just works with a separate command for the plot
+### ⚡ Performance
 
-  speedup changes, precache representation names, and further use only first frame in a measurement window for calculation of audio scores
+- Performance improvements, do not use hash function
 
-  some speedup in the chunk part
+### ⚙️ Other
 
-  update unittests
+- Update test script to check for exact values
+- Add profiling test description
+- Version bump to 1.4.0
+## [1.3.3] - 2019-11-22
 
-  minor cleanup
+### ⚙️ Other
 
+- Handle empty stalling values
+- Version bump to 1.3.3
+## [1.3.2] - 2019-09-12
 
-## v1.7.1 (2021-04-30)
+### 🐛 Bug Fixes
 
-* Update python requirement.
+- Fix rounding errors in measurement window, fixes #15
 
-* Update packages.
+This applies a small check at the end of the measurement window.
+If it is .9999, then it will be rounded up instead of down.
 
-* Fix profiling script.
+### ⚙️ Other
 
-* Simplify release script.
+- Version bump to 1.3.2
+## [1.3.1] - 2019-07-18
 
-* Fix usage of lru_cache() method.
+### ⚙️ Other
 
-* Solved issue #26.
+- Added missing comma
+- Merge pull request #14 from jeromepasvantis/bugfix-extractor-cmdarg
 
-* Error handling improvements.
+Bugfix in Extractor: Missing Comma in Cmdline args
+- Version bump to 1.3.1
+## [1.3.0] - 2019-07-08
 
-* Add console script to pyproject.toml.
+### ⚙️ Other
 
-* Remove old changes file.
+- Allow reading from STDIN
 
-* Enable auto-push on release.
+Make it possible to supply "-" as input filename, which will make the program
+read from STDIN instead of an actual file.
+- Version bump to 1.3.0
+## [1.2.8] - 2019-04-23
 
+### ⚙️ Other
 
-## v1.7.0 (2020-09-22)
+- Update notice about error in P.1203.3 standard
+- Update helper script to use existing qp values, if calculated
+- Add support for .gz files for QP values
+- Add warning if multiple segments are used with one qp logfile
+- Allow calculating average QP as shortcut in extractor
+- Add Windows compatibility
 
-* Update release script.
+This adds compatibility for Windows by using portable file size commands
+as well as list-based subprocess calls.
+This requires Python 3.5 or higher.
+Windows-specific instructions have been removed due to size and maintenance
+burden. Current versions of Python are recommended instead.
+- Version bump to 1.2.8
+## [1.2.7] - 2019-01-28
 
-* Freeze numpy/scipy/pandas versions.
+### ⚙️ Other
 
-* Add poetry env.
+- Round during segment continuity check
 
-* Add extraction of all parameters.
+additionally print info on what type of segment is being checked
+- Version bump to 1.2.7
+## [1.2.6] - 2019-01-18
 
-* Remove static functions and access to static constants.
+### 🐛 Bug Fixes
 
+- Fix position of warning message
 
-## v1.6.2 (2020-04-27)
+### ⚙️ Other
 
-* Version bump to 1.6.2.
+- Exclude zero-duration stalling events
+- Version bump to 1.2.6
+## [1.2.5] - 2019-01-18
 
-* Extract methods in pq part, thus such methods can be overloaded later.
+### ⚙️ Other
 
-* Add a test for Pq model part.
+- Restrict position of stalling events to inside media range
+- Version bump to 1.2.5
+## [1.2.4] - 2018-09-10
 
-* Fix python multiprocessing under macOS, fixes #16.
+### ⚙️ Other
 
+- Change how the overall result of P1203Standalone is handled, this increases extensibiliy of the Pq model
+- Version bump to 1.2.4
+## [1.2.3] - 2018-07-16
 
-## v1.6.1 (2020-04-24)
+### 🐛 Bug Fixes
 
-* Version bump to 1.6.1.
+- Fix debug print function
 
-* Add amendment 1 for p.1203.3.
+### ⚙️ Other
 
+- Missing dict specifier in readme input example
+- Typo in resolution for input
+- Missing commas on Readme json
+- Merge pull request #6 from pedosb/master
 
-## v1.6.0 (2020-04-24)
+Corrects invalid JSON in readme examples
+- Add missing return statement, fixes #7
+- Version bump to 1.2.3
+## [1.2.2] - 2018-06-21
 
-* Version bump to 1.6.0.
+### 🐛 Bug Fixes
 
-* Add linearization from Eq. 30 of P.1203.3.
+- Fix citation key
 
-* Add vscode to gitignore.
+### ⚙️ Other
 
+- Change affiliation
+- Clarify error in standard
+- Clarify acknowledgement terms
+- Ask user to accept terms before running
+- Version bump to 1.2.2
+## [1.2.1] - 2018-06-20
 
-## v1.5.2 (2020-04-10)
+### ⚙️ Other
 
-* Version bump to 1.5.2.
+- Add disclaimer in README
+- Minor readme improvements
+- Minor bug in detecting stalling
+- Version bump to 1.2.1
+## [1.2.0] - 2018-06-20
 
-* Fix unit test precision.
+### 🐛 Bug Fixes
 
+- Fix coefficient for exponential function
+- Fix detection of initial buffering for RF model
 
-## v1.5.1 (2020-04-10)
+### ⚙️ Other
 
-* Version bump to 1.5.1.
+- Version bump to 1.2.0
+## [1.1.15] - 2018-06-20
 
-* Allow overriding Pq coefficients from class constructor.
+### 🐛 Bug Fixes
 
-* Add fuzzy test comparator.
+- Fix setup script
 
+### ⚙️ Other
 
-## v1.5.0 (2020-03-16)
+- Warn if the first stalling event is not starting at 0
+- Version bump to 1.1.15
+## [1.1.14] - 2018-05-25
 
-* Version bump to 1.5.0.
+### ⚙️ Other
 
-* Remove python 3.8 compatibility, see #16.
+- Add auto release script
+- Version bump to 1.1.14
+## [1.1.13] - 2018-05-25
 
-* Add missing handheld/mobile conversion.
+### 🐛 Bug Fixes
 
-* Python 3.7 and 3.8.
+- Fix handling of single digit qp values
 
+### ⚙️ Other
 
-## v1.4.1 (2020-01-27)
+- Merge pull request #4 from derbroti/master
 
-* Version bump to 1.4.1.
+fix handling of single digit qp values
+- Bump version
+## [1.1.12] - 2018-05-23
 
-* Do not prune stalling events if there is no audio.
+### ⚙️ Other
 
+- Add a comment of media in json description
+- Do not import module for installation, fixes #2
+- Bump version
+## [1.1.11] - 2018-05-03
 
-## v1.4.0 (2019-11-28)
+### 🐛 Bug Fixes
 
-* Version bump to 1.4.0.
+- Fix error in method documentation
+- Fix handling of setup version
 
-* Add profiling test description.
+### ⚙️ Other
 
-* Update test script to check for exact values.
-
-* Performance improvements, do not use hash function.
-
-* Fix package imports, avoid relative imports.
-
-* Fix codec name in examples, add new one-line example.
-
-
-## v1.3.3 (2019-11-22)
-
-* Version bump to 1.3.3.
-
-* Handle empty stalling values.
-
-
-## v1.3.2 (2019-09-12)
-
-* Version bump to 1.3.2.
-
-* Fix rounding errors in measurement window, fixes #15.
-
-  This applies a small check at the end of the measurement window.
-  If it is .9999, then it will be rounded up instead of down.
-
-
-## v1.3.1 (2019-07-18)
-
-* Version bump to 1.3.1.
-
-* Merge pull request #14 from jeromepasvantis/bugfix-extractor-cmdarg.
-
-  Bugfix in Extractor: Missing Comma in Cmdline args
-
-* Added missing comma.
-
-
-## v1.3.0 (2019-07-08)
-
-* Version bump to 1.3.0.
-
-* Allow reading from STDIN.
-
-  Make it possible to supply "-" as input filename, which will make the program
-  read from STDIN instead of an actual file.
-
-
-## v1.2.8 (2019-04-23)
-
-* Version bump to 1.2.8.
-
-* Add Windows compatibility.
-
-  This adds compatibility for Windows by using portable file size commands
-  as well as list-based subprocess calls.
-  This requires Python 3.5 or higher.
-  Windows-specific instructions have been removed due to size and maintenance
-  burden. Current versions of Python are recommended instead.
-
-* Allow calculating average QP as shortcut in extractor.
-
-* Add warning if multiple segments are used with one qp logfile.
-
-* Add support for .gz files for QP values.
-
-* Update helper script to use existing qp values, if calculated.
-
-* Update notice about error in P.1203.3 standard.
-
-
-## v1.2.7 (2019-01-28)
-
-* Version bump to 1.2.7.
-
-* Round during segment continuity check.
-
-  additionally print info on what type of segment is being checked
-
-
-## v1.2.6 (2019-01-18)
-
-* Version bump to 1.2.6.
-
-* Exclude zero-duration stalling events.
-
-* Fix position of warning message.
-
-
-## v1.2.5 (2019-01-18)
-
-* Version bump to 1.2.5.
-
-* Restrict position of stalling events to inside media range.
-
-
-## v1.2.4 (2018-09-10)
-
-* Version bump to 1.2.4.
-
-* Change how the overall result of P1203Standalone is handled, this increases extensibiliy of the Pq model.
-
-
-## v1.2.3 (2018-07-16)
-
-* Version bump to 1.2.3.
-
-* Add missing return statement, fixes #7.
-
-* Fix debug print function.
-
-* Merge pull request #6 from pedosb/master.
-
-  Corrects invalid JSON in readme examples
-
-* Missing commas on Readme json.
-
-* Typo in resolution for input.
-
-* Missing dict specifier in readme input example.
-
-
-## v1.2.2 (2018-06-21)
-
-* Version bump to 1.2.2.
-
-* Ask user to accept terms before running.
-
-* Clarify acknowledgement terms.
-
-* Clarify error in standard.
-
-* Change affiliation.
-
-* Fix citation key.
-
-
-## v1.2.1 (2018-06-20)
-
-* Version bump to 1.2.1.
-
-* Minor bug in detecting stalling.
-
-* Minor readme improvements.
-
-* Add disclaimer in README.
-
-
-## v1.2.0 (2018-06-20)
-
-* Version bump to 1.2.0.
-
-* Fix detection of initial buffering for RF model.
-
-* Fix coefficient for exponential function.
-
-
-## v1.1.15 (2018-06-20)
-
-* Version bump to 1.1.15.
-
-* Warn if the first stalling event is not starting at 0.
-
-* Fix setup script.
-
-
-## v1.1.14 (2018-05-25)
-
-* Version bump to 1.1.14.
-
-* Add auto release script.
-
-
-## v1.1.13 (2018-05-25)
-
-* Bump version.
-
-* Merge pull request #4 from derbroti/master.
-
-  fix handling of single digit qp values
-
-* Fix handling of single digit qp values.
-
-
-## v1.1.12 (2018-05-23)
-
-* Bump version.
-
-* Do not import module for installation, fixes #2.
-
-* Add a comment of media in json description.
-
-
-## v1.1.11 (2018-05-03)
-
-* Fix handling of setup version.
-
-* Bump version.
-
-* Allow quiet running.
-
-* Minor README improvements.
-
-* Update references.
-
-* Bump version.
-
-* Remove debugging print.
-
-* Fix error in method documentation.
-
-* Initial commit.
-
-
+- Initial commit
+- Remove debugging print
+- Bump version
+- Update references
+- Minor README improvements
+- Allow quiet running
+- Bump version
