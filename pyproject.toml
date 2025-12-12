@@ -1,21 +1,46 @@
-[tool.poetry]
+[project]
 name = "itu-p1203"
 version = "1.10.0"
 description = "ITU-T P.1203 Standalone Model"
-authors = ["Werner Robitza <werner.robitza@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Werner Robitza", email = "werner.robitza@gmail.com" }]
+keywords = ["video", "p1203", "quality", "streaming"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Multimedia :: Video",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+requires-python = ">=3.9"
+dependencies = ["numpy>=2.0.0"]
 
-[tool.poetry.dependencies]
-python = ">=3.9,<4.0"
-numpy = ">=2.0.0,<3.0.0"
+[project.scripts]
+p1203-standalone = "itu_p1203.__main__:main"
 
-[tool.poetry.dev-dependencies]
-gitchangelog = "^3.0.4"
-pystache = "^0.6.5"
-pytest = "^6.2.5"
+[project.urls]
+Homepage = "https://github.com/itu-p1203/itu-p1203"
+Repository = "https://github.com/itu-p1203/itu-p1203"
 
-[tool.poetry.scripts]
-p1203-standalone = 'itu_p1203.__main__:main'
+[dependency-groups]
+dev = ["pytest>=8.0", "ruff>=0.8.0"]
 
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["uv_build>=0.9.17,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-root = ""
+
+[tool.ruff]
+line-length = 160
+
+[tool.ruff.lint]
+ignore = ["E226", "E302", "E401", "E402"]

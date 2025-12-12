@@ -63,15 +63,6 @@ if ! command -v git-cliff &> /dev/null; then
     exit 1
 fi
 
-# check if poetry is available for requirements export
-if ! command -v poetry &> /dev/null; then
-    echo "Warning: poetry is not installed. Requirements files will not be updated."
-    echo "Install poetry from https://python-poetry.org/"
-    SKIP_POETRY=true
-else
-    SKIP_POETRY=false
-fi
-
 echo "Would bump version:"
 uv version --bump "$1" --dry-run
 
@@ -89,28 +80,6 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     uv version --bump "$1"
 
     new_version=$(uv version --short)
-
-    # Special handling: update version in additional files
-    VERSION_FILE="itu_p1203/__init__.py"
-    VERSION_FILE_2="VERSION"
-
-    if [ -f "$VERSION_FILE" ]; then
-        perl -pi -e "s/\d+\.\d+\.\d+/$new_version/" "$VERSION_FILE"
-        git add "$VERSION_FILE"
-    fi
-
-    if [ -f "$VERSION_FILE_2" ]; then
-        echo "$new_version" > "$VERSION_FILE_2"
-        git add "$VERSION_FILE_2"
-    fi
-
-    # Special handling: export requirements using poetry
-    if [ "$SKIP_POETRY" = false ]; then
-        echo "Exporting requirements..."
-        poetry export --without-hashes -f requirements.txt > requirements.txt
-        poetry export --with dev -f requirements.txt --output requirements.dev.txt --without-hashes
-        git add requirements.txt requirements.dev.txt
-    fi
 
     # commit changes
     git add pyproject.toml uv.lock

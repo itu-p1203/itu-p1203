@@ -123,9 +123,7 @@ class P1203Standalone:
             except Exception:
                 logger.warning("No stream ID specified")
 
-            self.audio = self.Pa(segments, stream_id).calculate(
-                fast_mode=self.fast_mode or fast_mode
-            )
+            self.audio = self.Pa(segments, stream_id).calculate(fast_mode=self.fast_mode or fast_mode)
 
         # use existing O21 scores
         elif "O21" in self.input_report.keys():
@@ -159,9 +157,7 @@ class P1203Standalone:
         # estimate quality from segments
         if "I13" in self.input_report.keys():
             if "segments" not in self.input_report["I13"]:
-                raise P1203StandaloneError(
-                    "No video segments defined, check your input format"
-                )
+                raise P1203StandaloneError("No video segments defined, check your input format")
 
             segments = self.input_report["I13"]["segments"]
 
@@ -217,11 +213,7 @@ class P1203Standalone:
         logger.debug("Calculating integration module ...")
 
         stalling = []
-        if (
-            "I23" in self.input_report.keys()
-            and "stalling" in self.input_report["I23"].keys()
-            and self.input_report["I23"]["stalling"] is not None
-        ):
+        if "I23" in self.input_report.keys() and "stalling" in self.input_report["I23"].keys() and self.input_report["I23"]["stalling"] is not None:
             stalling = self.input_report["I23"]["stalling"]
 
         device = "pc"
@@ -242,13 +234,9 @@ class P1203Standalone:
             p_buff = [x[0] for x in stalling]
 
         if not self.audio:
-            raise P1203StandaloneError(
-                "No audio scores found, please run calculate_pa() first"
-            )
+            raise P1203StandaloneError("No audio scores found, please run calculate_pa() first")
         if not self.video:
-            raise P1203StandaloneError(
-                "No video scores found, please run calculate_pv() first"
-            )
+            raise P1203StandaloneError("No video scores found, please run calculate_pv() first")
 
         self.integration = self.Pq(
             O21=self.audio["audio"]["O21"],
@@ -297,13 +285,9 @@ class P1203Standalone:
         self.calculate_integration(**calculate_integration_kwargs)
 
         if not self.audio:
-            raise P1203StandaloneError(
-                "No audio scores found, has calculate_pa() failed?"
-            )
+            raise P1203StandaloneError("No audio scores found, has calculate_pa() failed?")
         if not self.video:
-            raise P1203StandaloneError(
-                "No video scores found, has calculate_pv() failed?"
-            )
+            raise P1203StandaloneError("No video scores found, has calculate_pv() failed?")
 
         # try setting stream ID from input video
         stream_id = -1
@@ -315,9 +299,7 @@ class P1203Standalone:
             pass
 
         if not self.integration:
-            raise P1203StandaloneError(
-                "No integration scores found, has calculate_integration() failed?"
-            )
+            raise P1203StandaloneError("No integration scores found, has calculate_integration() failed?")
 
         # integration usually consists of O23, O34, O35, O46
         self.overall_result = self.integration

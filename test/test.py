@@ -1729,11 +1729,7 @@ def fuzzy_equal(d1, d2, precision):
             elif isinstance(v, list):
                 for idx, (v1, v2) in enumerate(zip(v, d2[k])):
                     if not abs(v1 - v2) < precision:
-                        print(
-                            "Values for {} at index {} do not match: {}, {}".format(
-                                k, idx, v1, v2
-                            )
-                        )
+                        print("Values for {} at index {} do not match: {}, {}".format(k, idx, v1, v2))
                         return False
 
             # Fall back to default
@@ -1774,17 +1770,12 @@ class TestP1203(unittest.TestCase):
     def test_amendment_1_audiovisual_stalling(self):
         print("Testing amendment 1 AV/stall changes")
 
-        for test_file in [
-            os.path.join(BASEDIR, "examples", f + ".json")
-            for f in ["mode0_low_audio_quality", "mode0_long_stalling"]
-        ]:
+        for test_file in [os.path.join(BASEDIR, "examples", f + ".json") for f in ["mode0_low_audio_quality", "mode0_long_stalling"]]:
             test_case = os.path.splitext(os.path.basename(test_file))[0]
             test_data = utils.read_json_without_comments(test_file)
             print("Checking {}".format(test_case))
 
-            test_model = P1203Standalone(
-                test_data, amendment_1_audiovisual=True, amendment_1_stalling=True
-            )
+            test_model = P1203Standalone(test_data, amendment_1_audiovisual=True, amendment_1_stalling=True)
 
             output = test_model.calculate_complete(print_intermediate=True)
             del output["date"]
@@ -2232,11 +2223,7 @@ class TestP1203(unittest.TestCase):
                 ret = round(fun(*test_data["args"]), 3)
                 mos = test_data["mos"]
                 if abs(ret - mos) > 0.01:
-                    print(
-                        "{mode} test failed, expected {mos}, got {ret}".format(
-                            **locals()
-                        )
-                    )
+                    print("{mode} test failed, expected {mos}, got {ret}".format(**locals()))
                     failed += 1
 
         assert failed == 0
@@ -2265,25 +2252,14 @@ class TestP1203(unittest.TestCase):
             calculate_pv_kwargs={"fast_mode": True},
         )
         end_fast_mode = timer()
-        print(
-            "Fast mode:    " + str(timedelta(seconds=end_fast_mode - start_fast_mode))
-        )
+        print("Fast mode:    " + str(timedelta(seconds=end_fast_mode - start_fast_mode)))
 
         start_regular = timer()
         results_regular = p.calculate_complete(print_intermediate=True)
         end_regular = timer()
         print("Regular mode: " + str(timedelta(seconds=end_regular - start_regular)))
 
-        print(
-            "Speedup: "
-            + str(
-                round(
-                    timedelta(seconds=end_regular - start_regular)
-                    / timedelta(seconds=end_fast_mode - start_fast_mode)
-                )
-            )
-            + "x"
-        )
+        print("Speedup: " + str(round(timedelta(seconds=end_regular - start_regular) / timedelta(seconds=end_fast_mode - start_fast_mode))) + "x")
 
         del results_fast_mode["date"]
         del results_regular["date"]

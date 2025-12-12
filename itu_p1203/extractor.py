@@ -128,11 +128,13 @@ def parse_video_parser_output(output, use_average=False):
             # This is equivalent to use_average=True behavior from ffmpeg-debug-qp
             qp_values = [qp_avg]
 
-            frames.append({
-                "frameType": frame_type,
-                "frameSize": frame_size,
-                "qpValues": qp_values,
-            })
+            frames.append(
+                {
+                    "frameType": frame_type,
+                    "frameSize": frame_size,
+                    "qpValues": qp_values,
+                }
+            )
 
     return frames
 
@@ -272,19 +274,11 @@ class Extractor(object):
         for line in Extractor._file_line_gen(logfile):
             line = line.decode("utf-8").strip()
             # skip all non-relevant lines
-            if (
-                "[h264" not in line
-                and "[mpeg2video" not in line
-                and "pkt_size" not in line
-            ):
+            if "[h264" not in line and "[mpeg2video" not in line and "pkt_size" not in line:
                 continue
 
             # skip irrelevant other lines
-            if (
-                "nal_unit_type" in line
-                or "Reinit context" in line
-                or "Skipping" in line
-            ):
+            if "nal_unit_type" in line or "Reinit context" in line or "Skipping" in line:
                 continue
 
             # start a new frame
@@ -302,12 +296,7 @@ class Extractor(object):
 
                 frame_type = line[-1]
                 if frame_type not in ["I", "P", "B"]:
-                    print_stderr(
-                        "Wrong frame type parsed: "
-                        + str(frame_type)
-                        + "\n Offending LINE : "
-                        + line
-                    )
+                    print_stderr("Wrong frame type parsed: " + str(frame_type) + "\n Offending LINE : " + line)
                     continue
 
                 first_frame_found = True
@@ -324,10 +313,7 @@ class Extractor(object):
                 continue
 
             if ("[h264" in line or "[mpeg2video" in line) and "pkt_size" not in line:
-                if (
-                    set(line.split("] ")[1]) - set(" 0123456789PAiIdDgGS><X+-|?=")
-                    != set()
-                ):
+                if set(line.split("] ")[1]) - set(" 0123456789PAiIdDgGS><X+-|?=") != set():
                     # this line contains something that is not a qp value
                     continue
 
@@ -345,10 +331,7 @@ class Extractor(object):
                 # [h264 @ 0x7fadf2008000]  1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
                 raw_values = re.sub(r"\[[\w\s@]+\]\s", "", line)
                 # remove the leading space in case of single digit qp values
-                line_qp_values = [
-                    int(raw_values[i : i + 2].lstrip())
-                    for i in range(0, len(raw_values), 2)
-                ]
+                line_qp_values = [int(raw_values[i : i + 2].lstrip()) for i in range(0, len(raw_values), 2)]
                 frame_qp_values.extend(line_qp_values)
                 continue
             if "pkt_size" in line:
@@ -373,9 +356,7 @@ class Extractor(object):
         return list(Extractor._parse_qp_data(logfile, use_average))
 
     @staticmethod
-    def get_video_frame_info_ffmpeg_debug_qp(
-        segment, qp_logfile=None, use_average=False
-    ):
+    def get_video_frame_info_ffmpeg_debug_qp(segment, qp_logfile=None, use_average=False):
         """
         Obtain the video frame info using video-parser (preferred) or ffmpeg-debug-qp.
 
@@ -392,11 +373,7 @@ class Extractor(object):
             if os.path.isfile(qp_logfile):
                 return Extractor.parse_qp_data(qp_logfile, use_average)
             else:
-                print_stderr(
-                    "Logfile "
-                    + str(qp_logfile)
-                    + " not found! Falling back to QP extraction."
-                )
+                print_stderr("Logfile " + str(qp_logfile) + " not found! Falling back to QP extraction.")
 
         # Try video-parser first (from videoparser-ng)
         video_parser_result = get_video_frame_info_video_parser(segment, use_average)
@@ -407,14 +384,9 @@ class Extractor(object):
 
         # Fall back to ffmpeg-debug-qp
         # try to get from source distribution
-        ffmpeg_debug_script = os.path.abspath(
-            os.path.join(
-                os.path.dirname(__file__), "..", "ffmpeg-debug-qp", "ffmpeg_debug_qp"
-            )
-        )
+        ffmpeg_debug_script = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "ffmpeg-debug-qp", "ffmpeg_debug_qp"))
 
         if not os.path.isfile(ffmpeg_debug_script):
-
             # else, try to get from PATH
             ffmpeg_debug_script = utils.which("ffmpeg_debug_qp")
 
@@ -622,21 +594,14 @@ class Extractor(object):
             elif "tags" in video_info and "DURATION" in video_info["tags"]:
                 duration_str = video_info["tags"]["DURATION"]
                 hms, msec = duration_str.split(".")
-                total_dur = sum(
-                    int(x) * 60**i for i, x in enumerate(reversed(hms.split(":")))
-                )
+                total_dur = sum(int(x) * 60**i for i, x in enumerate(reversed(hms.split(":"))))
                 video_duration = total_dur + float("0." + msec)
             elif "duration" in info["format"]:
-                print_stderr(
-                    "Warning: could not extract video duration from stream info, use format entry "
-                    + str(segment)
-                )
+                print_stderr("Warning: could not extract video duration from stream info, use format entry " + str(segment))
                 video_duration = float(info["format"]["duration"])
             else:
                 video_duration = None
-                print_stderr(
-                    "Warning: could not extract video duration from " + str(segment)
-                )
+                print_stderr("Warning: could not extract video duration from " + str(segment))
 
             if "bit_rate" in video_info:
                 video_bitrate = round(float(video_info["bit_rate"]) / 1024.0, 2)
@@ -669,21 +634,14 @@ class Extractor(object):
             elif "tags" in audio_info and "DURATION" in audio_info["tags"]:
                 duration_str = audio_info["tags"]["DURATION"]
                 hms, msec = duration_str.split(".")
-                total_dur = sum(
-                    int(x) * 60**i for i, x in enumerate(reversed(hms.split(":")))
-                )
+                total_dur = sum(int(x) * 60**i for i, x in enumerate(reversed(hms.split(":"))))
                 audio_duration = total_dur + float("0." + msec)
             elif "duration" in info["format"]:
-                print_stderr(
-                    "Warning: could not extract audio duration from stream info, use format entry "
-                    + str(segment)
-                )
+                print_stderr("Warning: could not extract audio duration from stream info, use format entry " + str(segment))
                 audio_duration = float(info["format"]["duration"])
             else:
                 audio_duration = None
-                print_stderr(
-                    "Warning: could not extract audio duration from " + str(segment)
-                )
+                print_stderr("Warning: could not extract audio duration from " + str(segment))
 
             if "bit_rate" in audio_info:
                 audio_bitrate = round(float(audio_info["bit_rate"]) / 1024.0, 2)
@@ -738,9 +696,7 @@ class Extractor(object):
         return size
 
     @staticmethod
-    def get_segment_info_lines(
-        segment, mode=0, timestamp=0, qp_logfile=None, use_average=False
-    ):
+    def get_segment_info_lines(segment, mode=0, timestamp=0, qp_logfile=None, use_average=False):
         """
         Return (list, list, duration), where each list contains the info for the
         video or audio part of the passed segment, and the duration of the segment.
@@ -762,9 +718,7 @@ class Extractor(object):
                 "start": timestamp,
                 # use format duration to align both video and audio
                 "duration": format_info["duration"],
-                "resolution": str(segment_info["video_width"])
-                + "x"
-                + str(segment_info["video_height"]),
+                "resolution": str(segment_info["video_width"]) + "x" + str(segment_info["video_height"]),
                 "bitrate": segment_info["video_bitrate"],
                 "fps": segment_info["video_frame_rate"],
             }
@@ -791,9 +745,7 @@ class Extractor(object):
             video_segment_info_json["frames"] = frame_stats_json
 
         if mode in [2, 3]:
-            frame_stats = Extractor.get_video_frame_info_ffmpeg_debug_qp(
-                segment, qp_logfile, use_average
-            )
+            frame_stats = Extractor.get_video_frame_info_ffmpeg_debug_qp(segment, qp_logfile, use_average)
             video_segment_info_json["frames"] = frame_stats
 
         return (
@@ -846,9 +798,7 @@ def main(_):
         print_stderr("Need at least one input file")
         sys.exit(1)
 
-    report = Extractor(
-        segment_files, argsdict["mode"], argsdict["qp_logfile"], argsdict["use_average"]
-    ).extract()
+    report = Extractor(segment_files, argsdict["mode"], argsdict["qp_logfile"], argsdict["use_average"]).extract()
 
     print(json.dumps(report, sort_keys=True, indent=4))
 

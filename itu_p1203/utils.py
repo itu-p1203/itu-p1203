@@ -887,11 +887,7 @@ def mos_from_r(Q):
         return MOS_MIN
     if Q >= 100:
         return MOS_MAX
-    MOS = (
-        MOS_MIN
-        + float(MOS_MAX - MOS_MIN) * float(Q) / 100.0
-        + float(Q) * float(Q - 60.0) * float(100.0 - Q) * 0.000007
-    )
+    MOS = MOS_MIN + float(MOS_MAX - MOS_MIN) * float(Q) / 100.0 + float(Q) * float(Q - 60.0) * float(100.0 - Q) * 0.000007
     return MOS
 
 
@@ -949,9 +945,7 @@ def resolution_to_number(string):
     try:
         return int(string.split("x")[0]) * int(string.split("x")[1])
     except Exception as e:
-        raise P1203StandaloneError(
-            "Wrong specification of resolution {string}: {e}".format(**locals())
-        )
+        raise P1203StandaloneError("Wrong specification of resolution {string}: {e}".format(**locals()))
 
 
 def check_segment_continuity(segments, type="video"):
@@ -969,11 +963,7 @@ def check_segment_continuity(segments, type="video"):
         last_segment_end = round(prev_segment["start"] + prev_segment["duration"], 2)
         this_segment_start = round(segments[i]["start"], 2)
         if last_segment_end != this_segment_start:
-            logger.warning(
-                "{type} segment starts at {this_segment_start} but last one ended at {last_segment_end}".format(
-                    **locals()
-                )
-            )
+            logger.warning("{type} segment starts at {this_segment_start} but last one ended at {last_segment_end}".format(**locals()))
     logger.debug("Checked segment continuity")
 
 

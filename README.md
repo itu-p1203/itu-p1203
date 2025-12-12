@@ -11,6 +11,7 @@ This evaluation software implements the following standards:
 
 **News:**
 
+- Version 1.10.0 switches to `uv` for Python dependencies, adds support for `videoparser-ng` for QP extraction
 - Version 1.8.0 includes the new P.1203.3 Amendment 1 Appendix 2, which enables simplified model calculation for use with the P.1204.3 model.
 - Version 1.6.0 fixes an issue with the final linearization (P.1203.3 Eq. 30) not being applied. Any calculations performed with earlier versions must be re-computed.
 - Version 1.6.1 includes support for the P.1203.3 Amendment 1 "Adjustment of the audiovisual quality" which introduces an adjustment of the audiovisual quality of ITU-T P.1203.3 for the case of very low audio quality and long stalling events.
@@ -25,10 +26,16 @@ The software takes the following input:
 * One or more audiovisual files (segments), or
 * A JSON-formatted input specification
 
-Based on the input, it calculates per-second audio and video quality scores and an overall audiovisual integrated quality score according to the P.1203 standards. The following codecs are supported:
+Based on the input, it calculates per-second audio and video quality scores and an overall audiovisual integrated quality score according to the P.1203 standards.
+The Pv, Pa and Pq modules are implemented according to the following diagram.
+
+![](images/p1203_blocks.png)
+
+The following codecs and resolutions are supported by the offical P.1203 standard:
 
 * Audio: AAC-LC, HE-AAC, MP2, AC3
 * Video: H.264 (for other codecs, see [Extensions](#extensions))
+* Resolutions: up to 1920x1080p at 25fps
 
 When specifying the input, the software automatically decides which "mode" will be used for evaluation:
 
@@ -43,32 +50,29 @@ Different Amendments of the official P.1203 recommendation can be enabled; pleas
 
 ## Requirements
 
-* Python 3.9 or higher and `pip3`
-  * Modern Linux distributions should come with Python 3. If not, [pyenv](https://github.com/pyenv/pyenv) is recommended to get a user-level Python 3 installation.
-  * Under macOS, use [Homebrew](https://brew.sh/) and `brew install python` and read the printed messages.
-  * For installation under Windows, please install Python from the official website
+* [uv](https://docs.astral.sh/uv/)
 
-* Additional Python packages:
-  * For running the software locally without pip, install the dependencies: `pip3 install --user -r requirements.txt`.
-  * Under Windows, you can also download the requirements [here](https://www.lfd.uci.edu/~gohlke/pythonlibs/) and install the wheel for your architecture directly
+* Python 3.9 or higher (`uv` takes care of this!)
 
-* `ffprobe`/`ffmpeg` (only needed for Mode 3)
+If you want to run Mode 2 or 3:
+
+* [`videoparser-ng`](https://github.com/aveq-research/videoparser-ng) (recommended) or [`ffmpeg-debug-qp`](https://github.com/slhck/ffmpeg-debug-qp) (fallback)
+
+If you want to run Mode 3:
+
+* `ffprobe`/`ffmpeg`
   * Download a static build from [ffmpeg](http://ffmpeg.org/download.html)
   * Place it in your `$PATH`
 
-## Installation via `pip3`
+## Installation
 
-Directly via Git:
+Install `uv` first, then download this repository and run:
 
-    pip3 install git+https://github.com/itu-p1203/itu-p1203
+```bash
+uv run p1203-standalone --help
+```
 
-Or, from this directory, run:
-
-    pip3 install .
-
-Then you will get a `p1203-standalone` executable on your system. You can import the libraries with `itu_p1203` from Python.
-
-You can uninstall the model with `pip3 uninstall itu_p1203`.
+If you do not have a matching Python version, it will be installed automatically by `uv`. It will also take care of all dependencies.
 
 ## CLI Usage
 
@@ -137,10 +141,10 @@ The program will output a valid JSON report with the following structure:
 
 ## Usage Examples
 
-These examples assume direct usage from the source folder. If you installed the tool via `pip` you can just call `itu-p1203` with the needed options.
+These examples assume direct usage from the source folder with `uv run`. If you installed the tool via `pip` or `uv tool install`, you can just call `p1203-standalone` directly.
 
-```
-python3 -m itu_p1203 examples/mode0.json
+```bash
+uv run p1203-standalone examples/mode0.json
 ```
 
 Should output:
@@ -161,7 +165,7 @@ Should output:
 You can run video and audio-only evaluation, too:
 
 ```bash
-python3 -m itu_p1203 examples/mode1.json --only-pv
+uv run p1203-standalone examples/mode1.json --only-pv
 ```
 
 ```json
@@ -178,8 +182,8 @@ python3 -m itu_p1203 examples/mode1.json --only-pv
 
 You can run it on video files directly:
 
-```
-python3 -m itu_p1203 segment-1.mp4 segment-2.mp4 --mode 1
+```bash
+uv run p1203-standalone segment-1.mp4 segment-2.mp4 --mode 1
 ```
 
 ## JSON Input Format
@@ -282,7 +286,7 @@ The list of frames contains every frame in the sequence, in decoding order. The 
 If you have `ffprobe` installed, you can generate the required input file from one or more video segments by using the `itu_p1203/extractor.py` script. For example:
 
 ```bash
-python3 -m itu_p1203.extractor -m 1 /path/to/segment1.mp4 /path/to/segment2.mp4 > mode1.json
+uv run python -m itu_p1203.extractor -m 1 /path/to/segment1.mp4 /path/to/segment2.mp4 > mode1.json
 ```
 
 This is what the `itu_p1203` script does in the background if you call it with a video file as argument.
@@ -296,7 +300,7 @@ For extracting Mode 2/3 values, you need a QP extraction tool. The extractor sup
 Then you can extract the QP values directly:
 
 ```bash
-python3 -m itu_p1203.extractor --use-average -m 3 /path/to/segment1.mp4 /path/to/segment2.mp4 > mode3.json
+uv run python -m itu_p1203.extractor --use-average -m 3 /path/to/segment1.mp4 /path/to/segment2.mp4 > mode3.json
 ```
 
 **Note:** This procedure is experimental and may not work with all input video files, hence cannot be used to validate an existing implementation.
@@ -331,7 +335,11 @@ For more, see the example usage in `itu_p1203/__main__.py`.
 
 ## Extensions
 
-For evaluation of non-standard codecs (H.265/HEVC or VP9), you can use the [extension provided by TU Ilmenau](https://github.com/Telecommunication-Telemedia-Assessment/itu-p1203-codecextension).
+For evaluation of non-standard codecs (H.265/HEVC or VP9), you can use the [extension provided by TU Ilmenau](https://github.com/Telecommunication-Telemedia-Assessment/itu-p1203-codecextension) as a drop-in replacement.
+
+It is also possible to use the [AVQBits|M0 model from TU Ilmenau](https://github.com/Telecommunication-Telemedia-Assessment/p1204_3_extensions) for the Pv component to generate the O.22 video quality scores, then use them as input to the P.1203.3 quality integration module. This has support for HEVC and VP9 codecs up to 4K resolution and 60fps.
+
+For a more accurate bitstream model, the [P.1204.3 model](https://github.com/Telecommunication-Telemedia-Assessment/bitstream_mode3_p1204_3) can be used, again to generate O.22 scores for input to P.1203.3. Here, Amendment 1 Appendix 2 should be enabled for P.1203.
 
 ## Acknowledgement
 
@@ -371,7 +379,7 @@ Development of this software has been partly funded by the European Union’s Ho
 
 ## License
 
-Copyright 2017-2018 Deutsche Telekom AG, Technische Universität Berlin, Technische Universität Ilmenau, LM Ericsson
+Copyright 2017-2025 Deutsche Telekom AG, Technische Universität Berlin, Technische Universität Ilmenau, LM Ericsson, Werner Robitza
 
 Permission is hereby granted, free of charge, to use the software for non-commercial research purposes.
 
@@ -385,8 +393,8 @@ NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS 
 
 Main developers:
 
+* Werner Robitza, AVEQ GmbH (formerly Technische Universität Ilmenau)
 * Steve Göring, Technische Universität Ilmenau
-* Werner Robitza, Technische Universität Ilmenau
 
 Contributors:
 

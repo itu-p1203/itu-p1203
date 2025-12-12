@@ -32,9 +32,7 @@ def execute_trees(features, path):
     res_all = []
     for fn in os.listdir(path):
         if fn.endswith(".csv") and fn.startswith("tree"):
-            tree_matrix = np.genfromtxt(
-                os.path.join(path, fn), delimiter=",", dtype=float
-            )
+            tree_matrix = np.genfromtxt(os.path.join(path, fn), delimiter=",", dtype=float)
             res = execute_tree(features, tree_matrix)
             res_all.append(res)
     res_mean = np.mean(res_all, axis=0)
@@ -67,17 +65,12 @@ def scale_moses(sec_mos, num_splits):
 
     for i in range(total_duration):
         if previous_time + 1 >= split_duration:
-            mos = (
-                (previous_time * previous_mos)
-                + (split_duration - previous_time) * sec_mos[i]
-            ) / split_duration
+            mos = ((previous_time * previous_mos) + (split_duration - previous_time) * sec_mos[i]) / split_duration
             mos_samples.append(mos)
             previous_mos = sec_mos[i]
             previous_time = previous_time + 1 - split_duration
         else:
-            previous_mos = ((previous_mos * previous_time) + sec_mos[i] * 1) / (
-                previous_time + 1
-            )
+            previous_mos = ((previous_mos * previous_time) + sec_mos[i] * 1) / (previous_time + 1)
             previous_time += 1
 
     while len(mos_samples) < num_splits:
@@ -131,15 +124,7 @@ def calculate(O21, O22, l_buff, p_buff, duration):
     tree_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "trees"))
 
     rf_score = execute_trees(
-        np.array(
-            (
-                rebuf_stats
-                + sec_moses_feature_video
-                + sec_mos_stat
-                + sec_moses_feature_audio
-                + [duration]
-            )
-        ).astype("float64"),
+        np.array((rebuf_stats + sec_moses_feature_video + sec_mos_stat + sec_moses_feature_audio + [duration])).astype("float64"),
         path=tree_path,
     )
     return rf_score

@@ -3,6 +3,7 @@
 *.shelve
 __pycache__
 */__pycache__
+.venv/
 
 # Distribution / packaging
 .Python

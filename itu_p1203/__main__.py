@@ -22,6 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import argparse
 import json
 import logging
@@ -51,9 +52,7 @@ def sign_acknowledgement():
         with open(os.path.join(home, ".itu_p1203"), "w") as file_name:
             file_name.write("\n")
     except Exception as e:
-        logger.error(
-            "Coult not create file in home directory. Please use --accept-notice to silence the message."
-        )
+        logger.error("Coult not create file in home directory. Please use --accept-notice to silence the message.")
 
 
 def extract_from_single_file(
@@ -90,9 +89,7 @@ def extract_from_single_file(
         fast_mode {bool} -- enable fast mode (default: False)
     """
     if input_file != "-" and not os.path.isfile(input_file):
-        raise P1203StandaloneError(
-            "No such file: {input_file}".format(input_file=input_file)
-        )
+        raise P1203StandaloneError("No such file: {input_file}".format(input_file=input_file))
 
     if input_file == "-":
         stdin = sys.stdin.read()
@@ -106,25 +103,13 @@ def extract_from_single_file(
             input_report = utils.read_json_without_comments(input_file)
         # convert input video to required format
         elif file_ext in valid_video_exts:
-            logger.debug(
-                "Running extract_from_segment_files to get input report: {} mode {}".format(
-                    input_file, mode
-                )
-            )
+            logger.debug("Running extract_from_segment_files to get input report: {} mode {}".format(input_file, mode))
             try:
                 input_report = Extractor([input_file], mode).extract()
             except Exception as e:
-                raise P1203StandaloneError(
-                    "Could not auto-generate input report, error: {e.output}".format(
-                        e=e
-                    )
-                )
+                raise P1203StandaloneError("Could not auto-generate input report, error: {e.output}".format(e=e))
         else:
-            raise P1203StandaloneError(
-                "Could not guess what kind of input file this is: {input_file}".format(
-                    input_file=input_file
-                )
-            )
+            raise P1203StandaloneError("Could not guess what kind of input file this is: {input_file}".format(input_file=input_file))
 
     # create model ...
     itu_p1203 = P1203Standalone(
@@ -183,12 +168,8 @@ def main(modules={}, quiet=False):
         help="mode to run for extraction in case video files are loaded",
     )
     parser.add_argument("--debug", action="store_true", help="some debug output")
-    parser.add_argument(
-        "--only-pa", action="store_true", help="just print Pa O.21 values"
-    )
-    parser.add_argument(
-        "--only-pv", action="store_true", help="just print Pv O.22 values"
-    )
+    parser.add_argument("--only-pa", action="store_true", help="just print Pa O.21 values")
+    parser.add_argument("--only-pv", action="store_true", help="just print Pv O.22 values")
     parser.add_argument(
         "--print-intermediate",
         action="store_true",
@@ -308,9 +289,7 @@ def main(modules={}, quiet=False):
     if use_multiprocessing:
         multiprocessing.set_start_method("fork")
         if any(input_file == "-" for input_file in argsdict["input"]):
-            logger.error(
-                "You can only use STDIN with single-threaded processing. Use --cpu-count 1."
-            )
+            logger.error("You can only use STDIN with single-threaded processing. Use --cpu-count 1.")
             sys.exit(1)
 
         pool = Pool(processes=argsdict["cpu_count"])
@@ -334,9 +313,7 @@ def main(modules={}, quiet=False):
         try:
             output_results = pool.starmap(extract_from_single_file, params)
         except Exception as e:
-            logger.error(
-                "Error during processing, exiting: {}".format(e), exc_info=True
-            )
+            logger.error("Error during processing, exiting: {}".format(e), exc_info=True)
             sys.exit(1)
     else:
         # iterate over input files
@@ -357,9 +334,7 @@ def main(modules={}, quiet=False):
                     argsdict["fast_mode"],
                 )
             except Exception as e:
-                logger.error(
-                    "Error during processing, exiting: {}".format(e), exc_info=True
-                )
+                logger.error("Error during processing, exiting: {}".format(e), exc_info=True)
                 sys.exit(1)
             # append to output
             output_results.append(result)

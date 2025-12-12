@@ -15,11 +15,7 @@ def list_equal_element_plus_list():
         a = [i] + a
 
 
-print(
-    timeit.timeit(
-        "insert_pos_list()", setup="from __main__ import insert_pos_list", number=1000
-    )
-)  # --> 0.49346098299974983
+print(timeit.timeit("insert_pos_list()", setup="from __main__ import insert_pos_list", number=1000))  # --> 0.49346098299974983
 
 print(
     timeit.timeit(
