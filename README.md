@@ -115,7 +115,7 @@ optional arguments:
 
 The program will output a valid JSON report with the following structure:
 
-```json
+```jsonc
 {
   "path/to/first/input/file": {
     "O21": [
@@ -149,7 +149,7 @@ uv run p1203-standalone examples/mode0.json
 
 Should output:
 
-```json
+```jsonc
 {
  "examples/mode0.json": {
   "O23": 5.0,
@@ -168,7 +168,7 @@ You can run video and audio-only evaluation, too:
 uv run p1203-standalone examples/mode1.json --only-pv
 ```
 
-```json
+```jsonc
 {
  "examples/mode1.json": {
   "video": {
@@ -190,7 +190,7 @@ uv run p1203-standalone segment-1.mp4 segment-2.mp4 --mode 1
 
 The input JSON file (see files in `examples`) must have at least the following data:
 
-```json
+```jsonc
 {
 "I13": {              // video input information
     "streamId": 42,   // unique identifier for the stream
@@ -203,7 +203,7 @@ The input JSON file (see files in `examples`) must have at least the following d
 
 The following keys and data are optional:
 
-```json
+```jsonc
 {
   "IGen": {                         // Generic input information
     "displaySize": "1920x1080",   // display resolution in pixels, given as `<width>x<height>`
@@ -237,7 +237,7 @@ As an alternative to giving segment information, the input can also be a list of
 
 For audio, `segments` contains a list of audio segments to be analyzed. Each segment is defined by the following dictionary:
 
-```json
+```jsonc
 {
   "codec": "aaclc",   // audio codec, any of [mp2, ac3, aaclc, heaac]
   "start": 0.0,       // media start timestamp
@@ -250,7 +250,7 @@ For audio, `segments` contains a list of audio segments to be analyzed. Each seg
 
 For video, `segments` contains a list of video segments to be analyzed. Each segment is defined by the following dictionary, depending on the mode:
 
-```json
+```jsonc
 {
   "codec": "h264",       // only "h264" supported in standard
   "start": 0.0,          // media start timestamp in s
@@ -270,7 +270,7 @@ The `representation` key is equal to the *Media Quality Level* ID as defined in 
 
 The list of frames contains every frame in the sequence, in decoding order. The object contents depend on the mode, and the software figures out automatically which mode to calculate:
 
-```json
+```jsonc
 {
   "frameType": "I",     // I/Non-I, or I/P/B
   "frameSize": 18102,   // in Bytes
