@@ -1,3 +1,17 @@
+## [1.11.0] - 2025-12-12
+
+### 🚀 Features
+
+- Use video-parser instead of ffmpeg-debug-qp if available
+
+### ⚙️ Miscellaneous Tasks
+
+- Remove gitchangelog files, move to git-cliff
+- Migrate to uv, update README
+
+### ⚙️ Other
+
+- Bump version to 1.11.0
 ## [1.10.0] - 2024-09-20
 
 ### ⚙️ Other

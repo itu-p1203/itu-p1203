@@ -1,6 +1,6 @@
 [project]
 name = "itu-p1203"
-version = "1.10.0"
+version = "1.11.0"
 description = "ITU-T P.1203 Standalone Model"
 readme = "README.md"
 license = "MIT"
