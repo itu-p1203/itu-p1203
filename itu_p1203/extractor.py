@@ -37,6 +37,10 @@ from fractions import Fraction
 from . import utils
 
 
+# Frame type mapping for video-parser output (1=I, 2=P, 3=B)
+VIDEO_PARSER_FRAME_TYPES = {1: "I", 2: "P", 3: "B"}
+
+
 def average(x):
     if not isinstance(x, list):
         print_stderr("Cannot use average() on non-list!")
@@ -68,6 +72,94 @@ def run_command(cmd, dry_run=False, verbose=False):
         print_stderr("[error] running command: {}".format(" ".join(cmd)))
         print_stderr(stderr.decode("utf-8"))
         sys.exit(1)
+
+
+def find_video_parser():
+    """
+    Find the video-parser binary from videoparser-ng in PATH.
+
+    Returns the path to the binary if found, None otherwise.
+    """
+    return utils.which("video-parser")
+
+
+def parse_video_parser_output(output, use_average=False):
+    """
+    Parse the JSON Lines output from video-parser.
+
+    Returns a list of frame information in the same format as ffmpeg-debug-qp parser:
+    - frameType: "I", "P", or "B"
+    - frameSize: size in bytes
+    - qpValues: list of QP values (video-parser provides average QP)
+
+    Args:
+        output: String containing JSON Lines output from video-parser
+        use_average: If True, return single average QP (same behavior as ffmpeg-debug-qp)
+    """
+    frames = []
+
+    for line in output.strip().split("\n"):
+        if not line:
+            continue
+
+        try:
+            data = json.loads(line)
+        except json.JSONDecodeError:
+            print_stderr(f"Warning: Could not parse video-parser output line: {line}")
+            continue
+
+        # Skip sequence_info line
+        if data.get("type") == "sequence_info":
+            continue
+
+        if data.get("type") == "frame_info":
+            frame_type_num = data.get("frame_type")
+            frame_type = VIDEO_PARSER_FRAME_TYPES.get(frame_type_num)
+
+            if frame_type is None:
+                print_stderr(f"Warning: Unknown frame type {frame_type_num}")
+                continue
+
+            frame_size = data.get("size", 0)
+            qp_avg = data.get("qp_avg", 0)
+
+            # video-parser only provides aggregate QP statistics (avg, min, max, stdev)
+            # For compatibility, we always return a single-element list with the average
+            # This is equivalent to use_average=True behavior from ffmpeg-debug-qp
+            qp_values = [qp_avg]
+
+            frames.append({
+                "frameType": frame_type,
+                "frameSize": frame_size,
+                "qpValues": qp_values,
+            })
+
+    return frames
+
+
+def get_video_frame_info_video_parser(segment, use_average=False):
+    """
+    Obtain video frame info using videoparser-ng's video-parser.
+
+    Return keys:
+        - `frameType`: `I`, `P`, `B`
+        - `frameSize`: Size of the frame in bytes
+        - `qpValues`: List of QP values (single average value from video-parser)
+    """
+    video_parser_path = find_video_parser()
+    if not video_parser_path:
+        return None
+
+    cmd = [video_parser_path, segment]
+    print_stderr("Running video-parser to extract QPs ...")
+    print_stderr(cmd)
+
+    try:
+        stdout, stderr = run_command(cmd)
+        return parse_video_parser_output(stdout, use_average)
+    except Exception as e:
+        print_stderr(f"Error running video-parser: {e}")
+        return None
 
 
 class Extractor(object):
@@ -285,13 +377,17 @@ class Extractor(object):
         segment, qp_logfile=None, use_average=False
     ):
         """
-        Obtain the video frame info using the ffmpeg-debug-qp script.
+        Obtain the video frame info using video-parser (preferred) or ffmpeg-debug-qp.
+
+        Tries video-parser from videoparser-ng first if available, then falls back
+        to ffmpeg-debug-qp.
 
         Return keys:
-            - `frame_type`: `I`, `P`, `B`
-            - `size`: Size of the packet in bytes (including SPS, PPS for first frame, and AUD units for subsequent frames)
+            - `frameType`: `I`, `P`, `B`
+            - `frameSize`: Size of the packet in bytes (including SPS, PPS for first frame, and AUD units for subsequent frames)
             - `qpValues`: List of QP values
         """
+        # If a QP logfile is provided, use the ffmpeg-debug-qp parser
         if qp_logfile:
             if os.path.isfile(qp_logfile):
                 return Extractor.parse_qp_data(qp_logfile, use_average)
@@ -299,9 +395,17 @@ class Extractor(object):
                 print_stderr(
                     "Logfile "
                     + str(qp_logfile)
-                    + " not found! Falling back to ffmpeg-debug-qp parsing."
+                    + " not found! Falling back to QP extraction."
                 )
 
+        # Try video-parser first (from videoparser-ng)
+        video_parser_result = get_video_frame_info_video_parser(segment, use_average)
+        if video_parser_result is not None:
+            return video_parser_result
+
+        print_stderr("video-parser not found, falling back to ffmpeg-debug-qp")
+
+        # Fall back to ffmpeg-debug-qp
         # try to get from source distribution
         ffmpeg_debug_script = os.path.abspath(
             os.path.join(
