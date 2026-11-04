@@ -3,14 +3,14 @@ name = "itu-p1203"
 version = "1.11.0"
 description = "ITU-T P.1203 Standalone Model"
 readme = "README.md"
-license = "MIT"
+license = "LicenseRef-P1203-Non-Commercial-Research"
+license-files = ["LICENSE.md"]
 authors = [{ name = "Werner Robitza", email = "werner.robitza@gmail.com" }]
 keywords = ["video", "p1203", "quality", "streaming"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Topic :: Multimedia :: Video",
-    "License :: OSI Approved :: MIT License",
     "Natural Language :: English",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
