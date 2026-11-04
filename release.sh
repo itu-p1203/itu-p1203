@@ -2,7 +2,7 @@
 #
 # Release the project and bump version number in the process.
 
-set -e
+set -eo pipefail
 
 cd "$(dirname "$0")"
 
@@ -83,11 +83,11 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
     # commit changes
     git add pyproject.toml uv.lock
-    git commit -m "bump version to $new_version"
+    git commit -m "chore(release): bump version to $new_version"
     git tag -a "v$new_version" -m "v$new_version"
 
     # generate changelog
-    git-cliff > CHANGELOG.md
+    git-cliff | awk 'BEGIN { print "# Changelog\n" } { sub(/^### /, ""); print }' > CHANGELOG.md
 
     git add CHANGELOG.md
     git commit --no-verify --amend --no-edit
