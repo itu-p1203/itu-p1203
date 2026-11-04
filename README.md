@@ -52,7 +52,7 @@ Different Amendments of the official P.1203 recommendation can be enabled; pleas
 
 * [uv](https://docs.astral.sh/uv/)
 
-* Python 3.9 or higher (`uv` takes care of this!)
+* Python 3.11 or higher (`uv` takes care of this!)
 
 If you want to run Mode 2 or 3:
 
